@@ -3,7 +3,7 @@ import random
 import secrets
 import string
 from datetime import timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 import bcrypt
 from django.conf import settings
@@ -29,6 +29,7 @@ from core.models import (
     Wallet,
     WithdrawalStage,
 )
+from services import exchange_rate
 from tenants.state import get_current_tenant_id, tenant_atomic
 
 
@@ -452,6 +453,76 @@ def get_wallet_breakdown(user_id: int) -> dict:
         'deposits': deposits_total,
         'withdrawals': withdrawals_total,
         'gamePlay': game_play,
+    }
+
+
+# --- INR ⇄ USDT conversion (crypto cashier) --------------------------------
+# Wallets are denominated in INR; the crypto rail moves USDT. Both the deposit
+# and withdrawal screens need to show the player what their rupees are worth in
+# Tether at the live market rate before they commit to a transfer.
+
+# USDT is quoted to 6 decimals (its on-chain precision on TRC-20/ERC-20), INR to
+# paise. Rounding half-up so a displayed quote never under-states what the player
+# owes on a deposit.
+_USDT_DP = Decimal('0.000001')
+_INR_DP = Decimal('0.01')
+
+
+def get_usdt_inr_quote() -> dict:
+    """The current USDT⇄INR exchange rate, straight from CoinGecko.
+
+    Raises ``ValueError`` when no rate is available at all, so the cashier
+    refuses to quote rather than pricing a transfer off an invented number.
+    """
+    quote = exchange_rate.get_usdt_inr_rate()
+    if quote is None:
+        raise ValueError('Exchange rate unavailable, please try again shortly')
+    rate = quote['rate']
+    return {
+        'base': 'USDT',
+        'quote': 'INR',
+        # One USDT costs this many rupees, and one rupee buys this much USDT.
+        'rate': float(rate.quantize(_INR_DP, rounding=ROUND_HALF_UP)),
+        'inverseRate': float((Decimal(1) / rate).quantize(_USDT_DP, rounding=ROUND_HALF_UP)),
+        'source': 'coingecko',
+        # True when CoinGecko was unreachable and this is the last good rate —
+        # the UI surfaces it so a player isn't shown a stale price as live.
+        'stale': quote['stale'],
+        'lastUpdatedAt': quote['last_updated_at'],
+    }
+
+
+def convert_currency(amount: float, from_currency: str, to_currency: str) -> dict:
+    """Convert between INR and USDT at the live rate.
+
+    Returns the converted amount alongside the rate it was priced at, so the
+    client can display "≈ X USDT at ₹Y/USDT" without a second call.
+    """
+    frm = (from_currency or '').strip().upper()
+    to = (to_currency or '').strip().upper()
+    if {frm, to} != {'INR', 'USDT'}:
+        raise ValueError('Only INR ⇄ USDT conversion is supported')
+
+    try:
+        value = Decimal(str(amount))
+    except (InvalidOperation, ValueError):
+        raise ValueError('Amount must be a number')
+    if value < 0:
+        raise ValueError('Amount must not be negative')
+
+    quote = get_usdt_inr_quote()
+    rate = Decimal(str(quote['rate']))
+    if frm == 'INR':
+        converted = (value / rate).quantize(_USDT_DP, rounding=ROUND_HALF_UP)
+    else:
+        converted = (value * rate).quantize(_INR_DP, rounding=ROUND_HALF_UP)
+
+    return {
+        'amount': float(value),
+        'from': frm,
+        'to': to,
+        'converted': float(converted),
+        **{k: quote[k] for k in ('rate', 'inverseRate', 'source', 'stale', 'lastUpdatedAt')},
     }
 
 

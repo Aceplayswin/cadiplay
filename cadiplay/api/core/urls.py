@@ -20,6 +20,8 @@ urlpatterns = [
     path('wallet/deposit/<int:tx_id>/confirm', views.wallet_deposit_confirm),
     path('wallet/withdraw', views.wallet_withdraw),
     path('wallet/transactions', views.wallet_transactions),
+    # INR ⇄ USDT rate for the crypto cashier (public: pre-commitment quote).
+    path('exchange-rate/usdt', views.exchange_rate_usdt),
     # Bonuses / promotions (player-facing)
     path('promotions', views.promotions_list),
     path('bonuses/mine', views.my_bonuses),

@@ -227,6 +227,22 @@ GAME_BIG_WIN_THRESHOLD = os.getenv('GAME_BIG_WIN_THRESHOLD', '1000')
 # provider that never reports a result cannot pin a bet on "Pending" forever.
 GAME_PENDING_STAKE_MAX_HOURS = os.getenv('GAME_PENDING_STAKE_MAX_HOURS', '72')
 
+# --- CoinGecko (INR ⇄ USDT exchange rate) ---
+# A key is optional: without one the public Simple Price endpoint is used, which
+# is capped at a few calls per minute — hence the cache TTL below. Set
+# COINGECKO_PRO=1 only for a paid Pro key; a demo key uses the public host with a
+# different header, and sending the wrong one silently drops back to public limits.
+COINGECKO_API_KEY = os.getenv('COINGECKO_API_KEY', '')
+COINGECKO_PRO = os.getenv('COINGECKO_PRO', '').lower() in ('1', 'true', 'yes')
+COINGECKO_HTTP_TIMEOUT = int(os.getenv('COINGECKO_HTTP_TIMEOUT', '10'))
+# How long a fetched rate is served before refetching. 60s keeps the quote close
+# to the market while staying well inside the public rate limit.
+COINGECKO_CACHE_TTL = int(os.getenv('COINGECKO_CACHE_TTL', '60'))
+# Rate of last resort, used only if CoinGecko has never answered since this
+# process started (so there is no last-known-good copy). Left blank the cashier
+# refuses to quote rather than pricing a transfer off a stale constant.
+USDT_INR_FALLBACK_RATE = os.getenv('USDT_INR_FALLBACK_RATE', '')
+
 # Public base URLs of this deployment's own surfaces. The affiliate program
 # needs both: it builds tracking links against the API (which owns /r/<code>)
 # and redirects the resulting click to the player site.
