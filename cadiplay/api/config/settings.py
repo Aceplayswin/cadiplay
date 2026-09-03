@@ -60,7 +60,7 @@ DATABASE_ROUTERS = ['middleware.db_router.TenantRouter']
 # authenticates the pull AND identifies which product this instance is. Super
 # Admin resolves the product from this key alone — no slug is exchanged, so the
 # two sides only communicate when a valid key is configured here.
-SUPER_ADMIN_URL = os.getenv('SUPER_ADMIN_URL', 'http://localhost:8000').rstrip('/')
+SUPER_ADMIN_URL = os.getenv('SUPER_ADMIN_URL', 'http://localhost:9000').rstrip('/')
 PRODUCT_CONFIG_TOKEN = os.getenv('PRODUCT_CONFIG_TOKEN', '')
 # How long (seconds) to cache a fetched config before re-checking Super Admin.
 CONTROL_PLANE_CACHE_TTL = int(os.getenv('CONTROL_PLANE_CACHE_TTL', '60'))
@@ -174,7 +174,7 @@ JWT_REFRESH_SECRET = os.getenv('JWT_REFRESH_SECRET', 'dev-refresh-secret')
 JWT_EXPIRY_DAYS = 7
 WELCOME_BONUS = float(os.getenv('WELCOME_BONUS', '100'))
 DEMO_SESSION_MINUTES = 30
-API_PORT = int(os.getenv('PORT', '5000'))
+API_PORT = int(os.getenv('PORT', '9001'))
 
 # --- Game aggregator / provider integration ---
 # All values come from the environment so credentials, keys, and URLs are never
@@ -196,7 +196,7 @@ if _callback_env:
 elif _api_public_url.startswith('https://'):
     _game_callback_base = _api_public_url
 else:
-    _game_callback_base = 'http://localhost:5000'
+    _game_callback_base = 'http://localhost:9001'
 
 GAME_PROVIDER = {
     'AGENCY_UID': os.getenv('GAME_AGENCY_UID', ''),
@@ -209,7 +209,7 @@ GAME_PROVIDER = {
     # testing against a shared agency account it can be set to '/game/' (the
     # legacy registered path) and reverse-proxied/aliased to games_callback.
     'CALLBACK_PATH': os.getenv('GAME_CALLBACK_PATH', '/api/v1/games/callback'),
-    'HOME_URL': os.getenv('GAME_HOME_URL', 'http://localhost:3000'),
+    'HOME_URL': os.getenv('GAME_HOME_URL', 'http://localhost:4000'),
     'CURRENCY_CODE': os.getenv('GAME_CURRENCY_CODE', 'INR'),
     'DEFAULT_LANGUAGE': os.getenv('GAME_DEFAULT_LANGUAGE', 'en'),
     'HTTP_TIMEOUT': int(os.getenv('GAME_HTTP_TIMEOUT', '15')),
@@ -247,7 +247,7 @@ USDT_INR_FALLBACK_RATE = os.getenv('USDT_INR_FALLBACK_RATE', '')
 # needs both: it builds tracking links against the API (which owns /r/<code>)
 # and redirects the resulting click to the player site.
 API_URL = os.getenv('API_URL', '').rstrip('/') or f'http://localhost:{API_PORT}'
-WEB_URL = os.getenv('WEB_URL', '').rstrip('/') or 'http://localhost:3000'
+WEB_URL = os.getenv('WEB_URL', '').rstrip('/') or 'http://localhost:4000'
 # The partner portal. Needed server-side because sub-affiliate invite links are
 # built by the API and point at that portal's apply form.
-AFFILIATE_URL = os.getenv('AFFILIATE_URL', '').rstrip('/') or 'http://localhost:3003'
+AFFILIATE_URL = os.getenv('AFFILIATE_URL', '').rstrip('/') or 'http://localhost:4002'

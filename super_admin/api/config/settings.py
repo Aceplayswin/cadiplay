@@ -68,7 +68,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 JWT_SECRET = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
 JWT_EXPIRY_DAYS = 7
-API_PORT = int(os.getenv('PORT', '8000'))
+API_PORT = int(os.getenv('PORT', '9000'))
 
 # Shared secret a product API sends (X-Product-Token) to pull its own
 # control-plane config from GET /api/v1/products/<slug>/config. Products read

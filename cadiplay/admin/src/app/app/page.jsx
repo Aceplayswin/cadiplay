@@ -20,7 +20,7 @@ import {
 } from '@/components/admin/AdminShell';
 
 // The player-facing app-download page lives in the separate web app.
-const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
+const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:4000';
 
 const BLANK = {
   enabled: false,

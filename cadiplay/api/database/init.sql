@@ -369,7 +369,7 @@ CREATE TABLE IF NOT EXISTS game_callback_logs (
   INDEX idx_gcl_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Downline operators with their own portal (cadiplay/agent, :3004). A fourth
+-- Downline operators with their own portal (cadiplay/agent, :4003). A fourth
 -- trust boundary: not staff, not players, not marketing partners. They log in
 -- with `username`/`password_hash` and carry role='agent' in the JWT, so
 -- `request.auth.sub` is an `agents.id`.
@@ -453,7 +453,7 @@ CREATE TABLE IF NOT EXISTS agents (
   INDEX idx_agents_requested_parent (requested_parent_code)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- External marketing partners with their own portal (cadiplay/affiliate, :3003).
+-- External marketing partners with their own portal (cadiplay/affiliate, :4002).
 -- A third trust boundary: not staff, not players, so they live here rather than
 -- in `users` (whose role enum is ENUM('user','admin')) and authenticate against
 -- password_hash below with role='affiliate' in the JWT.
@@ -982,7 +982,7 @@ CREATE TABLE IF NOT EXISTS affiliate_commission_runs (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ---------------------------------------------------------------------------
--- Agent panel (cadiplay/agent, :3004)
+-- Agent panel (cadiplay/agent, :4003)
 --
 -- Everything below hangs off `agents` above. Shipped as migration
 -- database/migrations/003_agent_panel.sql for tenants that already exist.

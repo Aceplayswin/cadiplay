@@ -9,8 +9,8 @@ import { useEffect } from 'react';
  * here with ?ref=&sub=&clk=. This picks those up and stashes them so that a
  * registration minutes or days later can still be attributed.
  *
- * localStorage rather than a cookie on purpose: the API (:5000) and this site
- * (:3000) are different origins, so a cookie the API set would never be
+ * localStorage rather than a cookie on purpose: the API (:9001) and this site
+ * (:4000) are different origins, so a cookie the API set would never be
  * readable here without SameSite=None and a shared parent domain. Storing it on
  * the site's own origin sidesteps that entirely.
  *

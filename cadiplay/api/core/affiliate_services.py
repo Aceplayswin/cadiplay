@@ -213,15 +213,15 @@ def client_ip(request) -> str:
 
 
 def api_base_url() -> str:
-    return (django_settings.API_URL or 'http://localhost:5000').rstrip('/')
+    return (django_settings.API_URL or 'http://localhost:9001').rstrip('/')
 
 
 def web_base_url() -> str:
-    return (django_settings.WEB_URL or 'http://localhost:3000').rstrip('/')
+    return (django_settings.WEB_URL or 'http://localhost:4000').rstrip('/')
 
 
 def affiliate_portal_url() -> str:
-    return (django_settings.AFFILIATE_URL or 'http://localhost:3003').rstrip('/')
+    return (django_settings.AFFILIATE_URL or 'http://localhost:4002').rstrip('/')
 
 
 def tracking_url(code: str) -> str:

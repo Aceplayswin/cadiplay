@@ -49,7 +49,7 @@ import { adminApi, adminUploadImage, clearAdminToken, getAdminRole, getAdminToke
 import { useBranding } from '@/hooks/useBranding';
 
 // The player-facing site lives in a separate app; "View site" links out to it.
-const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:3000';
+const WEB_URL = process.env.NEXT_PUBLIC_WEB_URL ?? 'http://localhost:4000';
 
 const NAV_GROUPS = [
   {

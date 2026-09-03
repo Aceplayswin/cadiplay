@@ -5,7 +5,7 @@
 // branding and the live theme are fetched from the product API's keyless
 // endpoints and apply to whichever product this API belongs to.
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9001';
 
 // Branding for this product (authored in Super Admin, delivered to the product
 // API over the control plane and served here with no tenant argument).

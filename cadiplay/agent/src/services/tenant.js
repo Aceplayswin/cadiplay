@@ -7,7 +7,7 @@
 // a leading-slash path, so a base of `https://api.example.com/` would build
 // `https://api.example.com//api/v1/...` — Django's resolver treats the extra
 // leading segment as part of the path and 404s the whole panel.
-export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5000').replace(/\/+$/, '');
+export const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9001').replace(/\/+$/, '');
 
 // Branding for this product (authored in Super Admin, delivered to the product
 // API over the control plane and served here with no tenant argument).
