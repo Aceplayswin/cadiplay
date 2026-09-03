@@ -1,7 +1,7 @@
 """Seed the master/control-plane database and create the initial products.
 
 Creates the platform Super Admin and onboards the three initial products
-(Dollara, Product B, Product C). Each product's tenant database must already
+(Cadiplay, Product B, Product C). Each product's tenant database must already
 exist (created and schema-applied manually); this command only writes the
 master-DB records (Product, Branding, Url, Database connection info, theme
 rows, webhook credential). Re-runnable (idempotent).
@@ -17,9 +17,9 @@ from tenants.models import User
 
 INITIAL_PRODUCTS = [
     {
-        'name': 'Dollara',
-        'fe_url': 'https://dollara.com',
-        'be_url': 'https://api.dollara.com',
+        'name': 'Cadiplay',
+        'fe_url': 'https://cadiplay.com',
+        'be_url': 'https://api.cadiplay.com',
     },
     {
         'name': 'Product B',

@@ -14,7 +14,7 @@ THEME_CATALOG = [
     {
         'key': 'theme1',
         'name': 'Theme 1 — Classic',
-        'description': 'The original Dollara layout.',
+        'description': 'The original Cadiplay layout.',
     },
     {
         'key': 'theme2',

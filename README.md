@@ -2,7 +2,7 @@
 
 > A multi‑tenant, white‑label online gaming (casino / sports / slots / lottery) platform.
 > One central **control plane** (Super Admin) onboards and brands many isolated
-> **products** (e.g. Dollara, Product B, Product C). Each product ships a Django API,
+> **products** (e.g. Cadiplay, Product B, Product C). Each product ships a Django API,
 > a Next.js web app (with swappable themes), and a React Native mobile app.
 >
 > Each product is a **self‑contained deployment that owns its own database**. The control
@@ -31,9 +31,9 @@ this document is derived from the code as it exists in the repository.
 9. [The Gaming Module (Aggregator Integration)](#9-the-gaming-module-aggregator-integration)
 10. [Component: `super_admin/api` (Control Plane API)](#10-component-super_adminapi-control-plane-api)
 11. [Component: `super_admin/web` (Control Plane Console)](#11-component-super_adminweb-control-plane-console)
-12. [Component: `dollara/api` (Product Backend)](#12-component-dollaraapi-product-backend)
-13. [Component: `dollara/web` (Product Web App)](#13-component-dollaraweb-product-web-app)
-14. [Component: `dollara/mobile` (Product Mobile App)](#14-component-dollaramobile-product-mobile-app)
+12. [Component: `cadiplay/api` (Product Backend)](#12-component-cadiplayapi-product-backend)
+13. [Component: `cadiplay/web` (Product Web App)](#13-component-cadiplayweb-product-web-app)
+14. [Component: `cadiplay/mobile` (Product Mobile App)](#14-component-cadiplaymobile-product-mobile-app)
 15. [Database Schema Reference](#15-database-schema-reference)
 16. [API Reference](#16-api-reference)
 17. [Startup & Execution Flow](#17-startup--execution-flow)
@@ -59,13 +59,13 @@ Each product is a fully isolated tenant with:
   API connects to;
 - its **own branding** (name, logo, colors, support contacts) authored centrally;
 - a **live theme** (complete UI/UX skin) selected centrally;
-- a **product API** (`dollara/api`) that pulls its config from Super Admin and serves only
+- a **product API** (`cadiplay/api`) that pulls its config from Super Admin and serves only
   its own data;
-- a **web** front end (`dollara/web`) and **mobile** app (`dollara/mobile`).
+- a **web** front end (`cadiplay/web`) and **mobile** app (`cadiplay/mobile`).
 
-`dollara/` is the reference product implementation. To launch "Product B", you create the
+`cadiplay/` is the reference product implementation. To launch "Product B", you create the
 product in Super Admin (which provisions its DB and issues its signing key pair) and deploy
-copies of the same `dollara/*` codebases pointed at Super Admin (`SUPER_ADMIN_URL` +
+copies of the same `cadiplay/*` codebases pointed at Super Admin (`SUPER_ADMIN_URL` +
 `PRODUCT_CONFIG_TOKEN`) and at the new product's own database — no code fork is required for
 branding or theming.
 
@@ -74,16 +74,16 @@ The headline technical features:
 | Capability | Where it lives | Notes |
 |---|---|---|
 | Isolated product database | each product's own `default` DB (`MYSQL_*`) | No cross‑product DB access; one deployment = one product |
-| Control‑plane config pull (HTTP) | `dollara/api/services/control_plane.py` | Product fetches identity/branding/theme/keys; cached w/ last‑known‑good |
-| Signed webhook data channel | `super_admin/api/services/webhook_client.py` + `dollara/api/core/webhook_views.py` | RSA‑PSS‑signed pulls; product reads its **own** DB and answers |
+| Control‑plane config pull (HTTP) | `cadiplay/api/services/control_plane.py` | Product fetches identity/branding/theme/keys; cached w/ last‑known‑good |
+| Signed webhook data channel | `super_admin/api/services/webhook_client.py` + `cadiplay/api/core/webhook_views.py` | RSA‑PSS‑signed pulls; product reads its **own** DB and answers |
 | Product signing credentials | `super_admin/api/services/{crypto_keys,product_credentials}.py` | RSA‑2048 key pair per product; rotate/audit (`webhook_deliveries`) |
 | Central provisioning | `super_admin/api/services/tenant_provisioning.py` | Creates the product DB, applies `init.sql`, issues the key pair |
 | White‑label branding | master `branding` table → config pull + public endpoint | Served to web/mobile at runtime |
-| Per‑product theme switching | master `product_themes` table + `dollara/web/src/themes/` | A theme is a whole UI, not a color swap |
-| External game aggregator | `dollara/api/services/game_provider.py` + `core/game_services.py` | AES‑256 launch + idempotent callback settlement |
-| In‑process AI | `dollara/api/core/ai/` | PyTorch fraud scoring, welcome‑call & chat scripts |
-| Real‑time live ticker | `dollara/api/core/consumers.py` (Channels/WS) | `/ws` feed |
-| GraphQL + REST | `dollara/api/core/graphql_schema.py`, `core/urls.py` | Strawberry GraphQL alongside DRF‑style views |
+| Per‑product theme switching | master `product_themes` table + `cadiplay/web/src/themes/` | A theme is a whole UI, not a color swap |
+| External game aggregator | `cadiplay/api/services/game_provider.py` + `core/game_services.py` | AES‑256 launch + idempotent callback settlement |
+| In‑process AI | `cadiplay/api/core/ai/` | PyTorch fraud scoring, welcome‑call & chat scripts |
+| Real‑time live ticker | `cadiplay/api/core/consumers.py` (Channels/WS) | `/ws` feed |
+| GraphQL + REST | `cadiplay/api/core/graphql_schema.py`, `core/urls.py` | Strawberry GraphQL alongside DRF‑style views |
 
 ---
 
@@ -109,7 +109,7 @@ shamb_01/                         ← git root
 │       └── src/app/              ← login, overview, products (CRUD + branding + themes
 │                                    + credentials + webhook data viewer)
 │
-└── dollara/                      ← REFERENCE PRODUCT (one tenant)
+└── cadiplay/                      ← REFERENCE PRODUCT (one tenant)
     ├── api/                      ← Django product API (port 5000)
     │   ├── config/               ← settings, test_settings, urls, asgi, wsgi
     │   ├── core/                 ← all product features (auth, wallet, games, admin, ai)
@@ -135,18 +135,18 @@ shamb_01/                         ← git root
         └── src/                  ← screens, navigation, store, services, branding
 ```
 
-> **Important:** `super_admin` and `dollara` are siblings that only ever talk over **HTTP**.
+> **Important:** `super_admin` and `cadiplay` are siblings that only ever talk over **HTTP**.
 > The product API connects to its **own** database and never exposes Super Admin endpoints;
 > it *pulls* its config from Super Admin. Super Admin owns the master DB and provisions
 > products, but reads product data **only** by making signed webhook calls to each product —
 > it never connects to a product's database. (The gaming module's design notes, once in
-> `dollara/games.md` / `gamesv1.md` / `research.md`, now live in `dollara/api/docs/GAMES.md`.)
+> `cadiplay/games.md` / `gamesv1.md` / `research.md`, now live in `cadiplay/api/docs/GAMES.md`.)
 
 ---
 
 ## 3. Technology Stack
 
-### Backend (`super_admin/api`, `dollara/api`)
+### Backend (`super_admin/api`, `cadiplay/api`)
 
 | Technology | Version (req.) | Why it's here |
 |---|---|---|
@@ -164,19 +164,19 @@ shamb_01/                         ← git root
 | **python-dotenv** | 1.0 | `.env` loading |
 | **gunicorn** | 23 | WSGI production server (HTTP path) |
 
-### Frontend — Web (`super_admin/web`, `dollara/web`)
+### Frontend — Web (`super_admin/web`, `cadiplay/web`)
 
 | Technology | Version | Why |
 |---|---|---|
 | **Next.js (App Router)** | 14.2.18 | React framework; SSR shell + client components |
 | **React** | 18.3 | UI library |
-| **Zustand** | 5 | Lightweight global state (auth, theme) — *dollara/web* |
+| **Zustand** | 5 | Lightweight global state (auth, theme) — *cadiplay/web* |
 | **Tailwind CSS** | 3.4 | Utility‑first styling (config differs per app) |
 | **lucide-react** | 0.469 | Icon set |
 | **sweetalert2** | 11 | Toasts / confirm dialogs in admin & console |
-| **graphql / graphql-request** | 16 / 7 | (declared) GraphQL client deps — *dollara/web* |
+| **graphql / graphql-request** | 16 / 7 | (declared) GraphQL client deps — *cadiplay/web* |
 
-### Frontend — Mobile (`dollara/mobile`)
+### Frontend — Mobile (`cadiplay/mobile`)
 
 | Technology | Version | Why |
 |---|---|---|
@@ -205,11 +205,11 @@ graph TD
     SAA["super_admin/api<br/>Django :8000"]
   end
 
-  subgraph Product["Product (self-contained, e.g. Dollara)"]
-    DW["dollara/web<br/>Next.js :3000"]
-    DM["dollara/mobile<br/>React Native"]
-    DA["dollara/api<br/>Django :5000"]
-    T1[("dollara DB<br/>(the product owns it)")]
+  subgraph Product["Product (self-contained, e.g. Cadiplay)"]
+    DW["cadiplay/web<br/>Next.js :3000"]
+    DM["cadiplay/mobile<br/>React Native"]
+    DA["cadiplay/api<br/>Django :5000"]
+    T1[("cadiplay DB<br/>(the product owns it)")]
   end
 
   MASTER[("Master MySQL DB<br/>products, urls, branding, databases,<br/>product_themes, product_credentials,<br/>webhook_deliveries, super-admin users")]
@@ -267,17 +267,17 @@ used to be direct cross‑database access:
 
 > **Historical note.** Earlier revisions used a *database‑per‑tenant* model: one master DB
 > plus dynamically‑registered `tenant_<slug>` connections, with Super Admin opening MySQL
-> connections straight into each product's DB. That coupling is gone. Each `dollara/api`
+> connections straight into each product's DB. That coupling is gone. Each `cadiplay/api`
 > process now serves **one** product and keeps all feature data on its Django `default`
 > connection (`MYSQL_*`). The old router/thread‑local machinery remains but is inert —
 > `get_current_db()` returns `None`, so `TenantRouter` always targets `default`
-> ([`middleware/db_router.py`](dollara/api/middleware/db_router.py)), and the `tenants` app
-> now defines **no models** ([`tenants/models.py`](dollara/api/tenants/models.py)).
+> ([`middleware/db_router.py`](cadiplay/api/middleware/db_router.py)), and the `tenants` app
+> now defines **no models** ([`tenants/models.py`](cadiplay/api/tenants/models.py)).
 
 ### 5.1 Config pull — the product fetches its own config
 
 On every request the tenant resolver needs the product's identity. Instead of reading the
-master DB, [`services/control_plane.py`](dollara/api/services/control_plane.py) fetches it
+master DB, [`services/control_plane.py`](cadiplay/api/services/control_plane.py) fetches it
 from Super Admin:
 
 ```
@@ -291,8 +291,8 @@ product record, branding, active/known themes, and **public‑only** signing cre
 
 ```jsonc
 {
-  "slug": "dollara",
-  "product":     { "id": 1, "slug": "dollara", "name": "Dollara", "status": "active" },
+  "slug": "cadiplay",
+  "product":     { "id": 1, "slug": "cadiplay", "name": "Cadiplay", "status": "active" },
   "branding":    { "product_name": "...", "logo_url": "...", "theme_color": "...", ... },
   "theme":       { "active_theme": "theme1", "known_themes": ["theme1","theme2","theme3"] },
   "credentials": [ { "key_id": "sak_...", "public_pem": "...", "fingerprint": "...",
@@ -328,7 +328,7 @@ its **own** database and returns them. The full byte‑for‑byte contract is in
 sequenceDiagram
   participant OP as Operator (console)
   participant SAA as super_admin/api<br/>(holds PRIVATE key)
-  participant DA as dollara/api<br/>(holds PUBLIC key)
+  participant DA as cadiplay/api<br/>(holds PUBLIC key)
   participant DB as Product DB
   OP->>SAA: GET .../data-webhook/users
   SAA->>SAA: build signing-string; sign RSA-PSS/SHA-256 with private_pem
@@ -353,12 +353,12 @@ The **signing‑string** both sides agree on (6 lines joined by `\n`):
 ```
 
 RSA‑PSS with MGF1(SHA‑256) and max salt length. The product side lives in
-[`core/webhook_views.py`](dollara/api/core/webhook_views.py) (endpoint + dataset whitelist,
+[`core/webhook_views.py`](cadiplay/api/core/webhook_views.py) (endpoint + dataset whitelist,
 mirroring the console's `_DATASETS` column‑for‑column, secret columns never selected) and
-[`services/webhook_verify.py`](dollara/api/services/webhook_verify.py) (the verifier — a
+[`services/webhook_verify.py`](cadiplay/api/services/webhook_verify.py) (the verifier — a
 faithful copy of [`docs/product_verifier_reference.py`](super_admin/api/docs/product_verifier_reference.py)
 so the two sides cannot drift). The public key is resolved by `X-SA-Key-Id` in
-[`services/super_admin_keys.py`](dollara/api/services/super_admin_keys.py), primarily from
+[`services/super_admin_keys.py`](cadiplay/api/services/super_admin_keys.py), primarily from
 the config pull (so a rotation is honoured with no redeploy) and, as a fallback, from
 `SUPER_ADMIN_WEBHOOK_KEY_ID` / `SUPER_ADMIN_WEBHOOK_PUBLIC_KEY` env vars.
 
@@ -392,15 +392,15 @@ tables; `init.sql` per product).
 ## 6. Tenant Resolution & Request Flow
 
 A request's tenant is resolved in **priority order** by
-[`services/tenant_resolver.py#resolve_tenant`](dollara/api/services/tenant_resolver.py):
+[`services/tenant_resolver.py#resolve_tenant`](cadiplay/api/services/tenant_resolver.py):
 
 1. **`X-Tenant` / `X-Tenant-ID` header** (or `?tenant=` query) — used by the mobile app
    and server‑to‑server calls.
-2. **Host / subdomain** — `dollara.com` → `dollara`; reserved labels `www/api/admin` are
+2. **Host / subdomain** — `cadiplay.com` → `cadiplay`; reserved labels `www/api/admin` are
    ignored; local hosts (`localhost`, `127.0.0.1`) yield no slug.
 3. **JWT `tenant` claim** — embedded at sign time so native clients without a host header
    still resolve correctly.
-4. **`DEFAULT_TENANT`** (default `dollara`) — development fallback for `localhost`.
+4. **`DEFAULT_TENANT`** (default `cadiplay`) — development fallback for `localhost`.
 
 The resolver tries each candidate slug against the **control‑plane config** (§5.1) and
 takes the first that resolves — so a bad `X-Tenant` header falls through to the host, then
@@ -434,11 +434,11 @@ sequenceDiagram
   MW->>MW: finally: clear_current_tenant()
 ```
 
-**Web tenant propagation:** `dollara/web/src/middleware.js` derives the slug from
+**Web tenant propagation:** `cadiplay/web/src/middleware.js` derives the slug from
 host/subdomain (or `?tenant=` / cookie / default) and writes both an `x-tenant` request
 header and an `x-tenant` cookie. The client `services/tenant.js` reads that cookie so
 every `fetch` carries `X-Tenant`. **Mobile** hardcodes `TENANT_SLUG` per build
-(`src/tenant.js`, default `dollara`) and always sends `X-Tenant`.
+(`src/tenant.js`, default `cadiplay`) and always sends `X-Tenant`.
 
 ---
 
@@ -455,7 +455,7 @@ There are **three independent identity domains**, each with its own users table 
 ### JWT mechanics
 
 - Signed with **HS256** using `JWT_SECRET`, 7‑day expiry
-  ([`core/auth_jwt.py`](dollara/api/core/auth_jwt.py)).
+  ([`core/auth_jwt.py`](cadiplay/api/core/auth_jwt.py)).
 - `sub` is the user id (stringified on sign, normalized back to int on decode).
 - The product API embeds the resolved **`tenant`** claim so the API can re‑resolve the
   tenant even without a host header.
@@ -466,7 +466,7 @@ There are **three independent identity domains**, each with its own users table 
 `JWTAuthenticationMiddleware` attaches `request.auth` (an `AuthUser` with `sub`, `role`,
 `type`) when a valid `Bearer` token is present — it does **not** reject; views enforce
 roles. The `require_auth([...roles])` decorator
-([`core/middleware.py`](dollara/api/core/middleware.py)):
+([`core/middleware.py`](cadiplay/api/core/middleware.py)):
 
 1. 401 if no `request.auth`;
 2. 403 if the role isn't allowed (`admin` in the allow‑list expands to `{admin,
@@ -503,7 +503,7 @@ user agent, device type, and 7‑day expiry
 `otp/send` → (dev: OTP printed/returned) → `otp/verify` → `register/otp` which creates the
 user, a wallet seeded with the welcome bonus, and `UserSetting` (with a generated AI voice
 exec id), returning a JWT. OTPs are bcrypt‑hashed, expire in 5 min, and allow 3 attempts
-([`core/services.py`](dollara/api/core/services.py)).
+([`core/services.py`](cadiplay/api/core/services.py)).
 
 > **Note:** OTP delivery is **not** integrated — `send_otp` logs/returns the code in
 > `DEBUG`. Twilio/MSG91 env keys are placeholders.
@@ -526,19 +526,19 @@ front ends at runtime**. They are two distinct concerns:
 graph LR
   SA[Super Admin console] -->|PUT branding| SAA[super_admin/api]
   SAA --> M[(master.branding)]
-  FE[dollara/web BrandProvider] -->|GET /public/products/slug/branding| SAA
+  FE[cadiplay/web BrandProvider] -->|GET /public/products/slug/branding| SAA
   MO[mobile BrandingProvider] -->|GET /public/products/slug/branding| SAA
-  FE -->|fallback| DA[dollara/api /api/v1/branding]
+  FE -->|fallback| DA[cadiplay/api /api/v1/branding]
 ```
 
-- Web: [`hooks/useBranding.jsx`](dollara/web/src/hooks/useBranding.jsx) fetches branding
-  via [`services/tenant.js#fetchBranding`](dollara/web/src/services/tenant.js), sets CSS
+- Web: [`hooks/useBranding.jsx`](cadiplay/web/src/hooks/useBranding.jsx) fetches branding
+  via [`services/tenant.js#fetchBranding`](cadiplay/web/src/services/tenant.js), sets CSS
   variables (`--brand`, `--accent`), document title, and favicon. It prefers the platform
   public endpoint and falls back to the product API's `/api/v1/branding`. That product
-  fallback no longer reads the master `branding` table — [`services/branding.py`](dollara/api/services/branding.py)
+  fallback no longer reads the master `branding` table — [`services/branding.py`](cadiplay/api/services/branding.py)
   now returns branding straight from the control‑plane config pull (§5.1), with safe
   defaults if the control plane can't be reached.
-- Mobile: [`src/branding.js`](dollara/mobile/src/branding.js) provides `useBranding()` and
+- Mobile: [`src/branding.js`](cadiplay/mobile/src/branding.js) provides `useBranding()` and
   `useThemeColors()` (merges brand colors over base tokens).
 
 ### Theme flow (the "live theme" model)
@@ -557,7 +557,7 @@ Per [the theme architecture](.claude/projects/e--Dancika-shamb-01/memory/theme-s
   Enable/Disable toggle; changes apply immediately.
 - **Public endpoint product FE reads:** `GET /api/v1/public/products/<slug>/theme`
   (unauthenticated). Disabled products return `active_theme: null` (maintenance state).
-- **FE rendering** (`dollara/web`):
+- **FE rendering** (`cadiplay/web`):
   - `ProductThemeProvider` (`hooks/useProductTheme.jsx`) resolves the active key app‑wide
     (defaults to `theme1` until the platform responds, so there's no blank flash).
   - `themes/registry.js` maps `key → { Shell, pages }`.
@@ -585,10 +585,10 @@ graph TD
 ```
 
 > **Adding a theme** = a catalog entry in `themes.py` + a folder
-> `dollara/web/src/themes/<key>/{shell,pages}` + a `registry.js` entry. Every product
+> `cadiplay/web/src/themes/<key>/{shell,pages}` + a `registry.js` entry. Every product
 > auto‑gets a `product_themes` row for it via `ensure_product_themes`.
 
-**theme1** = the original Dollara look (`Header`/`Footer` chrome + amber/gold dark UI).
+**theme1** = the original Cadiplay look (`Header`/`Footer` chrome + amber/gold dark UI).
 **theme2** = "WAXCASINO" style (dark navy, hover‑expand left icon sidebar, sticky topbar
 with balance + Deposit, full footer; uses explicit hex colors and ignores the light/dark
 toggle). Shared theme2 primitives live in `themes/theme2/components/ui.jsx`.
@@ -607,7 +607,7 @@ The most security‑critical and cleanly‑architected subsystem. It integrates 
 game aggregator**: games run in an **iframe** served by the provider; bets and wins are
 settled back into the player wallet via a **secure, idempotent, transaction‑safe
 callback**. It is a clean reimplementation of the legacy PHP platform analysed in
-[`dollara/games.md`](dollara/games.md) (see also [`dollara/api/docs/GAMES.md`](dollara/api/docs/GAMES.md)).
+[`cadiplay/games.md`](cadiplay/games.md) (see also [`cadiplay/api/docs/GAMES.md`](cadiplay/api/docs/GAMES.md)).
 
 ### Layers
 
@@ -708,7 +708,7 @@ Every callback — settled, duplicate, heartbeat, error, or rejected — is reco
 ### Crypto (provider service)
 
 AES‑256‑ECB, PKCS#7 padding, base64 transport
-([`services/game_provider.py`](dollara/api/services/game_provider.py)).
+([`services/game_provider.py`](cadiplay/api/services/game_provider.py)).
 `build_member_account` namespaces the internal user id behind `GAME_PLAYER_PREFIX`;
 `strip_member_account` reverses it on callbacks. `_key_bytes` coerces the configured
 secret to a valid AES key length (16/24/32 bytes) so misconfig fails loudly.
@@ -725,7 +725,7 @@ Master games on/off toggle (stored in `platform_settings.game_status`), 24h/all�
 **GGR** (gross gaming revenue = bet − win), daily P&L series, top‑games leaderboard, and
 searchable round history.
 
-> **Catalog note:** [`GAMES.md`](dollara/api/docs/GAMES.md) states the 263‑game catalog is
+> **Catalog note:** [`GAMES.md`](cadiplay/api/docs/GAMES.md) states the 263‑game catalog is
 > embedded in `database/init.sql`. The project memory mentions a `seed_games` management
 > command + generated `_game_catalog.py`; **neither exists in this snapshot** — the
 > authoritative source today is `init.sql`. Treat the `seed_games` reference as
@@ -833,7 +833,7 @@ removed once every product implements the webhook.
 ### `seed_master` command
 
 Creates the platform super admin (`superadmin` / `Admin@123`) and provisions three initial
-products (`dollara`, `productb`, `productc`), each with its own product DB. `--skip-provision`
+products (`cadiplay`, `productb`, `productc`), each with its own product DB. `--skip-provision`
 creates only master records.
 
 ---
@@ -863,7 +863,7 @@ header, 401→redirect‑to‑login handling, and one named function per endpoin
 
 ---
 
-## 12. Component: `dollara/api` (Product Backend)
+## 12. Component: `cadiplay/api` (Product Backend)
 
 **Port 5000 (ASGI via Daphne).** Serves a single product and connects only to that
 product's own database (`default` / `MYSQL_*`). Four HTTP/WS surfaces: REST
@@ -927,7 +927,7 @@ These are deterministic stand‑ins for real models/telephony/LLM integrations.
 
 ---
 
-## 13. Component: `dollara/web` (Product Web App)
+## 13. Component: `cadiplay/web` (Product Web App)
 
 **Port 3000.** Next.js App Router. Two distinct surfaces share the codebase: the
 **player** app (theme‑dispatched) and the **`/admin`** console (its own shell, untouched by
@@ -994,7 +994,7 @@ logs out if both fail.
 
 ---
 
-## 14. Component: `dollara/mobile` (Product Mobile App)
+## 14. Component: `cadiplay/mobile` (Product Mobile App)
 
 React Native (Android + iOS), shipped per product (white‑label by `src/config.js`:
 `API_URL`, `PLATFORM_API_URL`, `TENANT_SLUG`, default branding). On Android emulator,
@@ -1121,7 +1121,7 @@ erDiagram
 | `users` | Platform super admins | seeded `superadmin`/`Admin@123` |
 | `user_sessions` | Active super‑admin sessions | single‑session enforcement |
 
-### 15.2 Tenant DB (`dollara/api/database/init.sql`) — 26 tables
+### 15.2 Tenant DB (`cadiplay/api/database/init.sql`) — 26 tables
 
 Tables actively used by the code are bolded; the rest are forward‑looking schema.
 
@@ -1287,11 +1287,11 @@ sequenceDiagram
   participant Op as Operator
   participant SQL as MySQL
   participant SA as super_admin/api
-  Op->>SQL: CREATE DATABASE dollara_master
-  Op->>SQL: mysql dollara_master < master.sql (tables + superadmin)
-  Op->>SQL: mysql dollara_master < migrations/001_webhook_data_channel.sql
+  Op->>SQL: CREATE DATABASE cadiplay_master
+  Op->>SQL: mysql cadiplay_master < master.sql (tables + superadmin)
+  Op->>SQL: mysql cadiplay_master < migrations/001_webhook_data_channel.sql
   Op->>SA: python manage.py seed_master
-  SA->>SQL: create superadmin + provision dollara/productb/productc
+  SA->>SQL: create superadmin + provision cadiplay/productb/productc
   SA->>SQL: per product: CREATE DB + init.sql (263 games, admin) + issue RSA key pair
 ```
 
@@ -1372,7 +1372,7 @@ provider stack. `BrandProvider` fetches branding (applies CSS vars/title/favicon
 
 ## 19. Configuration Reference
 
-### `dollara/api/.env`
+### `cadiplay/api/.env`
 
 | Var | Purpose |
 |---|---|
@@ -1384,7 +1384,7 @@ provider stack. `BrandProvider` fetches branding (applies CSS vars/title/favicon
 | `PRODUCT_CONFIG_TOKEN` | Shared secret sent as `X-Product-Token` on the config pull — must match Super Admin |
 | `CONTROL_PLANE_CACHE_TTL` / `CONTROL_PLANE_HTTP_TIMEOUT` | Config cache TTL (default 60s) / fetch timeout (default 10s) |
 | `MYSQL_*` | This product's **own** feature database (the `default` connection) |
-| `DEFAULT_TENANT` | This instance's single product slug (default `dollara`) |
+| `DEFAULT_TENANT` | This instance's single product slug (default `cadiplay`) |
 | `SUPER_ADMIN_WEBHOOK_KEY_ID` / `_PUBLIC_KEY` / `_PRODUCT` | Optional: pin a signing key when the config pull is unreachable (else keys come from config) |
 | `GAME_AGENCY_UID` / `GAME_AES_SECRET_KEY` / `GAME_PLAYER_PREFIX` | Aggregator identity + crypto |
 | `GAME_SERVER_URL` / `GAME_LAUNCH_PATH` | Aggregator launch endpoint |
@@ -1404,9 +1404,9 @@ secret products must present to pull their config (empty ⇒ the config endpoint
 
 | App | Var | Default |
 |---|---|---|
-| dollara/web | `NEXT_PUBLIC_API_URL` | `http://localhost:5000` |
-| dollara/web | `NEXT_PUBLIC_PLATFORM_API_URL` | `http://localhost:8000` |
-| dollara/web | `NEXT_PUBLIC_DEFAULT_TENANT` | `dollara` |
+| cadiplay/web | `NEXT_PUBLIC_API_URL` | `http://localhost:5000` |
+| cadiplay/web | `NEXT_PUBLIC_PLATFORM_API_URL` | `http://localhost:8000` |
+| cadiplay/web | `NEXT_PUBLIC_DEFAULT_TENANT` | `cadiplay` |
 | super_admin/web | `NEXT_PUBLIC_API_URL` | `http://localhost:8000` |
 | mobile | `API_URL` / `PLATFORM_API_URL` / `TENANT_SLUG` | per `src/config.js` |
 
@@ -1414,13 +1414,13 @@ secret products must present to pull their config (empty ⇒ the config endpoint
 
 | File | App | Notes |
 |---|---|---|
-| `next.config.mjs` | web apps | `reactStrictMode`, remote image patterns (`https://**` for dollara/web) |
+| `next.config.mjs` | web apps | `reactStrictMode`, remote image patterns (`https://**` for cadiplay/web) |
 | `tailwind.config.js` / `postcss.config.mjs` | web apps | Tailwind 3.4 |
 | `jsconfig.json` | web apps | `@/*` path alias |
 | `babel.config.js` / `metro.config.js` | mobile | RN preset + Metro bundler |
 | `jest.config.js` | mobile | RN jest preset |
 | `android/` `ios/` | mobile | Native projects (Gradle / Xcode) |
-| `config/test_settings.py` | dollara/api | SQLite test settings (see §21) |
+| `config/test_settings.py` | cadiplay/api | SQLite test settings (see §21) |
 
 ---
 
@@ -1430,28 +1430,28 @@ secret products must present to pull their config (empty ⇒ the config endpoint
 
 ```bash
 # 1) Master schema (once) — base tables + the webhook data-channel tables
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS dollara_master CHARACTER SET utf8mb4;"
-mysql -u root dollara_master < super_admin/api/database/master.sql
-mysql -u root dollara_master < super_admin/api/database/migrations/001_webhook_data_channel.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS cadiplay_master CHARACTER SET utf8mb4;"
+mysql -u root cadiplay_master < super_admin/api/database/master.sql
+mysql -u root cadiplay_master < super_admin/api/database/migrations/001_webhook_data_channel.sql
 
 # 2) Super Admin API (:8000) — provisions each product's DB + issues its RSA key
 cd super_admin/api
 python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 cp .env.example .env                  # set PRODUCT_CONFIG_TOKEN (shared with the product)
-python manage.py seed_master          # superadmin + dollara/productb/productc DBs + credentials
+python manage.py seed_master          # superadmin + cadiplay/productb/productc DBs + credentials
 python manage.py runserver 0.0.0.0:8000
 
 # 3) Super Admin Web (:3001)
 cd ../web && npm install && cp .env.example .env && npm run dev
 
 # 4) Product API (:5000) — connects to its OWN DB, pulls config from Super Admin
-cd ../../dollara/api
+cd ../../cadiplay/api
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env                  # MYSQL_* = this product's DB; SUPER_ADMIN_URL +
                                       # PRODUCT_CONFIG_TOKEN must match Super Admin
-# (if the product DB wasn't seeded by provisioning) mysql dollara_db < database/init.sql
+# (if the product DB wasn't seeded by provisioning) mysql cadiplay_db < database/init.sql
 python manage.py runserver 0.0.0.0:5000     # Daphne/ASGI for WS
 
 # 5) Product Web (:3000)
@@ -1469,7 +1469,7 @@ npm run android        # or: npm run ios
 
 > On Windows the repo's shell is PowerShell/Git‑Bash; activate venvs accordingly. The
 > project memory notes the product API venv may live at
-> `dollara/api/venv/Scripts/python.exe`.
+> `cadiplay/api/venv/Scripts/python.exe`.
 
 ### Default credentials
 
@@ -1497,7 +1497,7 @@ npm run android        # or: npm run ios
 
 ## 21. Testing
 
-The gaming module has a focused test suite (`dollara/api/core/tests/`):
+The gaming module has a focused test suite (`cadiplay/api/core/tests/`):
 
 | File | Covers |
 |---|---|
@@ -1510,7 +1510,7 @@ Run with the dedicated test settings (in‑memory SQLite, migrations re‑enable
 builds tables from models, **no tenant router**):
 
 ```bash
-cd dollara/api
+cd cadiplay/api
 python manage.py test core.tests --settings=config.test_settings
 ```
 
@@ -1598,10 +1598,10 @@ python manage.py test core.tests --settings=config.test_settings
 
 | Item | Detail |
 |---|---|
-| Vestigial multi‑tenant machinery | dollara's `TenantRouter`, `tenants/state.py` thread‑local, `use_tenant`, and `tenant_atomic` remain but now always resolve to `default` — dead weight that can mislead. Remove or clearly document as inert. |
+| Vestigial multi‑tenant machinery | cadiplay's `TenantRouter`, `tenants/state.py` thread‑local, `use_tenant`, and `tenant_atomic` remain but now always resolve to `default` — dead weight that can mislead. Remove or clearly document as inert. |
 | Hand‑synced signing contract | `webhook_verify.py` is a copy of `docs/product_verifier_reference.py`, and the product's `_DATASETS` mirrors Super Admin's `_DATASETS` column‑for‑column. Both must be edited in lockstep or the channel silently drifts. |
 | Duplicated auth/state logic | `auth_jwt.py`, `auth_middleware.py`, and the (now inert) tenant state are near‑copies across both backends — intentional (separate services) but drift‑prone. |
-| Duplicated tenant `User`/`UserSetting`/`Wallet`… models | `dollara/api/core/models.py` and `super_admin/api/core/models.py` overlap; the super‑admin copy (used by the webhook/data reads) lacks the gaming extensions. Keep in sync manually. |
+| Duplicated tenant `User`/`UserSetting`/`Wallet`… models | `cadiplay/api/core/models.py` and `super_admin/api/core/models.py` overlap; the super‑admin copy (used by the webhook/data reads) lacks the gaming extensions. Keep in sync manually. |
 | `available` balance formula differs | Backend `main − locked` vs mobile `main + bonus − locked − exposure`. Reconcile to avoid UX/accounting mismatch. |
 | Withdrawal stages are cosmetic | Auto‑approve regardless of stage outcome. |
 | Fraud model untrained | Advisory only. |
@@ -1623,14 +1623,14 @@ multi‑tenant primitives into a versioned internal package to stop drift.
 | Term | Meaning |
 |---|---|
 | **Control plane / Super Admin** | The central service that manages products, branding, themes, provisioning, and the signing credentials — and talks to products only over HTTP. |
-| **Product / Tenant** | A white‑label brand (e.g. Dollara) with its own DB, branding, theme, API, web, mobile. |
+| **Product / Tenant** | A white‑label brand (e.g. Cadiplay) with its own DB, branding, theme, API, web, mobile. |
 | **Master DB** | The control‑plane database holding products/urls/branding/databases/themes/`product_credentials`/`webhook_deliveries`/super‑admin users. |
 | **Product DB** | A product's isolated database (users, wallets, games, transactions, …) — connected to only by that product's own API. |
 | **Config pull** | The product's HTTP fetch of its identity/branding/theme/public keys from Super Admin (`GET /products/<slug>/config`, `X-Product-Token`), cached. |
 | **Signed webhook data channel** | Super Admin's RSA‑PSS‑signed HTTP pulls of a product's data; the product verifies the signature and reads its own DB. |
 | **Product credential** | The RSA‑2048 key pair per product: Super Admin signs pulls with `private_pem`, the product verifies with `public_pem`. |
 | **`key_id`** | The identifier for a credential (e.g. `sak_…`); lets the product pick the right public key across rotations. |
-| **Slug** | A product's stable identifier (e.g. `dollara`); used for config resolution and as the `X-Tenant` value. |
+| **Slug** | A product's stable identifier (e.g. `cadiplay`); used for config resolution and as the `X-Tenant` value. |
 | **Branding** | Per‑product white‑label data (name, logo, colors, support, legal URLs). |
 | **Theme** | A complete UI/UX skin (`theme1`, `theme2`): own shell + own version of every page. |
 | **Live theme** | The single `is_active` theme a product renders. |
@@ -1683,7 +1683,7 @@ multi‑tenant primitives into a versioned internal package to stop drift.
 | `src/app/components/DashboardLayout.jsx` | Console chrome + `useDashboard` |
 | `src/services/api.js` | Token mgmt + one fn per endpoint |
 
-### `dollara/api`
+### `cadiplay/api`
 
 | File | Role |
 |---|---|
@@ -1716,7 +1716,7 @@ multi‑tenant primitives into a versioned internal package to stop drift.
 | `database/init.sql` | Product schema + 263‑game seed |
 | `docs/GAMES.md` | Gaming module deep‑dive |
 
-### `dollara/web`
+### `cadiplay/web`
 
 | File | Role |
 |---|---|
@@ -1734,7 +1734,7 @@ multi‑tenant primitives into a versioned internal package to stop drift.
 | `src/store/**` | auth (zustand), theme (light/dark) |
 | `src/lib/gameRoutes.js` | Category mapping + filters |
 
-### `dollara/mobile`
+### `cadiplay/mobile`
 
 | File | Role |
 |---|---|

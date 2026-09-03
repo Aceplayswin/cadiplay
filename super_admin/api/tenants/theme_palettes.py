@@ -9,8 +9,8 @@ complete palette even when Super Admin sets nothing (or is unreachable and the
 product frontend uses its own baked-in copy of these same defaults).
 
 The token keys here are mirrored on the product side:
-  * ``dollara/web/src/themes/palettes.js`` (how each token maps to a CSS variable)
-  * ``dollara/api/services/branding.py`` (default colors for the offline state)
+  * ``cadiplay/web/src/themes/palettes.js`` (how each token maps to a CSS variable)
+  * ``cadiplay/api/services/branding.py`` (default colors for the offline state)
 
 Adding/renaming a token is a coordinated change across those three places.
 
@@ -24,7 +24,7 @@ Each token: ``{key, label, group, default}``.
 from __future__ import annotations
 
 # theme1 & theme2 render on the shared dark "glass" palette driven by the global
-# :root tokens in dollara/web/src/app/globals.css, plus the amber brand ramp.
+# :root tokens in cadiplay/web/src/app/globals.css, plus the amber brand ramp.
 _GLASS_TOKENS = [
     {'key': 'primary', 'label': 'Primary / Brand', 'group': 'Brand', 'default': '#F5C542'},
     {'key': 'accent', 'label': 'Accent / Secondary', 'group': 'Brand', 'default': '#FFB800'},

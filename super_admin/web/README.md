@@ -1,7 +1,7 @@
 # Platform Super Admin Web
 
 Standalone Next.js console for the white-label gaming platform control plane.
-Deployed separately from product frontends (e.g. Dollara) at `admin.ultraconic.com`.
+Deployed separately from product frontends (e.g. Cadiplay) at `admin.ultraconic.com`.
 
 ## Setup
 

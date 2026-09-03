@@ -1,18 +1,18 @@
-# Dollara Affiliate Panel — Implementation Plan
+# Cadiplay Affiliate Panel — Implementation Plan
 
 Status: proposal / not started
-Scope: `dollara` product only (this plan does not touch `super_admin` or other tenants)
+Scope: `cadiplay` product only (this plan does not touch `super_admin` or other tenants)
 
 ## 0. Why this document exists
 
-Dollara already has two portals — the player-facing `dollara/web` and the staff-facing
-`dollara/admin` — both talking to one Django API (`dollara/api`) that belongs to a single
+Cadiplay already has two portals — the player-facing `cadiplay/web` and the staff-facing
+`cadiplay/admin` — both talking to one Django API (`cadiplay/api`) that belongs to a single
 tenant/product. This plan adds a **third portal**: an affiliate-facing panel that lets
-external partners drive signups to Dollara, track what those signups do, and get paid a
+external partners drive signups to Cadiplay, track what those signups do, and get paid a
 commission for it.
 
 The schema already has a placeholder for this — `affiliates` and `agents` tables exist in
-[`database/init.sql`](dollara/api/database/init.sql) (`code`, `commission_tier`,
+[`database/init.sql`](cadiplay/api/database/init.sql) (`code`, `commission_tier`,
 `parent_affiliate_id`, `total_commission`, …) — but there is no login, no dashboard, no
 tracking, no commission engine, and no Django model behind them. This is a from-scratch
 build that happens to have a starting schema.
@@ -20,17 +20,17 @@ build that happens to have a starting schema.
 ## 1. Architecture decision
 
 **Build the affiliate panel as its own portal**, mirroring how `super_admin` is separate
-from `dollara/admin`, rather than bolting it onto the existing web or admin app:
+from `cadiplay/admin`, rather than bolting it onto the existing web or admin app:
 
-- `dollara/affiliate` — new Next.js 14 app (own `package.json`, own port, e.g. `3003`),
-  same stack as `dollara/admin` (Tailwind, `lucide-react`, `sweetalert2`). This is the
+- `cadiplay/affiliate` — new Next.js 14 app (own `package.json`, own port, e.g. `3003`),
+  same stack as `cadiplay/admin` (Tailwind, `lucide-react`, `sweetalert2`). This is the
   affiliate's own portal — dashboard, links, referrals, earnings, payouts, API keys.
-- `dollara/admin` — gains a new **Affiliates** section (staff-facing) alongside the
+- `cadiplay/admin` — gains a new **Affiliates** section (staff-facing) alongside the
   existing `staff`, `users`, `bonuses`, `reports` sections — for approving affiliates,
   setting commission rates, reviewing payouts, and killing abusive accounts.
-- `dollara/api` — gains a new `core/affiliate_*` module (models, services, views) plus a
+- `cadiplay/api` — gains a new `core/affiliate_*` module (models, services, views) plus a
   signed-key webhook contract for programmatic access, symmetrical to the existing
-  Super Admin ↔ Dollara contract in `services/webhook_verify.py`.
+  Super Admin ↔ Cadiplay contract in `services/webhook_verify.py`.
 
 Reasons to keep it a separate app instead of a route inside `web` or `admin`:
 
@@ -41,24 +41,24 @@ Reasons to keep it a separate app instead of a route inside `web` or `admin`:
   separation works operationally (separate deploys, separate ports, separate auth).
 - It matches the phase-4 requirement directly: an external partner authenticating via a
   signed key pair is architecturally the same shape as Super Admin's relationship to
-  Dollara today, just inverted (Dollara is now the one handing out keys, not receiving
+  Cadiplay today, just inverted (Cadiplay is now the one handing out keys, not receiving
   them).
 
-**Scope note:** this program is scoped to the `dollara` product/tenant only, consistent
-with the rest of `dollara/api` (`TenantResolverMiddleware` — "this instance serves a
+**Scope note:** this program is scoped to the `cadiplay` product/tenant only, consistent
+with the rest of `cadiplay/api` (`TenantResolverMiddleware` — "this instance serves a
 single product"). If other tenants want an affiliate program later, this module gets
-copied per-tenant like everything else in `dollara/api`; it is *not* built centrally in
+copied per-tenant like everything else in `cadiplay/api`; it is *not* built centrally in
 `super_admin`.
 
 ## 2. Domain model (read this before the phases)
 
 **Actors**
-- **Affiliate** — external partner with a login to `dollara/affiliate`. Can have
+- **Affiliate** — external partner with a login to `cadiplay/affiliate`. Can have
   sub-affiliates under them (`parent_affiliate_id` already in schema → multi-tier).
 - **Referred user** — a normal row in `users` / `user_settings`, linked back to the
   affiliate that brought them in (`user_settings.affiliate_id`, already in schema).
 - **Staff/Admin** — approves affiliates, sets rates, approves payouts, from
-  `dollara/admin`.
+  `cadiplay/admin`.
 
 **Commission models** (schema already declares the shape via `agents.commission_type`):
 - **Revenue share** — % of a referred user's net gaming revenue (bets − wins), recurring.
@@ -68,7 +68,7 @@ copied per-tenant like everything else in `dollara/api`; it is *not* built centr
   commission, on top of the sub-affiliate's own payout.
 
 **Attribution**
-- Click on `dollara.example/?ref=<affiliate_code>&sub=<campaign_id>` → cookie set →
+- Click on `cadiplay.example/?ref=<affiliate_code>&sub=<campaign_id>` → cookie set →
   registration reads the cookie and writes `user_settings.affiliate_id` +
   `user_settings.referral_code` at signup time. Last-click attribution, configurable
   cookie window (default 30 days), covered in Phase 2.
@@ -76,11 +76,11 @@ copied per-tenant like everything else in `dollara/api`; it is *not* built centr
 ## 3. Phase 1 — UI/UX (affiliate portal + admin management section)
 
 Goal: every screen and every control wireframed and built with mock/static data before
-any real logic exists. Reuse `dollara/admin`'s existing component conventions (table +
+any real logic exists. Reuse `cadiplay/admin`'s existing component conventions (table +
 pagination + filter bar pattern already used in `staff`, `users`, `reports`) so the new
 app doesn't invent a second design language.
 
-### 3.1 `dollara/affiliate` (partner-facing)
+### 3.1 `cadiplay/affiliate` (partner-facing)
 
 | Screen | Controls |
 |---|---|
@@ -93,13 +93,13 @@ app doesn't invent a second design language.
 | **Sub-affiliates / Network** | Tree/list view of recruited sub-affiliates, each row's own performance summary, "invite sub-affiliate" (generates a signup link with `parent_affiliate_id` pre-set), override-commission summary |
 | **Earnings / Commission ledger** | Filterable ledger (by type: revenue share / CPA / override), status per line (pending → approved → paid → clawed back), downloadable statements (CSV/PDF) per period |
 | **Payouts** | Current balance, "Request payout" (disabled below minimum threshold), payout history table with status, payout method management (bank/UPI/crypto — mirrors `bank_accounts`) |
-| **Reports** | Custom date range + breakdown (by link / by sub-affiliate / by country), CSV export (mirrors `admin/reports/<kind>/export` pattern already in `dollara/admin`) |
+| **Reports** | Custom date range + breakdown (by link / by sub-affiliate / by country), CSV export (mirrors `admin/reports/<kind>/export` pattern already in `cadiplay/admin`) |
 | **API & Integration** | Generate keypair (shows public key + one-time private-key download), key status (active/rotating/revoked), rotate key, revoke key, webhook URL config (affiliate's own postback endpoint), API docs link, request/response log (last N signed calls, for debugging) |
 | **Notifications** | In-app feed: new referral, first deposit, commission approved, payout sent/rejected, key rotation reminders |
 | **Profile / Settings** | Company info, contact info, password change, 2FA toggle, notification preferences, timezone/currency |
 | **Support** | Ticket list + new ticket (reuse `support_tickets` table, tag with `source='affiliate'` or a new source value) |
 
-### 3.2 `dollara/admin` — new "Affiliates" section (staff-facing)
+### 3.2 `cadiplay/admin` — new "Affiliates" section (staff-facing)
 
 | Screen | Controls |
 |---|---|
@@ -147,7 +147,7 @@ shape (real tables land in Phase 3, but the service layer can be designed in par
 Extend the existing `affiliates` table and add the tables it's missing. **Editing
 `init.sql` alone does nothing to the live tenant database** — every change below ships as
 a numbered file in
-`dollara/api/database/migrations/` (next one is `002_affiliate_program.sql`, following
+`cadiplay/api/database/migrations/` (next one is `002_affiliate_program.sql`, following
 the pattern in `001_registration_path_direct.sql`) and is then run by hand against the
 tenant DB:
 
@@ -191,9 +191,9 @@ Add matching Django models in `core/models.py` (there are currently none for
 `affiliates`/`agents` at all — `UserSetting.affiliate_id` is just a bare `BigIntegerField`
 today with no relation).
 
-## 6. Phase 4 — Connecting the affiliate panel to Dollara (public/private key, base64)
+## 6. Phase 4 — Connecting the affiliate panel to Cadiplay (public/private key, base64)
 
-This reuses the exact cryptographic contract already proven for Super Admin ↔ Dollara
+This reuses the exact cryptographic contract already proven for Super Admin ↔ Cadiplay
 (`services/webhook_verify.py`, RSA-PSS over SHA-256, base64-encoded signature) rather
 than inventing a new scheme — but on **its own header namespace and its own key store**,
 so an affiliate key can never be mistaken for a Super Admin key or vice versa.
@@ -205,14 +205,14 @@ so an affiliate key can never be mistaken for a Super Admin key or vice versa.
 2. The **public key** is stored in `affiliate_api_keys.public_pem`.
 3. The **private key** is shown to the affiliate **exactly once** for download/copy — it
    is never persisted in plaintext server-side after that response.
-4. Every request the affiliate's system makes to Dollara's affiliate API is signed: the
+4. Every request the affiliate's system makes to Cadiplay's affiliate API is signed: the
    JSON body is base64-encoded, hashed (SHA-256), and signed with the affiliate's private
-   key (RSA-PSS). Dollara verifies the signature against the stored public key before
+   key (RSA-PSS). Cadiplay verifies the signature against the stored public key before
    trusting the request — same shape as `verify_incoming()` in `webhook_verify.py`, just
    keyed by `affiliate_id` instead of product.
-5. Symmetrically, when Dollara pushes conversion/commission events *to* the affiliate's
-   own tracking system (postback), Dollara signs the outgoing payload with **Dollara's**
-   key so the affiliate can verify it really came from Dollara.
+5. Symmetrically, when Cadiplay pushes conversion/commission events *to* the affiliate's
+   own tracking system (postback), Cadiplay signs the outgoing payload with **Cadiplay's**
+   key so the affiliate can verify it really came from Cadiplay.
 
 ### 6.2 Wire contract
 
@@ -252,7 +252,7 @@ the one piece of Phase 4 that touches existing files.
 
 ### 6.4 Endpoints
 
-- `POST /api/v1/affiliate/webhook/postback` — affiliate system → Dollara (e.g. register an
+- `POST /api/v1/affiliate/webhook/postback` — affiliate system → Cadiplay (e.g. register an
   external click, or confirm an offline conversion), signed with the affiliate's key.
 - `GET /api/v1/affiliate/data/<resource>` — affiliate pulls stats programmatically
   (clicks, referrals, commission), signed pull mirroring the existing

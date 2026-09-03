@@ -1,8 +1,8 @@
-"""REFERENCE ONLY — drop-in verifier for the PRODUCT side (Phase 2 / dollara).
+"""REFERENCE ONLY — drop-in verifier for the PRODUCT side (Phase 2 / cadiplay).
 
 This file is NOT imported by Super Admin. It is the canonical verify-half of the
 signing contract in ``services/crypto_keys.py``, ready to copy into the product
-(e.g. ``dollara/api``) when Phase 2 starts. Keeping it here means both halves of
+(e.g. ``cadiplay/api``) when Phase 2 starts. Keeping it here means both halves of
 the contract are reviewed together and cannot silently drift.
 
 Usage on the product side (framework-agnostic core):

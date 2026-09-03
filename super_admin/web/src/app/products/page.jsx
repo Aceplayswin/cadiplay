@@ -411,7 +411,7 @@ function BrandingModal({ product, onClose, onSaved, theme }) {
   const labelCls = 'mb-1.5 block text-xs font-semibold text-gray-500 dark:text-gray-400';
 
   const fields = [
-    { key: 'product_name', label: 'Display Name', placeholder: 'Dollara', type: 'text', span: true },
+    { key: 'product_name', label: 'Display Name', placeholder: 'Cadiplay', type: 'text', span: true },
     { key: 'logo_url', label: 'Logo URL', placeholder: 'https://cdn.example.com/logo.png', type: 'url', span: true, upload: true },
     { key: 'favicon_url', label: 'Favicon URL', placeholder: 'https://cdn.example.com/favicon.ico', type: 'url', span: true, upload: true },
     { key: 'splash_url', label: 'Splash Image URL', placeholder: 'https://cdn.example.com/splash.png', type: 'url', span: true, upload: true },

@@ -19,7 +19,7 @@ class Command(BaseCommand):
         )
         parser.add_argument(
             '--brand_name',
-            default='DOLLARA',
+            default='CADIPLAY',
             help='Brand name stored in the site_name platform setting.',
         )
 
@@ -40,12 +40,12 @@ class Command(BaseCommand):
             resolve_tenant(header_key=product.api_key)
             self.stdout.write(f'Seeding tenant: {product.name} (id={product.id})')
 
-        brand_name = options.get('brand_name') or 'DOLLARA'
+        brand_name = options.get('brand_name') or 'CADIPLAY'
         password_hash = bcrypt.hashpw(b'Admin@123', bcrypt.gensalt()).decode()
         admin, created = User.objects.get_or_create(
             username='superadmin',
             defaults={
-                'email': 'admin@dollara.local',
+                'email': 'admin@cadiplay.local',
                 'password_hash': password_hash,
                 'role': User.Role.ADMIN,
                 'account_status': User.AccountStatus.ACTIVE,

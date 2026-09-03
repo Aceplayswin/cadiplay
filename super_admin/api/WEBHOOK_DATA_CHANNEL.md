@@ -14,7 +14,7 @@ prove the request really came from Super Admin.
 
 ```
   ┌────────────────────┐        signed HTTPS GET           ┌────────────────────┐
-  │   Super Admin      │  ───────────────────────────────▶ │   Product (dollara) │
+  │   Super Admin      │  ───────────────────────────────▶ │   Product (cadiplay) │
   │  (control plane)   │   X-SA-Signature: <RSA-PSS>       │   webhook endpoint  │
   │                    │ ◀───────────────────────────────  │   reads its OWN DB  │
   │  holds PRIVATE key │           JSON rows               │  holds PUBLIC key   │
@@ -75,32 +75,32 @@ GET {be_url}/api/v1/webhooks/super-admin/data/{resource}?{query}
   `/data/users`.
 - Base path prefix is `WEBHOOK_BASE_PATH = /api/v1/webhooks/super-admin`.
 
-## Phase 2 — DONE (on dollara, `dollara/api`)
+## Phase 2 — DONE (on cadiplay, `cadiplay/api`)
 
 The product side now:
 
-1. **Reads the public key + key_id** Super Admin issued. dollara shares Super
-   Admin's master/control-plane DB (`dollara_master`), so it reads `public_pem`
+1. **Reads the public key + key_id** Super Admin issued. cadiplay shares Super
+   Admin's master/control-plane DB (`cadiplay_master`), so it reads `public_pem`
    straight from the `product_credentials` table via a read-only mirror model
    (`tenants.models.ProductCredential`) keyed on `X-SA-Key-Id`. Because `key_id`
    is unique, a **rotation is picked up automatically with no redeploy**. Deploys
    that don't share the master DB can pin a key via
    `SUPER_ADMIN_WEBHOOK_KEY_ID` / `SUPER_ADMIN_WEBHOOK_PUBLIC_KEY` env vars.
-   Resolver: [`dollara/api/services/super_admin_keys.py`](../../dollara/api/services/super_admin_keys.py).
+   Resolver: [`cadiplay/api/services/super_admin_keys.py`](../../cadiplay/api/services/super_admin_keys.py).
 2. **Mounts the verifying endpoint** at
    `/api/v1/webhooks/super-admin/data/<resource>`
-   ([`dollara/api/core/webhook_views.py`](../../dollara/api/core/webhook_views.py),
-   routed in [`dollara/api/config/urls.py`](../../dollara/api/config/urls.py)) that:
+   ([`cadiplay/api/core/webhook_views.py`](../../cadiplay/api/core/webhook_views.py),
+   routed in [`cadiplay/api/config/urls.py`](../../cadiplay/api/config/urls.py)) that:
    - Rejects if `X-SA-Timestamp` is older than 300s (replay protection).
    - Rebuilds the signing-string from the **received** method/path/headers/body
      and verifies `X-SA-Signature` against the stored public key for `X-SA-Key-Id`
-     ([`dollara/api/services/webhook_verify.py`](../../dollara/api/services/webhook_verify.py),
+     ([`cadiplay/api/services/webhook_verify.py`](../../cadiplay/api/services/webhook_verify.py),
      a faithful copy of the reference verifier — same `build_signing_string`).
    - Validates the key's product matches `X-SA-Product`, activates that tenant's
      DB, reads the product's **own** database, and returns the same JSON shapes
      the console expects (mirrors `_DATASETS` / `product_data_summary` /
      `product_dataset` in [`tenants/views.py`](tenants/views.py) column-for-column).
-3. **Marking delivered:** because dollara reads the public key live from the
+3. **Marking delivered:** because cadiplay reads the public key live from the
    shared control plane, there is nothing to "install" — the operator just clicks
    `…/credential/mark-delivered` (or POSTs it) to record the handshake.
 
@@ -113,7 +113,7 @@ drift.
 
 - Set the product's `be_url` (Super Admin → product URLs) before pulling — the
   webhook client builds the target from it.
-- Apply the new master tables: `mysql … dollara_master < database/master.sql`
+- Apply the new master tables: `mysql … cadiplay_master < database/master.sql`
   (the two `CREATE TABLE IF NOT EXISTS` are additive and safe to re-run).
 - Existing products created before Phase 1 won't have a credential yet — click
   **Generate** (or re-run `provision`) to issue one.

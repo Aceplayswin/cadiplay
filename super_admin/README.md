@@ -2,7 +2,7 @@
 
 Standalone control plane for the white-label multi-tenant gaming platform. Manages
 products, domains, branding, and tenant database provisioning
-via the **master database** — completely separate from any product deployment (Dollara, etc.).
+via the **master database** — completely separate from any product deployment (Cadiplay, etc.).
 
 ```
 super_admin/
@@ -15,7 +15,7 @@ super_admin/
 | Layer | Service | Domain (prod) | Database |
 |-------|---------|---------------|----------|
 | Super Admin | `super_admin/api` + `super_admin/web` | `admin.ultraconic.com` | Master DB only |
-| Product (e.g. Dollara) | `dollara/api` + `dollara/web` + `dollara/mobile` | `dollara.com` | Master (read) + tenant DB |
+| Product (e.g. Cadiplay) | `cadiplay/api` + `cadiplay/web` + `cadiplay/mobile` | `cadiplay.com` | Master (read) + tenant DB |
 
 The product API reads tenant config from the master DB but does **not** expose Super Admin endpoints.
 
@@ -23,8 +23,8 @@ The product API reads tenant config from the master DB but does **not** expose S
 
 ```bash
 # 1. Master schema (once)
-mysql -u root -e "CREATE DATABASE IF NOT EXISTS dollara_master CHARACTER SET utf8mb4;"
-mysql -u root dollara_master < super_admin/api/database/master.sql
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS cadiplay_master CHARACTER SET utf8mb4;"
+mysql -u root cadiplay_master < super_admin/api/database/master.sql
 
 # 2. Super Admin API
 cd super_admin/api

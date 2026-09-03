@@ -96,7 +96,7 @@ LOCK TABLES `databases` WRITE;
 /*!40000 ALTER TABLE `databases` DISABLE KEYS */;
 set autocommit=0;
 INSERT INTO `databases` VALUES
-(1,1,'dollara','13.201.218.191','3306','whitegamemaster','Aceplays!1a','2026-07-13 14:36:03','2026-07-13 14:36:03');
+(1,1,'cadiplay','13.201.218.191','3306','whitegamemaster','Aceplays!1a','2026-07-13 14:36:03','2026-07-13 14:36:03');
 /*!40000 ALTER TABLE `databases` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;

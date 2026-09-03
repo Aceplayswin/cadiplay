@@ -20,7 +20,7 @@ the request (method, path, key id, timestamp, nonce, and a SHA-256 of the body).
 The same canonical-string construction is implemented on the product side so the
 two agree byte-for-byte. See ``build_signing_string`` — it is the contract.
 
-Nothing here imports Django models, so the product (dollara) can copy this module
+Nothing here imports Django models, so the product (cadiplay) can copy this module
 almost verbatim for the verify half in Phase 2.
 """
 
@@ -165,7 +165,7 @@ def verify_request(
     body: bytes | None,
 ) -> bool:
     """Verify a request signature with the public key. Reference impl for the
-    product (dollara) side — Super Admin itself only signs, but shipping the
+    product (cadiplay) side — Super Admin itself only signs, but shipping the
     verifier here keeps both halves in one tested place."""
     try:
         public_key = serialization.load_pem_public_key(public_pem.encode())
