@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  /* Scales every rem-based Tailwind text-* utility down proportionally. */
+  font-size: 14px;
+}
+
+:root {
+  /* ---- Theme tokens (RGB triplets so Tailwind can apply alpha modifiers) ----
+     Dark is the default palette; .light overrides below swap every token.
+     Each token reads a Super Admin-injected override (--sa-*) if present, else the
+     theme's own default baked in here — so the app renders correctly with no
+     Super Admin at all, and per-color when only some are overridden. Injection
+     happens at runtime in hooks/useBranding.jsx via themes/palettes.js. */
+  --color-app-bg: var(--sa-app-bg, 11 15 20); /* page background, #0B0F14 */
+  --color-app-fg: var(--sa-app-fg, 255 255 255); /* primary text, #FFFFFF */
+  --color-rail: var(--sa-rail, 11 15 20); /* side rail / top bar / bottom nav */
+  --color-panel: var(--sa-panel, 21 26 33); /* cards, glass, #151A21 */
+  --color-panel-strong: var(--sa-panel-strong, 11 15 20); /* stronger glass */
+  --color-muted: var(--sa-muted, 156 163 175); /* secondary text, #9CA3AF */
+  --color-hairline: var(--sa-hairline, 255 255 255); /* border / overlay base */
+  --ambient-1: rgb(var(--brand-500, 245 197 66) / 0.12);
+  --ambient-2: rgb(var(--brand-600, 255 184 0) / 0.1);
+  --ambient-3: rgb(var(--brand-500, 245 197 66) / 0.05);
+
+  --background: rgb(var(--color-app-bg));
+  --foreground: rgb(var(--color-app-fg));
+  /* Ensure native form controls (number spinners, selects) render dark. */
+  color-scheme: dark;
+}
+
+:root.light {
+  --color-app-bg: 246 245 250;
+  --color-app-fg: 27 23 38;
+  --color-rail: 255 255 255;
+  --color-panel: 255 255 255;
+  --color-panel-strong: 255 255 255;
+  --color-muted: 100 99 125;
+  --color-hairline: 20 16 36;
+  --ambient-1: rgb(var(--brand-500, 245 197 66) / 0.08);
+  --ambient-2: rgb(var(--brand-600, 255 184 0) / 0.06);
+  --ambient-3: rgb(var(--brand-500, 245 197 66) / 0.04);
+
+  color-scheme: light;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  min-height: 100vh;
+  /* Layered ambient glows so the page never reads as flat black (or flat white). */
+  background-image:
+    radial-gradient(60% 50% at 12% -5%, var(--ambient-1) 0%, transparent 60%),
+    radial-gradient(55% 45% at 100% 0%, var(--ambient-2) 0%, transparent 55%),
+    radial-gradient(50% 50% at 50% 120%, var(--ambient-3) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-brand-300 via-brand-500 to-brand-600 bg-clip-text text-transparent;
+  }
+  .text-gradient-gold {
+    @apply bg-gradient-to-br from-brand-200 via-brand-400 to-brand-600 bg-clip-text text-transparent;
+  }
+  /* Frosted panel used across cards, header, modals. */
+  .glass,
+  .card-glass {
+    @apply rounded-2xl border border-hairline/[0.07] bg-panel/70 backdrop-blur-xl;
+  }
+  .glass-strong {
+    @apply rounded-2xl border border-hairline/10 bg-panel-strong/80 backdrop-blur-2xl;
+  }
+  /* Animated gradient border wrapper. */
+  .ring-grad {
+    position: relative;
+  }
+  .ring-grad::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(245, 197, 66, 0.6), rgba(255, 184, 0, 0.45), transparent 70%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  /* Soft fade on the right edge of horizontal scrollers. */
+  .edge-fade-x {
+    -webkit-mask-image: linear-gradient(to right, #000 92%, transparent 100%);
+    mask-image: linear-gradient(to right, #000 92%, transparent 100%);
+  }
+  .shimmer-text {
+    background: linear-gradient(90deg, #ffb800 0%, #fff 50%, #ffb800 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
+/* Per-theme styles do NOT live here. Each theme owns its own CSS at
+   src/themes/<key>/theme.css, imported by that theme's manifest (index.js), so a
+   build that ships one theme carries only that theme's styles. Everything above
+   is the shared base every theme builds on. */
+
+/* Slim custom scrollbar for the page itself */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-hairline) / 0.15);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-hairline) / 0.25);
+  background-clip: padding-box;
+}
+
+/* SweetAlert popups should match the active glass theme */
+.swal2-popup {
+  border-radius: 1rem !important;
+  background: rgb(var(--color-panel)) !important;
+  color: rgb(var(--color-app-fg)) !important;
+}
