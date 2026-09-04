@@ -60,7 +60,7 @@ LOCK TABLES `branding` WRITE;
 /*!40000 ALTER TABLE `branding` DISABLE KEYS */;
 set autocommit=0;
 INSERT INTO `branding` VALUES
-(1,1,'theme1','Rana Match','https://static.vecteezy.com/system/resources/thumbnails/011/883/284/small/colorful-star-logo-good-for-technology-logo-vintech-logo-company-logo-browser-logo-dummy-logo-bussiness-logo-free-vector.jpg','https://static.vecteezy.com/system/resources/thumbnails/011/883/284/small/colorful-star-logo-good-for-technology-logo-vintech-logo-company-logo-browser-logo-dummy-logo-bussiness-logo-free-vector.jpg','#f09d28','#5c5c61','{\"rail\": \"#0B0F14\", \"muted\": \"#9CA3AF\", \"panel\": \"#151A21\", \"accent\": \"#5c5c61\", \"app_bg\": \"#0B0F14\", \"app_fg\": \"#FFFFFF\", \"primary\": \"#f09d28\", \"hairline\": \"#FFFFFF\", \"panel_strong\": \"#0B0F14\"}','','','','','','',NULL,'2026-07-20 07:29:23');
+(1,1,'theme1','Cadiplay','https://static.vecteezy.com/system/resources/thumbnails/011/883/284/small/colorful-star-logo-good-for-technology-logo-vintech-logo-company-logo-browser-logo-dummy-logo-bussiness-logo-free-vector.jpg','https://static.vecteezy.com/system/resources/thumbnails/011/883/284/small/colorful-star-logo-good-for-technology-logo-vintech-logo-company-logo-browser-logo-dummy-logo-bussiness-logo-free-vector.jpg','#f09d28','#5c5c61','{\"rail\": \"#0B0F14\", \"muted\": \"#9CA3AF\", \"panel\": \"#151A21\", \"accent\": \"#5c5c61\", \"app_bg\": \"#0B0F14\", \"app_fg\": \"#FFFFFF\", \"primary\": \"#f09d28\", \"hairline\": \"#FFFFFF\", \"panel_strong\": \"#0B0F14\"}','','','','','','',NULL,'2026-07-20 07:29:23');
 /*!40000 ALTER TABLE `branding` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;

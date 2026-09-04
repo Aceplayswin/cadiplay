@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { api } from '@/services/api';
 
-const inr = (v) => `₹${Number(v ?? 0).toLocaleString('en-IN')}`;
+const usdt = (v) => `USDT ${Number(v ?? 0).toLocaleString('en-US')}`;
 
 export default function Theme1Wallet() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function Theme1Wallet() {
             <div className="pointer-events-none absolute -right-8 -top-10 h-40 w-40 rounded-full bg-brand-500/10 blur-2xl" />
             <p className="text-sm text-slate-400">Total balance</p>
             <p className="mt-1 text-5xl font-extrabold text-gradient-gold">
-              {inr((wallet?.real ?? wallet?.main ?? 0) + (wallet?.bonus ?? 0))}
+              {usdt((wallet?.real ?? wallet?.main ?? 0) + (wallet?.bonus ?? 0))}
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -67,7 +67,7 @@ export default function Theme1Wallet() {
 
             {wallet?.pendingWithdrawal > 0 && (
               <p className="mt-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
-                {inr(wallet.pendingWithdrawal)} is on hold for a withdrawal awaiting
+                {usdt(wallet.pendingWithdrawal)} is on hold for a withdrawal awaiting
                 approval. It stays in your balance until an admin approves the payout.
               </p>
             )}
@@ -173,7 +173,7 @@ export default function Theme1Wallet() {
 
 function Row({ label, value, strong, muted, signed }) {
   const n = Number(value ?? 0);
-  const display = signed && n > 0 ? `+${inr(n)}` : inr(n);
+  const display = signed && n > 0 ? `+${usdt(n)}` : usdt(n);
   const tone = signed
     ? n > 0
       ? 'text-emerald-400'
@@ -204,7 +204,7 @@ function BalanceTile({ label, value, hint, accent }) {
       <p className="text-[0.65rem] font-semibold uppercase tracking-wide opacity-80">
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold text-white">{inr(value)}</p>
+      <p className="mt-1 text-2xl font-bold text-white">{usdt(value)}</p>
       {hint && <p className="mt-0.5 text-[0.65rem] opacity-70">{hint}</p>}
     </div>
   );
@@ -215,7 +215,7 @@ function Stat({ label, value }) {
     <div className="card-glass p-5">
       <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 text-xl font-bold text-white">
-        ₹{Number(value ?? 0).toLocaleString('en-IN')}
+        USDT {Number(value ?? 0).toLocaleString('en-US')}
       </p>
     </div>
   );

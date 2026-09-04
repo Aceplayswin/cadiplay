@@ -15,7 +15,7 @@ import {
   Card,
   toast,
   useAdminData,
-  inr,
+  usdt,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -123,7 +123,7 @@ export default function AdminUsersPage() {
         method: 'POST',
         body: JSON.stringify({ amount: signedAmount, notes: adjustNotes }),
       });
-      toast.success(adjustMode === 'deduct' ? `${inr(magnitude)} deducted` : `${inr(magnitude)} added`);
+      toast.success(adjustMode === 'deduct' ? `${usdt(magnitude)} deducted` : `${usdt(magnitude)} added`);
       setAdjustUser(null);
       setAdjustAmount('');
       setAdjustNotes('');
@@ -153,8 +153,8 @@ export default function AdminUsersPage() {
         </div>
       ),
     },
-    { key: 'main_balance', label: 'Balance', render: (r) => inr(r.main_balance) },
-    { key: 'bonus_balance', label: 'Bonus', render: (r) => inr(r.bonus_balance) },
+    { key: 'main_balance', label: 'Balance', render: (r) => usdt(r.main_balance) },
+    { key: 'bonus_balance', label: 'Bonus', render: (r) => usdt(r.bonus_balance) },
     {
       key: 'kyc_status',
       label: 'KYC',
@@ -323,11 +323,11 @@ export default function AdminUsersPage() {
             <div className="grid gap-3 sm:grid-cols-3">
               <Card className="p-4">
                 <p className="text-xs text-slate-500">Main balance</p>
-                <p className="mt-1 font-display text-lg font-bold text-white">{inr(detail.main_balance)}</p>
+                <p className="mt-1 font-display text-lg font-bold text-white">{usdt(detail.main_balance)}</p>
               </Card>
               <Card className="p-4">
                 <p className="text-xs text-slate-500">Bonus balance</p>
-                <p className="mt-1 font-display text-lg font-bold text-white">{inr(detail.bonus_balance)}</p>
+                <p className="mt-1 font-display text-lg font-bold text-white">{usdt(detail.bonus_balance)}</p>
               </Card>
               <Card className="p-4">
                 <p className="text-xs text-slate-500">Fraud score</p>
@@ -351,7 +351,7 @@ export default function AdminUsersPage() {
                   detail.transactions.map((t) => (
                     <div key={t.id} className="flex items-center justify-between rounded-lg bg-slate-950/50 px-3 py-2 text-sm">
                       <span className="capitalize text-slate-300">{t.type.replace(/_/g, ' ')}</span>
-                      <span className="font-medium text-white">{inr(t.amount)}</span>
+                      <span className="font-medium text-white">{usdt(t.amount)}</span>
                       <StatusBadge status={t.status} />
                     </div>
                   ))
@@ -433,7 +433,7 @@ export default function AdminUsersPage() {
             Adjusting balance for{' '}
             <span className="font-semibold text-white">{adjustUser?.full_name || adjustUser?.username}</span>
             {' · current balance '}
-            <span className="font-semibold text-white">{inr(adjustUser?.main_balance)}</span>
+            <span className="font-semibold text-white">{usdt(adjustUser?.main_balance)}</span>
           </p>
 
           <Field label="Action">
@@ -494,10 +494,10 @@ export default function AdminUsersPage() {
               }`}
             >
               {adjustMode === 'deduct' ? 'Deducting' : 'Adding'}{' '}
-              <span className="font-semibold">{inr(Math.abs(parseFloat(adjustAmount) || 0))}</span>
+              <span className="font-semibold">{usdt(Math.abs(parseFloat(adjustAmount) || 0))}</span>
               {' — new balance will be '}
               <span className="font-semibold">
-                {inr(
+                {usdt(
                   (Number(adjustUser?.main_balance) || 0) +
                     (adjustMode === 'deduct' ? -1 : 1) * Math.abs(parseFloat(adjustAmount) || 0)
                 )}

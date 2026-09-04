@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { T2Card, t2Select, t2BtnPrimary, t2BtnGhost } from '../components/ui';
 
 const GAME_TYPES = ['Sports Betting', 'Live Casino', 'Slots', 'Lottery', 'AI Games', 'Fantasy Games'];
-const BET_RANGES = ['₹100-500', '₹500-2000', '₹2000-10000', '₹10000+'];
+const BET_RANGES = ['USDT 100-500', 'USDT 500-2000', 'USDT 2000-10000', 'USDT 10000+'];
 
 export default function Theme2Onboarding() {
   const router = useRouter();
@@ -43,7 +43,7 @@ export default function Theme2Onboarding() {
   const contents = [
     <p key="1" className="text-slate-400">Secure your account with a strong password and two-factor authentication.</p>,
     <div key="2" className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
-      <p className="text-amber-300">₹100 FREE added to your wallet!</p>
+      <p className="text-amber-300">USDT 100 FREE added to your wallet!</p>
       <p className="mt-2 text-sm text-slate-400">Explore AI Games &amp; Sports</p>
     </div>,
     null,

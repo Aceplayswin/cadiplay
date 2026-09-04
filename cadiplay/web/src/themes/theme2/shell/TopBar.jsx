@@ -18,7 +18,7 @@ export function Theme2TopBar({ onMenu }) {
   const wallet = useAuthStore((s) => s.wallet);
   const isHydrated = useAuthStore((s) => s.isHydrated);
   // Real balance, not `available` — a pending withdrawal only holds funds, it
-  // does not debit them, so netting the hold off made this read ₹0.00.
+  // does not debit them, so netting the hold off made this read USDT 0.00.
   const balance = wallet?.main ?? wallet?.real ?? 0;
   const { tryDemo, demoLoading } = useDemoLogin({ redirectTo: '/' });
   const [getAppOpen, setGetAppOpen] = useState(false);
@@ -67,7 +67,7 @@ export function Theme2TopBar({ onMenu }) {
         )}
 
         {/* Wallet pill. Signed out there is no balance to read (it is always
-            ₹0.00 and the pill routes to login), so narrow screens show the
+            USDT 0.00 and the pill routes to login), so narrow screens show the
             wallet mark + Deposit only — that is the room Play Demo needs to
             stay on the bar on a 360px phone. */}
         <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/5 bg-[#0a101a] py-1 pl-2.5 pr-1 sm:gap-2 sm:pl-3">
@@ -77,7 +77,7 @@ export function Theme2TopBar({ onMenu }) {
               token ? '' : 'hidden sm:inline'
             }`}
           >
-            ₹{Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            USDT {Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <Link
             href={token ? '/deposit' : '/login'}

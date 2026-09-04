@@ -21,7 +21,7 @@ const NAV = [
 
 export function Theme2Sidebar({ open, onClose }) {
   const branding = useBranding();
-  const brandName = branding.product_name || 'WAXCASINO';
+  const brandName = branding.product_name || 'CADIPLAY';
 
   return (
     <>

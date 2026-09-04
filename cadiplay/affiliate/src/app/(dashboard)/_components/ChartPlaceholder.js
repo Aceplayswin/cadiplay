@@ -6,7 +6,7 @@ import { BarChart, Percent, HelpCircle } from 'lucide-react';
 import { useAffiliate } from '../../../context/AffiliateContext';
 import { useAffiliateData } from '../../../hooks/useAffiliateData';
 import { DataState } from '../../../components/ui/DataState';
-import { inr, num } from '../../../lib/format';
+import { usdt, num } from '../../../lib/format';
 
 /**
  * Commission trend + conversion funnel.
@@ -74,7 +74,7 @@ export default function CommissionChart({ funnel }) {
 
                   {/* Hover Tooltip */}
                   <div className="absolute -top-10 scale-0 group-hover:scale-100 transition-transform duration-200 bg-slate-900 dark:bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded shadow-md border dark:border-slate-700 z-10 whitespace-nowrap">
-                    {inr(item.value)}
+                    {usdt(item.value)}
                   </div>
 
                   {/* CSS Flex Bar */}

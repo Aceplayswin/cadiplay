@@ -321,7 +321,7 @@ export default function AdminProvidersPage() {
                     <Input
                       value={form.currency_code}
                       onChange={(e) => setForm({ ...form, currency_code: e.target.value })}
-                      placeholder="INR"
+                      placeholder="USDT"
                     />
                   </Field>
                 </div>

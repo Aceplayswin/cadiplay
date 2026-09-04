@@ -15,7 +15,7 @@ import { ChevronDown, Clock, Loader2 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 
-const inr = (n) => `₹${Number(n ?? 0).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-US')}`;
 
 export default function Theme1BetHistory() {
   const router = useRouter();
@@ -165,10 +165,10 @@ export default function Theme1BetHistory() {
                             )}
                           </td>
                           <td className="px-5 py-3 text-right text-slate-300">
-                            {inr(r.total_bet)}
+                            {usdt(r.total_bet)}
                           </td>
                           <td className="px-5 py-3 text-right text-slate-300">
-                            {inr(r.total_win)}
+                            {usdt(r.total_win)}
                           </td>
                           <td className="px-5 py-3 text-right">
                             <ResultCell record={r} />
@@ -215,7 +215,7 @@ function ResultCell({ record }) {
   return (
     <span className={`font-semibold ${up ? 'text-green-400' : 'text-red-400'}`}>
       {up ? '+' : '−'}
-      {inr(Math.abs(Number(record.profit_loss)))}
+      {usdt(Math.abs(Number(record.profit_loss)))}
     </span>
   );
 }
@@ -257,10 +257,10 @@ function RoundDetails({ detail }) {
               </td>
               <td className="py-2 pr-4">{rd.game_name || '—'}</td>
               <td className="py-2 pr-4 text-slate-400">{formatTime(rd.created_at)}</td>
-              <td className="py-2 pr-4 text-right">{inr(rd.bet_amount)}</td>
-              <td className="py-2 pr-4 text-right">{inr(rd.win_amount)}</td>
+              <td className="py-2 pr-4 text-right">{usdt(rd.bet_amount)}</td>
+              <td className="py-2 pr-4 text-right">{usdt(rd.win_amount)}</td>
               <td className="py-2 pr-4 text-right text-slate-400">
-                {rd.balance_after == null ? '—' : inr(rd.balance_after)}
+                {rd.balance_after == null ? '—' : usdt(rd.balance_after)}
               </td>
               <td className="py-2 text-right">
                 {rd.result === 'pending' ? (
@@ -268,7 +268,7 @@ function RoundDetails({ detail }) {
                 ) : (
                   <span className={rd.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}>
                     {rd.profit_loss >= 0 ? '+' : '−'}
-                    {inr(Math.abs(rd.profit_loss))}
+                    {usdt(Math.abs(rd.profit_loss))}
                   </span>
                 )}
               </td>
@@ -292,7 +292,7 @@ function Summary({ label, value, tone, hint }) {
   return (
     <div className="card-glass p-4">
       <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-1 text-lg font-bold ${color}`}>{inr(value)}</p>
+      <p className={`mt-1 text-lg font-bold ${color}`}>{usdt(value)}</p>
       {hint && <p className="mt-0.5 text-[0.65rem] text-slate-500">{hint}</p>}
     </div>
   );

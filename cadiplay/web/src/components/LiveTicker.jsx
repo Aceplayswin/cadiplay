@@ -75,7 +75,7 @@ function TickerSection({ title, items, highlight }) {
             }`}
           >
             <span className="text-app-fg/80">{item.username}</span>
-            <span className="ml-1 text-green-400">₹{item.amount.toLocaleString('en-IN')}</span>
+            <span className="ml-1 text-green-400">USDT {item.amount.toLocaleString('en-US')}</span>
             <span className="block text-muted/80">{item.timestamp}</span>
           </li>
         ))}

@@ -11,7 +11,7 @@ import { useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  ChevronLeft, ChevronRight, ChevronDown, Play, Radio, Zap, IndianRupee,
+  ChevronLeft, ChevronRight, ChevronDown, Play, Radio, Zap, Coins,
   UserPlus, ShieldCheck, Trophy,
 } from 'lucide-react';
 import { useGameCatalog } from '@/hooks/useGameCatalog';
@@ -25,7 +25,7 @@ import { useAuthModal } from '../shell/authModalContext';
 const STATS = [
   { value: '100%', label: 'First Deposit', color: 'text-[#c79a3b]' },
   { value: '20%', label: 'Reload Bonus', color: 'text-[#2fbf71]' },
-  { value: '₹500', label: 'Refer & Earn', color: 'text-[#e5484d]' },
+  { value: 'USDT 500', label: 'Refer & Earn', color: 'text-[#e5484d]' },
   { value: 'Live', label: 'Sports', color: 'text-[#1b1726]' },
 ];
 
@@ -38,7 +38,7 @@ const NEWS = [
 
 const WHY = [
   { n: '01', Icon: Zap, title: 'Fast Withdrawal', desc: 'Quick payout flow with smooth account verification.' },
-  { n: '02', Icon: IndianRupee, title: 'Instant Deposit', desc: 'Add funds in seconds through popular payment options.' },
+  { n: '02', Icon: Coins, title: 'Instant Deposit', desc: 'Add funds in seconds through popular payment options.' },
   { n: '03', Icon: UserPlus, title: '1-Click Signup', desc: 'Create your account quickly and start playing faster.' },
   { n: '04', Icon: ShieldCheck, title: 'Trusted Platform', desc: 'Secure, reliable experience with support when needed.' },
 ];
@@ -149,7 +149,7 @@ export default function Theme3Home() {
     if (game?.slug) router.push(playPath(game));
   };
 
-  const brandName = branding.product_name || 'VELPLAY';
+  const brandName = branding.product_name || 'CADIPLAY';
 
   return (
     <div className="mx-auto max-w-[1500px] px-3 pb-4 pt-4 sm:px-5">

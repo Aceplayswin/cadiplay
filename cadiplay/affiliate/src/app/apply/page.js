@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle, DollarSign, ArrowLeft, CheckCircle2, Eye, EyeOff, Send, ShieldCheck, ArrowRight, Users } from 'lucide-react';
+import { AlertCircle, Coins, ArrowLeft, CheckCircle2, Eye, EyeOff, Send, ShieldCheck, ArrowRight, Users } from 'lucide-react';
 import { fetchProgram, submitApplication } from '../../services/affiliateApi';
 import { useBranding } from '@/hooks/useBranding';
 
@@ -284,7 +284,7 @@ function ApplyForm() {
 // screen (form + success), so it's pulled out here instead of copy-pasted
 function PageHeader() {
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'the platform';
+  const brandName = productName || 'Cadiplay';
   return (
     <div className="mb-8 flex items-center justify-between">
       <Link href="/" className="inline-flex items-center space-x-2 text-sm text-slate-500 hover:text-slate-900 transition-colors">

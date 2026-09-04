@@ -121,10 +121,10 @@ export default function Theme1Withdraw() {
           <section className="card-glass p-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-400">Available to withdraw</span>
-              <span className="font-semibold text-green-400">₹{available.toLocaleString('en-IN')}</span>
+              <span className="font-semibold text-green-400">USDT {available.toLocaleString('en-US')}</span>
             </div>
             <div className="mt-4 flex items-center rounded-lg border border-white/10 bg-surface-700 px-4">
-              <span className="text-2xl text-slate-500">₹</span>
+              <span className="text-base font-semibold text-slate-500">USDT</span>
               <input
                 type="number"
                 value={amount}
@@ -147,7 +147,7 @@ export default function Theme1Withdraw() {
               ))}
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              Minimum withdrawal ₹{MIN_WITHDRAWAL}.
+              Minimum withdrawal USDT {MIN_WITHDRAWAL}.
               {numAmount > available && <span className="text-red-400"> Amount exceeds balance.</span>}
             </p>
           </section>
@@ -231,12 +231,12 @@ export default function Theme1Withdraw() {
           <section className="card-glass p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Review withdrawal</h2>
             <div className="mt-4 space-y-2 text-sm">
-              <Row label="Amount" value={`₹${numAmount.toLocaleString('en-IN')}`} />
-              <Row label="Processing fee" value="₹0" />
+              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-US')}`} />
+              <Row label="Processing fee" value="USDT 0" />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Est. time" value="2–24 hours" />
-              <Row label="You'll receive" value={`₹${numAmount.toLocaleString('en-IN')}`} strong last />
+              <Row label="You'll receive" value={`USDT ${numAmount.toLocaleString('en-US')}`} strong last />
             </div>
             <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
               <Clock className="h-3.5 w-3.5" /> Funds are locked from your balance while we process this request.
@@ -275,15 +275,15 @@ export default function Theme1Withdraw() {
               paid out once our team approves it — or returned if it&apos;s rejected.
             </p>
             <div className="mt-6 space-y-2 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left text-sm">
-              <Row label="Amount" value={`₹${numAmount.toLocaleString('en-IN')}`} />
+              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-US')}`} />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Request ID" value={`#${transactionId}`} />
               {/* Spell out balance vs. hold. Showing "available" alone here read as
                   though the payout had already been taken out of the account. */}
-              <Row label="Wallet balance" value={`₹${walletBalance.toLocaleString('en-IN')}`} />
-              <Row label="On hold for this request" value={`₹${heldForWithdrawal.toLocaleString('en-IN')}`} />
-              <Row label="Available to play" value={`₹${available.toLocaleString('en-IN')}`} last />
+              <Row label="Wallet balance" value={`USDT ${walletBalance.toLocaleString('en-US')}`} />
+              <Row label="On hold for this request" value={`USDT ${heldForWithdrawal.toLocaleString('en-US')}`} />
+              <Row label="Available to play" value={`USDT ${available.toLocaleString('en-US')}`} last />
             </div>
           </section>
           <div className="flex gap-3">

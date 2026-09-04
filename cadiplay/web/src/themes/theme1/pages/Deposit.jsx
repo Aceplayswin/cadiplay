@@ -110,7 +110,7 @@ export default function Theme1Deposit() {
           <section className="card-glass p-6">
             <label className="text-sm text-slate-400">Enter amount</label>
             <div className="mt-2 flex items-center rounded-lg border border-white/10 bg-surface-700 px-4">
-              <span className="text-2xl text-slate-500">₹</span>
+              <span className="text-base font-semibold text-slate-500">USDT</span>
               <input
                 type="number"
                 value={amount}
@@ -130,11 +130,11 @@ export default function Theme1Deposit() {
                     numAmount === a ? 'bg-brand-500 text-surface-900' : 'bg-surface-700 hover:bg-brand-500/20'
                   }`}
                 >
-                  ₹{a.toLocaleString('en-IN')}
+                  USDT {a.toLocaleString('en-US')}
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs text-slate-500">Minimum deposit ₹{MIN_DEPOSIT}.</p>
+            <p className="mt-3 text-xs text-slate-500">Minimum deposit USDT {MIN_DEPOSIT}.</p>
           </section>
 
           <button
@@ -155,7 +155,7 @@ export default function Theme1Deposit() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-400">Depositing</span>
               <span className="text-lg font-bold text-gradient-gold">
-                ₹{numAmount.toLocaleString('en-IN')}
+                USDT {numAmount.toLocaleString('en-US')}
               </span>
             </div>
             <h2 className="mt-5 text-sm font-semibold uppercase tracking-wide text-slate-400">
@@ -202,7 +202,7 @@ export default function Theme1Deposit() {
               disabled={creating}
               className="flex-[2] rounded-xl bg-brand-500 py-4 font-semibold text-surface-900 transition hover:bg-brand-400 disabled:opacity-50"
             >
-              {creating ? 'Starting…' : `Proceed to pay ₹${numAmount.toLocaleString('en-IN')}`}
+              {creating ? 'Starting…' : `Proceed to pay USDT ${numAmount.toLocaleString('en-US')}`}
             </button>
           </div>
         </div>
@@ -227,11 +227,11 @@ export default function Theme1Deposit() {
             <Clock className="mx-auto h-14 w-14 text-brand-400" />
             <h2 className="mt-4 text-xl font-bold">Deposit submitted</h2>
             <p className="mt-1 text-sm text-slate-400">
-              ₹{Number(receipt.amount).toLocaleString('en-IN')} is awaiting confirmation. Your wallet
+              USDT {Number(receipt.amount).toLocaleString('en-US')} is awaiting confirmation. Your wallet
               will be credited once our team approves the payment.
             </p>
             <div className="mt-6 space-y-2 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left text-sm">
-              <Row label="Amount" value={`₹${Number(receipt.amount).toLocaleString('en-IN')}`} />
+              <Row label="Amount" value={`USDT ${Number(receipt.amount).toLocaleString('en-US')}`} />
               <Row label="Reference" value={receipt.reference} />
               <Row label="Transaction ID" value={`#${transactionId}`} />
               <Row label="Status" value="Pending approval" last />

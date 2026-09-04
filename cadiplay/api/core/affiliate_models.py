@@ -132,7 +132,7 @@ class Affiliate(models.Model):
     onboarding_complete = models.BooleanField(default=False)
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
     timezone = models.CharField(max_length=64, default='Asia/Kolkata')
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     notification_prefs = models.JSONField(null=True, blank=True)
     webhook_url = models.CharField(max_length=500, null=True, blank=True)
 
@@ -256,7 +256,7 @@ class AffiliateReferral(models.Model):
 
 
 class AffiliateCommissionLedger(models.Model):
-    """Every rupee an affiliate earns, one row at a time.
+    """Every USDT an affiliate earns, one row at a time.
 
     ``dedupe_key`` is unique per affiliate and is computed by the commission
     engine from (entry type, period, referral, source affiliate). Re-running a
@@ -301,7 +301,7 @@ class AffiliateCommissionLedger(models.Model):
     base_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     rate = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=18, decimal_places=2)
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.PENDING
     )
@@ -337,7 +337,7 @@ class AffiliatePayout(models.Model):
         Affiliate, on_delete=models.CASCADE, db_column='affiliate_id'
     )
     amount = models.DecimalField(max_digits=18, decimal_places=2)
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     method_id = models.BigIntegerField(null=True, blank=True)
     # Snapshotted at request time so history stays readable after a method is
     # edited or deleted.

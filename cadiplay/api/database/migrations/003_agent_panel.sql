@@ -93,7 +93,7 @@ CALL _cadiplay_add_column('agents', 'bet_locked',        "bet_locked BOOLEAN DEF
 CALL _cadiplay_add_column('agents', 'user_locked',       "user_locked BOOLEAN DEFAULT FALSE AFTER bet_locked");
 CALL _cadiplay_add_column('agents', 'must_change_password', "must_change_password BOOLEAN DEFAULT FALSE AFTER user_locked");
 CALL _cadiplay_add_column('agents', 'timezone',          "timezone VARCHAR(64) DEFAULT 'Asia/Kolkata'");
-CALL _cadiplay_add_column('agents', 'currency',          "currency VARCHAR(10) DEFAULT 'INR'");
+CALL _cadiplay_add_column('agents', 'currency',          "currency VARCHAR(10) DEFAULT 'USDT'");
 CALL _cadiplay_add_column('agents', 'contact_email',     "contact_email VARCHAR(255)");
 CALL _cadiplay_add_column('agents', 'contact_phone',     "contact_phone VARCHAR(20)");
 CALL _cadiplay_add_column('agents', 'last_login_at',     "last_login_at DATETIME");

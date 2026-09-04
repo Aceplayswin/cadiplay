@@ -905,7 +905,7 @@ pulled from Super Admin over HTTP (§5.1).
 - **Deposit:** `create_deposit` opens a `pending` `Transaction`; `confirm_deposit`
   (player or admin) credits `main_balance` under `tenant_atomic` + `select_for_update`.
 - **Withdrawal:** `create_withdrawal` validates available balance (`main − locked`) and a
-  ₹500 minimum, opens a `pending` transaction, **locks** the amount, creates five
+  USDT 500 minimum, opens a `pending` transaction, **locks** the amount, creates five
   `WithdrawalStage` rows, then `process_withdrawal_stages` auto‑approves → `processing`.
   Admin `approve`/`reject` complete it (reject unlocks the funds back to `main`).
 - **Bet (non‑aggregator):** `place_bet` locks the wallet, checks balance, debits
@@ -1216,13 +1216,13 @@ Bearer <jwt>`. Tenant header: `X-Tenant: <slug>` (or resolved by host).
 | POST | `/auth/otp/send` | — | `{phone, channel?}` | Dev returns OTP |
 | POST | `/auth/otp/verify` | — | `{phone, otp}` | |
 | POST | `/auth/register/otp` | — | `{fullName, phone, password, countryCode?}` | OTP must be verified first |
-| POST | `/auth/demo` | — | — | 30‑min demo session, ₹50k/₹5k |
+| POST | `/auth/demo` | — | — | 30‑min demo session, USDT 50k/USDT 5k |
 | POST | `/auth/login` | — | `{phone, password}` | → `{token, userId}` |
 | GET/PUT/PATCH | `/settings` | user | preference fields | editable: languages, currency, notifications, marketing |
 | GET | `/wallet` | user | — | balances + `available` |
 | POST | `/wallet/deposit` | user | `{amount, paymentMethod, currency?}` | opens pending tx |
 | POST | `/wallet/deposit/<tx>/confirm` | user/admin | `{referenceNumber}` | credits main |
-| POST | `/wallet/withdraw` | user | `{amount, paymentMethod}` | min ₹500; locks funds |
+| POST | `/wallet/withdraw` | user | `{amount, paymentMethod}` | min USDT 500; locks funds |
 | GET | `/wallet/transactions` | user | — | last 50 |
 | GET | `/games` | — | `category, featured, limit, offset` | catalog |
 | GET | `/games/trending` | — | — | top 12 |
@@ -1352,12 +1352,12 @@ provider stack. `BrandProvider` fetches branding (applies CSS vars/title/favicon
 | Key rotation needs no product redeploy | `super_admin_keys` resolves by `X-SA-Key-Id` from live config | Zero‑downtime credential rotation |
 | Exactly one active theme per product | `themes.set_active_theme`/`ensure_product_themes` | Deterministic "live theme" |
 | Disabled product → no theme | `public_product_theme` | Lets FE show maintenance |
-| Min deposit ₹100 (mobile), min withdrawal ₹500 | wallet store / `create_withdrawal` | Operational floors |
+| Min deposit USDT 100 (mobile), min withdrawal USDT 500 | wallet store / `create_withdrawal` | Operational floors |
 | Withdrawal locks funds immediately | `create_withdrawal` | Prevents double‑spend during review |
 | Reject withdrawal unlocks funds | `admin_withdrawal_reject` | Restores balance |
 | Welcome bonus on register | `register_with_otp` (`WELCOME_BONUS`) | Acquisition |
-| Demo session: 30 min, ₹50k main + ₹5k bonus | `create_demo_session` | Try‑before‑signup |
-| Min launch balance (default ₹100) | `game_services.launch_game` | Aggregator launch gate |
+| Demo session: 30 min, USDT 50k main + USDT 5k bonus | `create_demo_session` | Try‑before‑signup |
+| Min launch balance (default USDT 100) | `game_services.launch_game` | Aggregator launch gate |
 | Games master switch | `platform_settings.game_status` | Kill‑switch for all launches |
 | Per‑game `is_active` | `games.is_active` | Granular game toggle |
 | Callback idempotency (3 levels) | `process_callback` + unique `serial_number` | Never double‑settle |

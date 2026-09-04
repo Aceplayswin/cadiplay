@@ -11,7 +11,7 @@ import { useAuthStore } from '@/store/auth';
 const STEPS = [
   { icon: '🔗', title: 'Share your link', desc: 'Send your referral link to friends.' },
   { icon: '💰', title: 'They deposit & play', desc: 'Your friend signs up and makes a deposit.' },
-  { icon: '🎁', title: 'You both earn', desc: 'Get ₹500 credited once they start playing.' },
+  { icon: '🎁', title: 'You both earn', desc: 'Get USDT 500 credited once they start playing.' },
 ];
 
 export default function Theme1Refer() {
@@ -49,7 +49,7 @@ export default function Theme1Refer() {
     <main className="mx-auto max-w-6xl flex-1 px-4 py-8">
       <h1 className="text-2xl font-bold">Refer &amp; Earn</h1>
       <p className="mt-1 text-sm text-slate-400">
-        Earn ₹500 for every friend who joins and plays.
+        Earn USDT 500 for every friend who joins and plays.
       </p>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
@@ -72,7 +72,7 @@ export default function Theme1Refer() {
 
           <div className="mt-6 rounded-xl border border-white/5 bg-white/[0.02] p-4">
             <p className="text-sm text-slate-400">Reward per referral</p>
-            <p className="mt-1 text-2xl font-bold text-green-400">₹500</p>
+            <p className="mt-1 text-2xl font-bold text-green-400">USDT 500</p>
           </div>
         </section>
 

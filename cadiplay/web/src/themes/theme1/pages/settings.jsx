@@ -13,17 +13,12 @@ const LANGUAGES = [
   { value: 'ta', label: 'தமிழ் (Tamil)' },
 ];
 
-const CURRENCIES = [
-  { value: 'INR', label: '₹ INR — Indian Rupee' },
-  { value: 'USD', label: '$ USD — US Dollar' },
-  { value: 'EUR', label: '€ EUR — Euro' },
-  { value: 'USDT', label: '₮ USDT — Tether' },
-];
+const CURRENCIES = [{ value: 'USDT', label: 'USDT — Tether' }];
 
 const DEFAULTS = {
   website_language: 'en',
   communication_language: 'en',
-  currency: 'INR',
+  currency: 'USDT',
   notifications_enabled: true,
   marketing_opt_in: false,
 };

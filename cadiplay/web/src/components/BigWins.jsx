@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { api } from '@/services/api';
 
-const inr = (n) => `₹${Number(n ?? 0).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-US')}`;
 
 export function useBigWins(limit = 12, refreshMs = 45000) {
   const [wins, setWins] = useState([]);
@@ -83,7 +83,7 @@ function WinCard({ win }) {
         <p className="truncate text-xs text-slate-500">{win.game_name}</p>
       </div>
       <div className="text-right">
-        <p className="font-bold text-emerald-400">{inr(win.win_amount)}</p>
+        <p className="font-bold text-emerald-400">{usdt(win.win_amount)}</p>
         {win.multiplier && (
           <p className="text-[0.65rem] text-slate-500">{win.multiplier}×</p>
         )}

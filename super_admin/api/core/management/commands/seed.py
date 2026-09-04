@@ -91,7 +91,7 @@ class Command(BaseCommand):
         Bonus.objects.get_or_create(
             name='welcome100',
             defaults={
-                'display_title': 'Welcome Bonus ₹100',
+                'display_title': 'Welcome Bonus USDT 100',
                 'bonus_type': 'no_deposit',
                 'value_type': 'fixed',
                 'value_amount': Decimal('100'),

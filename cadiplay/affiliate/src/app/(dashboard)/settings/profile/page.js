@@ -40,7 +40,7 @@ export default function ProfileSettingsPage() {
         contactEmail: data.email || '',
         contactPhone: data.phone || '',
         timezone: data.timezone || 'Asia/Kolkata',
-        currency: data.currency || 'INR',
+        currency: data.currency || 'USDT',
         notificationPreferences: data.notification_prefs || {
           referrals: true,
           deposits: true,
@@ -250,8 +250,7 @@ export default function ProfileSettingsPage() {
                 title="Commission is paid in the programme currency"
                 className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/80 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:opacity-70"
               >
-                <option>INR</option>
-                <option>GBP</option>
+                <option>USDT</option>
               </select>
             </div>
 

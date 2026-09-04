@@ -22,7 +22,7 @@ const PAY_MODES = ['UPI', 'GPay', 'PhonePe', 'Net Banking', 'Paytm'];
 
 export function Theme3Footer() {
   const branding = useBranding();
-  const name = branding.product_name || 'VELPLAY365';
+  const name = branding.product_name || 'CADIPLAY';
   const year = new Date().getFullYear();
 
   return (

@@ -527,7 +527,7 @@ def _settle(user_id: int, cb: CallbackPayload) -> SettlementResult:
                       f'(bet={cb.bet_amount}, win={cb.win_amount})',
             )
 
-        # Wagering: every rupee staked counts toward any pending bonus target,
+        # Wagering: every USDT staked counts toward any pending bonus target,
         # win or lose. Weighted by the provider the bet was placed on. A bonus
         # that clears here is credited to the withdrawable balance immediately.
         # Guarded because a fault in the bonus engine must never roll back a

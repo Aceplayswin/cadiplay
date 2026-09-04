@@ -182,7 +182,7 @@ export function GamePlayView({ slug, variant = 'theme1' }) {
           </>
         ) : (
           <>
-            <label className={s.label}>Bet amount (₹)</label>
+            <label className={s.label}>Bet amount (USDT)</label>
             <input
               type="number"
               value={betAmount}
@@ -190,7 +190,7 @@ export function GamePlayView({ slug, variant = 'theme1' }) {
               className={s.input}
             />
             <p className={s.limits}>
-              Min ₹{game.min_bet} · Max ₹{game.max_bet}
+              Min USDT {game.min_bet} · Max USDT {game.max_bet}
             </p>
             {token ? (
               <button type="button" onClick={placeBet} className={s.btn}>

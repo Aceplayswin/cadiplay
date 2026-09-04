@@ -55,7 +55,7 @@ export default function Theme3Profile() {
         {txs.slice(0, 10).map((t) => (
           <li key={t.id} className="flex justify-between rounded-xl border border-black/[0.06] bg-white px-4 py-3 text-sm shadow-sm">
             <span className="capitalize text-[#4a4458]">{t.type}</span>
-            <span className="font-bold text-[#1b1726]">₹{parseFloat(t.amount).toLocaleString('en-IN')}</span>
+            <span className="font-bold text-[#1b1726]">USDT {parseFloat(t.amount).toLocaleString('en-US')}</span>
             <span className="text-[#9a94a8]">{t.status}</span>
           </li>
         ))}

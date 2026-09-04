@@ -23,7 +23,7 @@ def _default_branding(theme_key: str) -> dict:
     colors = default_colors(theme_key)
     return {
         'theme_key': theme_key,
-        'product_name': 'Gaming Platform',
+        'product_name': 'Cadiplay',
         'logo_url': '',
         'favicon_url': '',
         'theme_color': colors.get('primary', '#ff9800'),

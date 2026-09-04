@@ -31,7 +31,7 @@ export default function StatCard({ title, value, icon: Icon, trend, isCurrency =
 
           <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 font-display">
 
-            {isCurrency ? `$${Number(value).toLocaleString()}` : Number(value).toLocaleString()}
+            {isCurrency ? `USDT ${Number(value).toLocaleString()}` : Number(value).toLocaleString()}
 
           </span>
 

@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import { ChevronDown, ChevronRight, UserPlus, Calendar } from 'lucide-react';
-import { fmtDateShort, inr, num } from '../../../../lib/format';
+import { fmtDateShort, usdt, num } from '../../../../lib/format';
 
 const STATUS_DOT = {
   approved: 'bg-emerald-500',
@@ -105,12 +105,12 @@ export default function SubAffiliateTable({ items }) {
                         </span>
                         
                     </td>
-                    <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{inr(sub.sub_commission)}</td>
+                    <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{usdt(sub.sub_commission)}</td>
                     <td className="p-4 font-semibold text-slate-500 dark:text-slate-400">{sub.override_rate}%</td>
                     <td className="p-4 font-extrabold text-emerald-600 dark:text-emerald-400 font-display">
 
 
-                      +{inr(sub.override_earned)}
+                      +{usdt(sub.override_earned)}
                     </td>
 
 

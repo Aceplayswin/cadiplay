@@ -73,7 +73,7 @@ export function PaymentGateway({ amount, method = 'upi', onConfirm, onCancel }) 
         <Loader2 className="mx-auto h-10 w-10 animate-spin text-brand-400" />
         <p className="mt-4 text-lg font-semibold">Processing payment…</p>
         <p className="mt-1 text-sm text-slate-400">
-          Securely confirming ₹{Number(amount).toLocaleString('en-IN')} via {ui.label}. Please don't
+          Securely confirming USDT {Number(amount).toLocaleString('en-US')} via {ui.label}. Please don't
           close this window.
         </p>
         <div className="mx-auto mt-6 h-1 w-48 overflow-hidden rounded-full bg-white/10">
@@ -93,7 +93,7 @@ export function PaymentGateway({ amount, method = 'upi', onConfirm, onCancel }) 
           </span>
           <div>
             <p className="text-sm font-semibold">Pay with {ui.label}</p>
-            <p className="text-xs text-slate-500">Amount ₹{Number(amount).toLocaleString('en-IN')}</p>
+            <p className="text-xs text-slate-500">Amount USDT {Number(amount).toLocaleString('en-US')}</p>
           </div>
         </div>
         <span className="flex items-center gap-1 text-xs text-slate-400">
@@ -191,8 +191,8 @@ export function PaymentGateway({ amount, method = 'upi', onConfirm, onCancel }) 
               ))}
             </select>
             <p className="mt-3 text-xs text-slate-500">
-              You'll be redirected to your bank to authorise ₹
-              {Number(amount).toLocaleString('en-IN')}.
+              You'll be redirected to your bank to authorise USDT
+              {Number(amount).toLocaleString('en-US')}.
             </p>
           </div>
         )}
@@ -201,7 +201,7 @@ export function PaymentGateway({ amount, method = 'upi', onConfirm, onCancel }) 
           <div className="rounded-xl border border-white/10 bg-surface-700 p-4">
             <p className="text-sm text-slate-400">Send exactly</p>
             <p className="text-xl font-bold text-white">
-              ₹{Number(amount).toLocaleString('en-IN')} <span className="text-sm text-slate-500">in USDT</span>
+              USDT {Number(amount).toLocaleString('en-US')}
             </p>
             <p className="mt-3 text-sm text-slate-400">To wallet address</p>
             <p className="break-all font-mono text-sm text-white">{ui.address}</p>
@@ -213,7 +213,7 @@ export function PaymentGateway({ amount, method = 'upi', onConfirm, onCancel }) 
           onClick={pay}
           className="mt-6 w-full rounded-xl bg-brand-500 py-4 font-semibold text-surface-900 transition hover:bg-brand-400"
         >
-          Pay ₹{Number(amount).toLocaleString('en-IN')}
+          Pay USDT {Number(amount).toLocaleString('en-US')}
         </button>
         <button
           type="button"

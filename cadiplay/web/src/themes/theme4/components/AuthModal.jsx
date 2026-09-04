@@ -14,7 +14,7 @@ import { X } from 'lucide-react';
  * @param headline     small white caption in the teal header
  * @param children     the form (body content)
  */
-export function AuthModal({ onClose, brandInitial = 'D', brandName = '', headline, children }) {
+export function AuthModal({ onClose, brandInitial = 'C', brandName = '', headline, children }) {
   // Close on Escape and lock body scroll while the modal is open.
   useEffect(() => {
     const onKey = (e) => {

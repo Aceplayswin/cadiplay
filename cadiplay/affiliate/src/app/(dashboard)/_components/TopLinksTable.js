@@ -10,7 +10,7 @@ import NextLink from 'next/link';
 import { Copy, Check, Link } from 'lucide-react';
 import { useAffiliateData } from '../../../hooks/useAffiliateData';
 import { DataState } from '../../../components/ui/DataState';
-import { inr, num } from '../../../lib/format';
+import { usdt, num } from '../../../lib/format';
 
 
 
@@ -104,7 +104,7 @@ export default function TopLinksTable() {
                   <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{num(link.clicks)}</td>
                   <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{num(link.signups)}</td>
                   <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{num(link.ftds)}</td>
-                  <td className="p-4 font-bold text-brand-600 font-display">{inr(link.commission)}</td>
+                  <td className="p-4 font-bold text-brand-600 font-display">{usdt(link.commission)}</td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-1.5">
                       <button

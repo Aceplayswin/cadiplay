@@ -84,7 +84,7 @@ def _serialize_preferences(user: User, prefs: UserSetting | None) -> dict:
         'account_status': user.account_status,
         'website_language': prefs.website_language if prefs else 'en',
         'communication_language': prefs.communication_language if prefs else 'en',
-        'currency': prefs.currency if prefs else 'INR',
+        'currency': prefs.currency if prefs else 'USDT',
         'notifications_enabled': prefs.notifications_enabled if prefs else True,
         'marketing_opt_in': prefs.marketing_opt_in if prefs else False,
     }
@@ -355,7 +355,7 @@ def _require_player(user_id: int) -> User:
 
 def get_wallet(user_id: int) -> dict:
     _require_player(user_id)
-    wallet, _ = Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': 'INR'})
+    wallet, _ = Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': 'USDT'})
     main = float(wallet.main_balance)
     locked = float(wallet.locked_balance)
     bonus = float(wallet.bonus_balance)
@@ -457,9 +457,9 @@ def get_wallet_breakdown(user_id: int) -> dict:
 
 
 # --- INR ⇄ USDT conversion (crypto cashier) --------------------------------
-# Wallets are denominated in INR; the crypto rail moves USDT. Both the deposit
-# and withdrawal screens need to show the player what their rupees are worth in
-# Tether at the live market rate before they commit to a transfer.
+# Wallets are denominated in USDT, so nothing on the cashier screens needs this
+# to render a balance. It stays as a quoting endpoint: a player funding from an
+# INR rail can price the transfer at the live market rate before committing.
 
 # USDT is quoted to 6 decimals (its on-chain precision on TRC-20/ERC-20), INR to
 # paise. Rounding half-up so a displayed quote never under-states what the player
@@ -496,7 +496,7 @@ def convert_currency(amount: float, from_currency: str, to_currency: str) -> dic
     """Convert between INR and USDT at the live rate.
 
     Returns the converted amount alongside the rate it was priced at, so the
-    client can display "≈ X USDT at ₹Y/USDT" without a second call.
+    client can display "≈ X USDT at Y INR/USDT" without a second call.
     """
     frm = (from_currency or '').strip().upper()
     to = (to_currency or '').strip().upper()
@@ -530,7 +530,7 @@ def create_deposit(
     user_id: int,
     amount: float,
     payment_method: str,
-    currency: str = 'INR',
+    currency: str = 'USDT',
     reference_number: str | None = None,
 ) -> dict:
     _require_player(user_id)
@@ -582,7 +582,7 @@ def confirm_deposit(transaction_id: int, reference_number: str) -> dict:
         bonus_services.award_referral_bonus(tx.user_id, event='deposit', deposit_amount=amount)
         # Stamps the first deposit and accumulates lifetime totals on the
         # affiliate referral, if this player came from one. No commission is
-        # awarded here: that happens in the nightly run so every rupee passes
+        # awarded here: that happens in the nightly run so every unit passes
         # through the same approval workflow. Deferred import — see register_user.
         from core import affiliate_services
 
@@ -615,7 +615,7 @@ def create_withdrawal(user_id: int, amount: float, payment_method: str) -> dict:
     if amount > wallet_data['available']:
         raise ValueError('Insufficient balance')
     if amount < 500:
-        raise ValueError('Minimum withdrawal is ₹500')
+        raise ValueError('Minimum withdrawal is USDT 500')
 
     with tenant_atomic():
         tx = Transaction.objects.create(

@@ -87,7 +87,7 @@ CALL _cadiplay_add_column('affiliates', 'kyc_status',          "kyc_status ENUM(
 CALL _cadiplay_add_column('affiliates', 'onboarding_complete', "onboarding_complete BOOLEAN DEFAULT FALSE");
 CALL _cadiplay_add_column('affiliates', 'terms_accepted_at',   "terms_accepted_at DATETIME");
 CALL _cadiplay_add_column('affiliates', 'timezone',            "timezone VARCHAR(64) DEFAULT 'Asia/Kolkata'");
-CALL _cadiplay_add_column('affiliates', 'currency',            "currency VARCHAR(10) DEFAULT 'INR'");
+CALL _cadiplay_add_column('affiliates', 'currency',            "currency VARCHAR(10) DEFAULT 'USDT'");
 CALL _cadiplay_add_column('affiliates', 'notification_prefs',  "notification_prefs JSON");
 CALL _cadiplay_add_column('affiliates', 'webhook_url',         "webhook_url VARCHAR(500)");
 -- Application fields, captured by the public /apply form.
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS affiliate_commission_ledger (
   base_amount DECIMAL(18,2) DEFAULT 0,
   rate DECIMAL(6,2) DEFAULT 0,
   amount DECIMAL(18,2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   status ENUM('pending','approved','paid','rejected','clawed_back') DEFAULT 'pending',
   period_start DATE NOT NULL,
   period_end DATE NOT NULL,
@@ -237,7 +237,7 @@ CREATE TABLE IF NOT EXISTS affiliate_payouts (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   affiliate_id BIGINT UNSIGNED NOT NULL,
   amount DECIMAL(18,2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   method_id BIGINT UNSIGNED,
   method_label VARCHAR(120),
   method_details VARCHAR(255),
@@ -461,10 +461,10 @@ CREATE TABLE IF NOT EXISTS affiliate_commission_runs (
 -- Settings screen needs no new endpoint. Per-affiliate overrides live on the
 -- affiliates row, where 0 means "inherit whatever is in here".
 --
--- Amounts are INR (the admin mock's 50/100 defaults were USD).
+-- Amounts are USDT (the admin mock's 50/100 defaults were USD).
 -- ---------------------------------------------------------------------------
 INSERT INTO platform_settings (setting_key, setting_value) VALUES (
   'affiliate_program',
-  '{"default_commission_type":"revenue_share","default_commission_rate":30,"default_cpa_amount":500,"default_override_rate":5,"default_hybrid_cpa_days":30,"cpa_min_deposit":500,"cookie_window_days":30,"attribution_model":"last_click","min_payout_threshold":5000,"payout_cycle":"monthly","auto_approve_days":7,"max_override_depth":3,"deduct_bonus_from_ngr":true,"negative_ngr_carry_forward":true,"fraud_max_referrals_per_ip":5,"fraud_block_disposable_emails":true,"fraud_flag_self_referral":true,"click_retention_days":180,"currency":"INR"}'
+  '{"default_commission_type":"revenue_share","default_commission_rate":30,"default_cpa_amount":500,"default_override_rate":5,"default_hybrid_cpa_days":30,"cpa_min_deposit":500,"cookie_window_days":30,"attribution_model":"last_click","min_payout_threshold":5000,"payout_cycle":"monthly","auto_approve_days":7,"max_override_depth":3,"deduct_bonus_from_ngr":true,"negative_ngr_carry_forward":true,"fraud_max_referrals_per_ip":5,"fraud_block_disposable_emails":true,"fraud_flag_self_referral":true,"click_retention_days":180,"currency":"USDT"}'
 )
 ON DUPLICATE KEY UPDATE setting_key = setting_key;

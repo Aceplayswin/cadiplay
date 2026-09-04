@@ -163,7 +163,7 @@ def _resolve_amount(bonus: Bonus, gross_amount: Decimal) -> Decimal:
     left = _budget_left(bonus)
     if left is not None:
         amount = min(amount, max(left, ZERO))
-    # Round to paise.
+    # Round to two decimals.
     return amount.quantize(Decimal('0.01'))
 
 
@@ -209,7 +209,7 @@ def _award_bonus(
     with tenant_atomic():
         # Materialise the wallet so downstream reads never race a missing row,
         # but leave every balance untouched — the reward is not money yet.
-        Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': 'INR'})
+        Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': 'USDT'})
 
         user_bonus = UserBonus.objects.create(
             user_id=user_id,
@@ -299,7 +299,7 @@ def record_wagering(
 ) -> list[int]:
     """Credit ``bet_amount`` of turnover against the player's pending bonuses.
 
-    Called from bet settlement. Every rupee staked counts toward the target
+    Called from bet settlement. Every USDT staked counts toward the target
     regardless of whether the round won or lost. When a bonus's target is
     reached it is paid straight into the withdrawable balance.
 

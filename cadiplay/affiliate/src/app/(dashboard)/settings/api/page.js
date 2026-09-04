@@ -51,7 +51,7 @@ function downloadBlob(filename, text) {
  */
 export default function SettingsApiPage() {
   const { product_name: productName } = useBranding();
-  const brandName = productName || 'the platform';
+  const brandName = productName || 'Cadiplay';
   const [busy, setBusy] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookDirty, setWebhookDirty] = useState(false);

@@ -22,7 +22,7 @@ function LoginModal() {
   const { close, open } = useAuthModal();
   const { identifier, setIdentifier, password, setPassword, loading, submit } = useUnifiedLogin();
   const branding = useBranding();
-  const brandInitial = (branding.product_name || 'V').charAt(0).toUpperCase();
+  const brandInitial = (branding.product_name || 'Cadiplay').charAt(0).toUpperCase();
 
   const handleSubmit = async (e) => {
     await submit(e); // shows its own SweetAlert + redirects on success
@@ -98,7 +98,7 @@ function RegisterModal() {
   const { close, open } = useAuthModal();
   const setAuth = useAuthStore((s) => s.setAuth);
   const branding = useBranding();
-  const brandInitial = (branding.product_name || 'V').charAt(0).toUpperCase();
+  const brandInitial = (branding.product_name || 'Cadiplay').charAt(0).toUpperCase();
 
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');

@@ -79,7 +79,7 @@ class UserSetting(models.Model):
     demo_expires_at = models.DateTimeField(null=True, blank=True)
     website_language = models.CharField(max_length=10, default='en')
     communication_language = models.CharField(max_length=10, default='en')
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     registration_path = models.CharField(
         max_length=10, choices=RegistrationPath.choices, default=RegistrationPath.DIRECT
     )
@@ -113,7 +113,7 @@ class Wallet(models.Model):
     # cleared by net gameplay before the user can withdraw. Updated by game
     # callback settlement; see core/game_services.py.
     wagering_balance = models.DecimalField(max_digits=18, decimal_places=2, default=0)
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -142,7 +142,7 @@ class Transaction(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, db_column='user_id')
     type = models.CharField(max_length=20, choices=TxType.choices)
     amount = models.DecimalField(max_digits=18, decimal_places=2)
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     payment_method = models.CharField(max_length=50, null=True, blank=True)
     reference_number = models.CharField(max_length=255, null=True, blank=True)
@@ -267,7 +267,7 @@ class GameSession(models.Model):
     game_name = models.CharField(max_length=150)
     member_account = models.CharField(max_length=100, db_index=True)
     launch_url = models.TextField(null=True, blank=True)
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     # Accumulated settlement totals across all rounds in this session.
     total_bet = models.DecimalField(max_digits=20, decimal_places=2, default=0)
     total_win = models.DecimalField(max_digits=20, decimal_places=2, default=0)
@@ -330,7 +330,7 @@ class GameRound(models.Model):
     balance_after = models.DecimalField(
         max_digits=20, decimal_places=2, null=True, blank=True
     )
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     provider_timestamp = models.CharField(max_length=50, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,13 +1,13 @@
 """CoinGecko client: the live INR ⇄ USDT rate used to price crypto deposits.
 
-Players fund and are paid in INR, but the crypto rail settles in USDT (Tether),
+Wallets are denominated in USDT, but a player funding from an INR rail needs a
 so both sides of the cashier need to know what one USDT is worth in rupees right
 now. That number comes from CoinGecko's public Simple Price API::
 
     GET https://api.coingecko.com/api/v3/simple/price
-        ?ids=tether&vs_currencies=inr&include_last_updated_at=true
+        ?ids=tether&vs_currencies=usdt&include_last_updated_at=true
 
-    -> {"tether": {"inr": 94.53, "last_updated_at": 1788460840}}
+    -> {"tether": {"usdt": 94.53, "last_updated_at": 1788460840}}
 
 A demo/Pro API key may be supplied, in which case it is sent as a header and,
 for a Pro key, the Pro host is used instead; without a key the public endpoint is
@@ -46,7 +46,7 @@ _PRO_HOST = 'https://pro-api.coingecko.com/api/v3'
 
 # CoinGecko's id for Tether, and the fiat we quote it against.
 _COIN_ID = 'tether'
-_VS_CURRENCY = 'inr'
+_VS_CURRENCY = 'usdt'
 
 
 def _api_key() -> str:

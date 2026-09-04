@@ -5,7 +5,7 @@ import { Search, Plus, Clock3, Wallet, CreditCard } from 'lucide-react';
 import { useAffiliateData } from '../../../../hooks/useAffiliateData';
 import { DataState } from '../../../../components/ui/DataState';
 import { Pagination } from '../../../../components/ui/Pagination';
-import { fmtDateShort, inr, label } from '../../../../lib/format';
+import { fmtDateShort, usdt, label } from '../../../../lib/format';
 import { toast } from '../../../../lib/toast';
 import RequestPayoutModal from './_components/RequestPayoutModal';
 import ManageMethodsModal from './_components/ManageMethodsModal';
@@ -115,11 +115,11 @@ export default function PayoutsPage() {
                 Available balance
               </span>
               <p className="mt-3 text-3xl font-black font-display text-white">
-                {inr(balance?.available ?? 0)}
+                {usdt(balance?.available ?? 0)}
               </p>
               {balance?.pending > 0 && (
                 <p className="mt-1 text-xs text-slate-400">
-                  {inr(balance.pending)} still pending approval
+                  {usdt(balance.pending)} still pending approval
                 </p>
               )}
             </div>
@@ -128,7 +128,7 @@ export default function PayoutsPage() {
           <p className="text-xs text-slate-400">
             Minimum payout threshold:{' '}
             <span className="font-semibold text-slate-100">
-              {inr(balance?.minimum_threshold ?? 0)}
+              {usdt(balance?.minimum_threshold ?? 0)}
             </span>.
           </p>
           <p className="text-xs text-slate-400 mt-2">
@@ -275,7 +275,7 @@ export default function PayoutsPage() {
               {filteredHistory.map((entry) => (
                 <tr key={entry.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="p-4 font-mono font-bold text-slate-400 dark:text-slate-500">#{entry.id}</td>
-                  <td className="p-4 font-black font-display text-slate-900 dark:text-slate-100">{inr(entry.amount)}</td>
+                  <td className="p-4 font-black font-display text-slate-900 dark:text-slate-100">{usdt(entry.amount)}</td>
                   <td className="p-4 text-slate-600 dark:text-slate-300 font-semibold">
                     {entry.method_label}
                     {entry.reference && (

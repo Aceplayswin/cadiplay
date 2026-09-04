@@ -13,9 +13,9 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 export const metadata = {
-  title: 'Online Gaming Platform',
+  title: 'Cadiplay - Online Gaming Platform',
   description: 'Play casino, sports, slots, lottery and AI games',
-  applicationName: 'Gaming App',
+  applicationName: 'Cadiplay',
   // Installable PWA. The manifest itself is branded per product at /manifest.webmanifest
   // (src/app/manifest.js); these are the build-time defaults, re-pointed to the
   // brand's logo/name at runtime by useBranding.
@@ -24,7 +24,7 @@ export const metadata = {
     capable: true,
     // Opaque dark status bar so standalone content never hides under the notch.
     statusBarStyle: 'black',
-    title: 'Gaming App',
+    title: 'Cadiplay',
   },
   icons: {
     icon: [

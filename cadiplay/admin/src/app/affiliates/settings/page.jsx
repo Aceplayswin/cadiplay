@@ -13,7 +13,7 @@ import {
   useAdminData,
 } from '@/components/admin/AdminShell';
 import { adminApi } from '@/services/adminApi';
-import { Percent, DollarSign, Clock, ShieldAlert, Loader2 } from 'lucide-react';
+import { Percent, Coins, Clock, ShieldAlert, Loader2 } from 'lucide-react';
 
 /**
  * Programme-wide defaults.
@@ -110,7 +110,7 @@ export default function GlobalSettingsPage() {
                   onChange={e => handleChange('default_commission_rate', Number(e.target.value))}
                 />
               </Field>
-              <Field label="CPA Amount (₹)">
+              <Field label="CPA Amount (USDT)">
                 <Input 
                   type="number" 
                   value={settings.default_cpa_amount}
@@ -145,12 +145,12 @@ export default function GlobalSettingsPage() {
         {/* Payout Rules */}
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-6">
-            <DollarSign className="text-emerald-500" size={20} />
+            <Coins className="text-emerald-500" size={20} />
             <h3 className="text-lg font-semibold text-white">Payout Rules</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Field label="Minimum Payout Threshold (₹)">
+            <Field label="Minimum Payout Threshold (USDT)">
               <Input 
                 type="number" 
                 value={settings.min_payout_threshold}
@@ -186,7 +186,7 @@ export default function GlobalSettingsPage() {
             </div>
 
             <div>
-              <Field label="Minimum first deposit for CPA (₹)">
+              <Field label="Minimum first deposit for CPA (USDT)">
                 <Input
                   type="number"
                   min="0"

@@ -120,7 +120,7 @@ export default function Theme5Withdraw() {
           <T5Card className="p-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-[#64748b]">Available to withdraw</span>
-              <span className="font-black text-[#15803d]">₹{available.toLocaleString('en-IN')}</span>
+              <span className="font-black text-[#15803d]">USDT {available.toLocaleString('en-US')}</span>
             </div>
             <input
               type="number"
@@ -143,7 +143,7 @@ export default function Theme5Withdraw() {
               ))}
             </div>
             <p className="mt-3 text-xs text-[#94a3b8]">
-              Minimum withdrawal ₹{MIN_WITHDRAWAL}.
+              Minimum withdrawal USDT {MIN_WITHDRAWAL}.
               {numAmount > available && <span className="text-[#c23a5e]"> Amount exceeds balance.</span>}
             </p>
           </T5Card>
@@ -232,12 +232,12 @@ export default function Theme5Withdraw() {
           <T5Card className="p-6">
             <h2 className="text-sm font-black uppercase tracking-wide text-[#64748b]">Review withdrawal</h2>
             <div className="mt-4 space-y-2 text-sm">
-              <Row label="Amount" value={`₹${numAmount.toLocaleString('en-IN')}`} />
-              <Row label="Processing fee" value="₹0" />
+              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-US')}`} />
+              <Row label="Processing fee" value="USDT 0" />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Est. time" value="2–24 hours" />
-              <Row label="You'll receive" value={`₹${numAmount.toLocaleString('en-IN')}`} strong last />
+              <Row label="You'll receive" value={`USDT ${numAmount.toLocaleString('en-US')}`} strong last />
             </div>
             <p className="mt-4 flex items-center gap-2 text-xs text-[#94a3b8]">
               <Clock className="h-3.5 w-3.5" /> Funds are locked from your balance while we process this request.
@@ -271,13 +271,13 @@ export default function Theme5Withdraw() {
               out once our team approves it — or returned if it&apos;s rejected.
             </p>
             <div className="mt-6 space-y-2 rounded-lg border border-black/[0.06] bg-[#f8fafc] p-4 text-left text-sm">
-              <Row label="Amount" value={`₹${numAmount.toLocaleString('en-IN')}`} />
+              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-US')}`} />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Request ID" value={`#${transactionId}`} />
-              <Row label="Wallet balance" value={`₹${walletBalance.toLocaleString('en-IN')}`} />
-              <Row label="On hold for this request" value={`₹${heldForWithdrawal.toLocaleString('en-IN')}`} />
-              <Row label="Available to play" value={`₹${available.toLocaleString('en-IN')}`} last />
+              <Row label="Wallet balance" value={`USDT ${walletBalance.toLocaleString('en-US')}`} />
+              <Row label="On hold for this request" value={`USDT ${heldForWithdrawal.toLocaleString('en-US')}`} />
+              <Row label="Available to play" value={`USDT ${available.toLocaleString('en-US')}`} last />
             </div>
           </T5Card>
           <div className="flex gap-3">

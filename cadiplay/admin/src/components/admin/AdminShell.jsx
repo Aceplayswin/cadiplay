@@ -849,7 +849,7 @@ export function TxReference({ reference, transaction }) {
               <TxDetailRow label="Type">
                 <span className="capitalize">{String(tx.type).replace(/_/g, ' ')}</span>
               </TxDetailRow>
-              <TxDetailRow label="Amount">{inr(tx.amount)}</TxDetailRow>
+              <TxDetailRow label="Amount">{usdt(tx.amount)}</TxDetailRow>
               <TxDetailRow label="Status">
                 <StatusBadge status={tx.status} />
               </TxDetailRow>
@@ -939,7 +939,7 @@ export function Pagination({
   const single = totalPages <= 1;
   const start = total === 0 ? 0 : page * perPage + 1;
   const end = Math.min((page + 1) * perPage, total);
-  const fmt = (n) => n.toLocaleString('en-IN');
+  const fmt = (n) => n.toLocaleString('en-US');
   const label = single
     ? `Showing all ${fmt(total)} ${plural(noun, total)}`
     : `Showing ${fmt(start)}–${fmt(end)} of ${fmt(total)} ${plural(noun, total)}`;
@@ -1458,7 +1458,7 @@ export function BarChart({ data, series }) {
               return (
                 <div
                   key={s.key}
-                  title={`${s.label}: ${v.toLocaleString('en-IN')}`}
+                  title={`${s.label}: ${v.toLocaleString('en-US')}`}
                   className={`w-full max-w-[14px] rounded-t-md ${s.color} transition-all`}
                   style={{ height: h, minHeight: v > 0 ? '4px' : '0px' }}
                 />
@@ -1510,5 +1510,5 @@ export function useAdminData(fetcher, deps = []) {
   return { data, loading, error, reload, setData };
 }
 
-export const inr = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+export const usdt = (n) => `USDT ${Number(n || 0).toLocaleString('en-US')}`;
 export const fmtDate = (s) => (s ? new Date(s).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—');

@@ -17,7 +17,7 @@ import {
 import {
   ErrorState,
   StatCard,
-  inr,
+  usdt,
   useAdminData,
 } from '@/components/admin/AdminShell';
 import { adminApi } from '@/services/adminApi';
@@ -94,7 +94,7 @@ export default function PayoutApprovalsPage() {
   const approvePayout = async (row) => {
     const ok = await confirmDialog({
       title: 'Approve this payout?',
-      text: `${inr(row.amount)} to ${row.affiliate_name}. Approving signs it off; `
+      text: `${usdt(row.amount)} to ${row.affiliate_name}. Approving signs it off; `
         + 'money moves when you mark it paid.',
       confirmText: 'Approve',
     });
@@ -158,7 +158,7 @@ export default function PayoutApprovalsPage() {
     )},
     { key: 'amount', label: 'Amount', render: (r) => (
       <div>
-        <p className="font-bold text-emerald-400">{inr(r.amount)}</p>
+        <p className="font-bold text-emerald-400">{usdt(r.amount)}</p>
         <p className="text-xs text-slate-500">{r.entry_count} ledger entries</p>
       </div>
     )},
@@ -230,13 +230,13 @@ export default function PayoutApprovalsPage() {
         />
         <StatCard
           label="Pending amount"
-          value={inr(summary?.pending_amount ?? 0)}
+          value={usdt(summary?.pending_amount ?? 0)}
           icon={Wallet}
           accent="indigo"
         />
         <StatCard
           label="Paid this month"
-          value={inr(summary?.paid_this_month ?? 0)}
+          value={usdt(summary?.paid_this_month ?? 0)}
           icon={CheckCircle2}
           accent="emerald"
         />
@@ -308,7 +308,7 @@ export default function PayoutApprovalsPage() {
           <form onSubmit={submitPaid} className="space-y-4">
             <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-lg">
               <p className="text-sm font-medium text-emerald-400">
-                Amount to pay: {inr(approveData.amount)}
+                Amount to pay: {usdt(approveData.amount)}
               </p>
               <p className="mt-1 text-xs text-slate-400">
                 {approveData.method_label} ({approveData.method_details})
@@ -345,7 +345,7 @@ export default function PayoutApprovalsPage() {
         {rejectData && (
           <form onSubmit={submitReject} className="space-y-4">
             <p className="text-sm text-slate-300">
-              Rejecting returns {inr(rejectData.amount)} to {rejectData.affiliate_name}&apos;s
+              Rejecting returns {usdt(rejectData.amount)} to {rejectData.affiliate_name}&apos;s
               available balance so they can request it again.
             </p>
             <Field label="Rejection Reason (sent to affiliate)">

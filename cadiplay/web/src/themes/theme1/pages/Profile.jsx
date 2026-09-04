@@ -35,11 +35,11 @@ export default function Theme1Profile() {
             <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-brand-500/10 blur-2xl" />
             <p className="text-sm text-slate-400">Available balance</p>
             <p className="mt-1 text-4xl font-extrabold text-gradient-gold">
-              ₹{(wallet?.available ?? 0).toLocaleString('en-IN')}
+              USDT {(wallet?.available ?? 0).toLocaleString('en-US')}
             </p>
             {wallet?.bonus != null && (
               <p className="mt-1 text-xs text-slate-500">
-                Bonus: ₹{Number(wallet.bonus).toLocaleString('en-IN')}
+                Bonus: USDT {Number(wallet.bonus).toLocaleString('en-US')}
               </p>
             )}
             <div className="mt-5 grid grid-cols-2 gap-3">
@@ -82,7 +82,7 @@ export default function Theme1Profile() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={isCredit(t.type) ? 'text-green-400' : 'text-white'}>
-                      {isCredit(t.type) ? '+' : '−'}₹{parseFloat(t.amount).toLocaleString('en-IN')}
+                      {isCredit(t.type) ? '+' : '−'}USDT {parseFloat(t.amount).toLocaleString('en-US')}
                     </span>
                     <StatusPill status={t.status} />
                   </div>

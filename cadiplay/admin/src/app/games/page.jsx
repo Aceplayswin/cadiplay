@@ -137,7 +137,7 @@ export default function AdminGamesPage() {
       filter: 'select',
     },
     { key: 'rtp', label: 'RTP', render: (r) => (r.rtp ? `${r.rtp}%` : '—') },
-    { key: 'play_count', label: 'Plays', render: (r) => r.play_count?.toLocaleString('en-IN') },
+    { key: 'play_count', label: 'Plays', render: (r) => r.play_count?.toLocaleString('en-US') },
     {
       key: 'is_active_web',
       label: 'Web',

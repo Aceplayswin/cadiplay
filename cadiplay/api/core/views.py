@@ -390,7 +390,7 @@ def wallet_deposit(request):
             request.auth.sub,
             float(body['amount']),
             body['paymentMethod'],
-            body.get('currency', 'INR'),
+            body.get('currency', 'USDT'),
             # Optional UTR / reference the user pastes from their payment app.
             reference_number=(body.get('referenceNumber') or body.get('reference_number')),
         )

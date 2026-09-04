@@ -84,7 +84,7 @@ THEME_PALETTES = {
 # Shared white-label identity defaults (same tokens for every theme; product_name
 # defaults to the product's own name at serialization time).
 IDENTITY_DEFAULTS = {
-    'product_name': 'Gaming Platform',
+    'product_name': 'Cadiplay',
     'logo_url': '',
     'favicon_url': '',
     'splash_url': '',

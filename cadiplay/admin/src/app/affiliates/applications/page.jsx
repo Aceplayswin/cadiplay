@@ -248,7 +248,7 @@ export default function AffiliateApplicationsPage() {
                 )}
 
                 {terms.commissionType !== 'revenue_share' && (
-                  <Field label="CPA amount (₹)">
+                  <Field label="CPA amount (USDT)">
                     <Input
                       type="number"
                       min="0"

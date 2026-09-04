@@ -17,7 +17,7 @@ import {
   confirmDialog,
   toast,
   fmtDate,
-  inr,
+  usdt,
   Field,
   Input,
   Select,
@@ -42,7 +42,7 @@ function SignedAmount({ row }) {
   const out = row.direction === 'down';
   return (
     <span className={out ? 'font-semibold text-rose-400' : 'font-semibold text-emerald-400'}>
-      {out ? '−' : '+'}{inr(row.amount)}
+      {out ? '−' : '+'}{usdt(row.amount)}
     </span>
   );
 }
@@ -254,29 +254,29 @@ export default function AgentDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-lg bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">Balance</p>
-                  <p className="text-xl font-bold text-white">{inr(data.balance)}</p>
+                  <p className="text-xl font-bold text-white">{usdt(data.balance)}</p>
                 </div>
                 <div className="rounded-lg bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">Free of open bets</p>
-                  <p className="text-xl font-bold text-white">{inr(data.available_credit)}</p>
+                  <p className="text-xl font-bold text-white">{usdt(data.available_credit)}</p>
                 </div>
                 <div className="rounded-lg bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">Own exposure</p>
-                  <p className="text-xl font-bold text-white">{inr(data.exposure)}</p>
+                  <p className="text-xl font-bold text-white">{usdt(data.exposure)}</p>
                 </div>
                 {/* Own exposure plus everything the subtree is carrying — what
                     this account is actually on the hook for. */}
                 <div className="rounded-lg border border-amber-500/20 bg-slate-950 p-4">
                   <p className="text-xs text-amber-500">Net exposure</p>
-                  <p className="text-xl font-bold text-amber-400">{inr(data.stats.net_exposure)}</p>
+                  <p className="text-xl font-bold text-amber-400">{usdt(data.stats.net_exposure)}</p>
                 </div>
                 <div className="rounded-lg bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">Settled P&amp;L</p>
-                  <p className="text-xl font-bold text-white">{inr(data.settled_pl)}</p>
+                  <p className="text-xl font-bold text-white">{usdt(data.settled_pl)}</p>
                 </div>
                 <div className="rounded-lg bg-slate-950 p-4">
                   <p className="text-xs text-slate-500">Unsettled P&amp;L</p>
-                  <p className="text-xl font-bold text-white">{inr(data.unsettled_pl)}</p>
+                  <p className="text-xl font-bold text-white">{usdt(data.unsettled_pl)}</p>
                 </div>
               </div>
 
@@ -320,8 +320,8 @@ export default function AgentDetailPage() {
               )},
               { key: 'level', label: 'Level', render: (r) => <LevelBadge level={r.level} label={r.level_label} /> },
               { key: 'partnership', label: 'Partnership', render: (r) => <span className="text-slate-300">{r.partnership}%</span> },
-              { key: 'balance', label: 'Balance', render: (r) => <span className="font-semibold text-white">{inr(r.balance)}</span> },
-              { key: 'exposure', label: 'Exposure', render: (r) => <span className="text-slate-400">{inr(r.exposure)}</span> },
+              { key: 'balance', label: 'Balance', render: (r) => <span className="font-semibold text-white">{usdt(r.balance)}</span> },
+              { key: 'exposure', label: 'Exposure', render: (r) => <span className="text-slate-400">{usdt(r.exposure)}</span> },
               { key: 'players', label: 'Players', render: (r) => <span className="text-slate-300">{r.players}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
@@ -338,8 +338,8 @@ export default function AgentDetailPage() {
             columns={[
               { key: 'username', label: 'Player', render: (r) => <span className="font-medium text-white">{r.username}</span> },
               { key: 'name', label: 'Name', render: (r) => <span className="text-slate-400">{r.name || '—'}</span> },
-              { key: 'balance', label: 'Wallet', render: (r) => <span className="font-semibold text-emerald-400">{inr(r.balance)}</span> },
-              { key: 'exposure', label: 'Exposure', render: (r) => <span className="text-slate-400">{inr(r.exposure)}</span> },
+              { key: 'balance', label: 'Wallet', render: (r) => <span className="font-semibold text-emerald-400">{usdt(r.balance)}</span> },
+              { key: 'exposure', label: 'Exposure', render: (r) => <span className="text-slate-400">{usdt(r.exposure)}</span> },
               { key: 'joined_at', label: 'Joined', render: (r) => fmtDate(r.joined_at) },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
@@ -368,7 +368,7 @@ export default function AgentDetailPage() {
                 )
               )},
               { key: 'amount', label: 'Amount', render: (r) => <SignedAmount row={r} /> },
-              { key: 'balance_after', label: 'Balance after', render: (r) => <span className="text-slate-300">{inr(r.balance_after)}</span> },
+              { key: 'balance_after', label: 'Balance after', render: (r) => <span className="text-slate-300">{usdt(r.balance_after)}</span> },
               { key: 'remark', label: 'Remark', render: (r) => <span className="text-sm text-slate-400">{r.remark}</span> },
             ]}
             rows={data.transfers}
@@ -395,10 +395,10 @@ export default function AgentDetailPage() {
               )},
               { key: 'amount', label: 'Settled', render: (r) => (
                 <span className={r.amount >= 0 ? 'font-semibold text-emerald-400' : 'font-semibold text-rose-400'}>
-                  {inr(r.amount)}
+                  {usdt(r.amount)}
                 </span>
               )},
-              { key: 'pl_after', label: 'P&L after', render: (r) => <span className="text-slate-300">{inr(r.pl_after)}</span> },
+              { key: 'pl_after', label: 'P&L after', render: (r) => <span className="text-slate-300">{usdt(r.pl_after)}</span> },
               { key: 'note', label: 'Note', render: (r) => <span className="text-sm text-slate-400">{r.note}</span> },
             ]}
             rows={data.settlements}

@@ -112,7 +112,7 @@ class Query:
             email=user.email,
             kyc_status=prefs.kyc_status if prefs else UserSetting.KycStatus.NONE,
             account_status=user.account_status,
-            currency=prefs.currency if prefs else 'INR',
+            currency=prefs.currency if prefs else 'USDT',
             website_language=prefs.website_language if prefs else 'en',
         )
 

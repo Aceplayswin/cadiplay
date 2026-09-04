@@ -116,7 +116,7 @@ export default function AgentGlobalSettingsPage() {
               </p>
             </div>
 
-            <Field label="Default opening credit (₹)">
+            <Field label="Default opening credit (USDT)">
               <Input
                 type="number"
                 min="0"

@@ -14,7 +14,7 @@ const roboto = Roboto({
 // Static fallback title; useBranding sets the real product name at runtime
 // once branding loads (Next.js metadata can't be dynamic from a client fetch).
 export const metadata = {
-  title: 'Agent Panel',
+  title: 'Cadiplay Agent Panel',
   description:
     'Downline console for agents — sport analysis, clients, players, '
     + 'credit and P&L reporting.',

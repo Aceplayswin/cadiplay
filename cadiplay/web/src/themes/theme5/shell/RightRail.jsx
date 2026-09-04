@@ -16,14 +16,14 @@ import { useBigWins } from '@/components/BigWins';
 import { T5PanelHead } from '../components/ui';
 import { useAuthModal } from './authModalContext';
 
-const inr = (n) =>
-  `₹ ${Number(n ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const usdt = (n) =>
+  `USDT ${Number(n ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function BalanceTile({ label, value, strong = false }) {
   return (
     <div className={`rounded-lg border px-3 py-2.5 ${strong ? 'border-[#1d4ed8]/25 bg-[#eff4ff]' : 'border-black/[0.07] bg-[#f6f8fa]'}`}>
       <p className="text-[0.55rem] font-black uppercase tracking-[0.12em] text-[#94a3b8]">{label}</p>
-      <p className={`mt-1 text-sm font-black ${strong ? 'text-[#1d4ed8]' : 'text-[#0f1b33]'}`}>{inr(value)}</p>
+      <p className={`mt-1 text-sm font-black ${strong ? 'text-[#1d4ed8]' : 'text-[#0f1b33]'}`}>{usdt(value)}</p>
     </div>
   );
 }
@@ -125,7 +125,7 @@ function BigWinsPanel() {
               <span className="block truncate text-[0.65rem] text-[#94a3b8]">{w.game_name}</span>
             </span>
             <span className="shrink-0 text-xs font-black text-[#0f1b33]">
-              ₹{Number(w.win_amount ?? 0).toLocaleString('en-IN')}
+              USDT {Number(w.win_amount ?? 0).toLocaleString('en-US')}
             </span>
           </li>
         ))}

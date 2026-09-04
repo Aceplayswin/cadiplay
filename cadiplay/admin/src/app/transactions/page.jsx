@@ -15,7 +15,7 @@ import {
   confirmDialog,
   toast,
   useAdminData,
-  inr,
+  usdt,
 } from '@/components/admin/AdminShell';
 
 const ACTIONABLE_TYPES = ['deposit', 'withdrawal'];
@@ -37,8 +37,8 @@ export default function AdminTransactionsPage() {
       title: row.type === 'deposit' ? 'Confirm deposit?' : 'Approve withdrawal?',
       text:
         row.type === 'deposit'
-          ? `Credit ${inr(row.amount)} to ${row.full_name || row.username}'s wallet.`
-          : `Approve payout of ${inr(row.amount)} to ${row.full_name || row.username}.`,
+          ? `Credit ${usdt(row.amount)} to ${row.full_name || row.username}'s wallet.`
+          : `Approve payout of ${usdt(row.amount)} to ${row.full_name || row.username}.`,
       confirmText: 'Approve',
       icon: 'question',
     });
@@ -121,7 +121,7 @@ export default function AdminTransactionsPage() {
       label: 'Amount',
       render: (r) => (
         <span className={r.type === 'withdrawal' ? 'font-semibold text-rose-400' : 'font-semibold text-emerald-400'}>
-          {r.type === 'withdrawal' ? '−' : '+'}{inr(r.amount)}
+          {r.type === 'withdrawal' ? '−' : '+'}{usdt(r.amount)}
         </span>
       ),
     },
@@ -227,8 +227,8 @@ export default function AdminTransactionsPage() {
         <form id="tx-reject-form" onSubmit={submitReject} className="space-y-4">
           <p className="text-sm text-slate-400">
             {rejectRow?.type === 'deposit'
-              ? `Rejecting marks this ${inr(rejectRow?.amount)} deposit as rejected without crediting the wallet.`
-              : `Rejecting returns ${inr(rejectRow?.amount)} to the player's main balance.`}
+              ? `Rejecting marks this ${usdt(rejectRow?.amount)} deposit as rejected without crediting the wallet.`
+              : `Rejecting returns ${usdt(rejectRow?.amount)} to the player's main balance.`}
           </p>
           <Field label="Reason (optional)">
             <Textarea

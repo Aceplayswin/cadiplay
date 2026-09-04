@@ -108,7 +108,7 @@ CALL _cadiplay_add_index('agents', 'idx_agents_requested_parent', 'requested_par
 INSERT INTO platform_settings (setting_key, setting_value)
 VALUES (
   'agent_program',
-  '{"default_level": "agent", "default_partnership": 25, "default_commission_rate": 2, "default_opening_credit": 0, "min_partnership": 0, "max_partnership": 100, "review_hours": 24, "currency": "INR"}'
+  '{"default_level": "agent", "default_partnership": 25, "default_commission_rate": 2, "default_opening_credit": 0, "min_partnership": 0, "max_partnership": 100, "review_hours": 24, "currency": "USDT"}'
 )
 ON DUPLICATE KEY UPDATE setting_key = setting_key;
 

@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 export const metadata = {
-  title: 'Admin Console',
+  title: 'Cadiplay Admin Console',
   description: 'Operator console for the gaming platform',
 };
 

@@ -34,7 +34,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { me, unread, logout } = useAffiliate();
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'the platform';
+  const brandName = productName || 'Cadiplay';
 
   const handleLogout = async () => {
     const ok = await confirmDialog({

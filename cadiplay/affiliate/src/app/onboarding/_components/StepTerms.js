@@ -20,7 +20,7 @@ function getTerms(brandName) {
     ['No Negative Carryover', 'Negative balances from one period will not carry over to the next. Each commission period starts fresh.'],
     ['Cookie Window', 'Attribution is based on a 30-day last-click cookie. Players must register within 30 days of clicking your tracking link to be attributed to your account.'],
     ['Prohibited Promotions', 'Self-referrals, spam, incentivised traffic, and promotions targeting minors are strictly prohibited and will result in immediate account suspension and commission forfeiture.'],
-    ['Payment Schedule', 'Commissions are paid weekly every Monday, subject to a minimum threshold of $100 (or equivalent). Payouts below the threshold roll forward.'],
+    ['Payment Schedule', 'Commissions are paid weekly every Monday, subject to a minimum threshold of USDT 100. Payouts below the threshold roll forward.'],
     ['KYC Requirement', 'Identity verification is required before any payout can be processed. Failure to complete KYC within 30 days will suspend commission accrual.'],
     ['Termination', 'Either party may terminate this agreement with 14 days written notice. Any earned commissions to the termination date remain payable.'],
   ];
@@ -32,7 +32,7 @@ function getTerms(brandName) {
 
 export default function StepTerms({ agreed, setAgreed, onNext, loading }) {
   const { product_name: productName } = useBranding();
-  const brandName = productName || 'the platform';
+  const brandName = productName || 'Cadiplay';
   const TERMS = getTerms(brandName);
   return (
     <div className="animate-fade-up space-y-6">

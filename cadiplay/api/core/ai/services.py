@@ -88,11 +88,11 @@ def welcome_call(
 def chat_respond(*, message: str, language: str = 'en', brand: str = 'our platform') -> dict:
     lower = message.lower()
     if 'deposit' in lower:
-        reply = 'To deposit, go to Wallet > Deposit. UPI is instant. Min ₹100.'
+        reply = 'To deposit, go to Wallet > Deposit. UPI is instant. Min USDT 100.'
     elif 'withdraw' in lower:
         reply = 'Withdrawals process in 2-24 hours after KYC verification.'
     elif 'bonus' in lower:
-        reply = 'Your welcome bonus of ₹100 is in your bonus wallet. Wagering is 35x.'
+        reply = 'Your welcome bonus of USDT 100 is in your bonus wallet. Wagering is 35x.'
     else:
         reply = f"I'm your {brand} assistant. How can I help you today?"
     return {'reply': reply, 'language': language}

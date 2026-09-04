@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS user_settings (
   demo_expires_at DATETIME,
   website_language VARCHAR(10) DEFAULT 'en',
   communication_language VARCHAR(10) DEFAULT 'en',
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   registration_path ENUM('direct', 'kyc') DEFAULT 'direct',
   preferred_game_type VARCHAR(50),
   typical_bet_range VARCHAR(20),
@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS wallets (
   exposure_balance DECIMAL(18,2) DEFAULT 0,
   locked_balance DECIMAL(18,2) DEFAULT 0,
   wagering_balance DECIMAL(18,2) DEFAULT 0,
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_wallet_user (user_id),
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   user_id BIGINT UNSIGNED NOT NULL,
   type ENUM('deposit', 'withdrawal', 'bonus_credit', 'bet_settlement', 'refund', 'adjustment') NOT NULL,
   amount DECIMAL(18,2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   status ENUM('pending', 'processing', 'completed', 'failed', 'rejected', 'cancelled') DEFAULT 'pending',
   payment_method VARCHAR(50),
   payment_provider VARCHAR(50),
@@ -304,7 +304,7 @@ CREATE TABLE IF NOT EXISTS game_sessions (
   game_name VARCHAR(150) NOT NULL,
   member_account VARCHAR(100) NOT NULL,
   launch_url TEXT,
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   total_bet DECIMAL(20,2) DEFAULT 0,
   total_win DECIMAL(20,2) DEFAULT 0,
   profit_loss DECIMAL(20,2) DEFAULT 0,
@@ -343,7 +343,7 @@ CREATE TABLE IF NOT EXISTS game_rounds (
   win_amount DECIMAL(20,2) DEFAULT 0,
   balance_before DECIMAL(20,2),
   balance_after DECIMAL(20,2),
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   provider_timestamp VARCHAR(50),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (session_id) REFERENCES game_sessions(id) ON DELETE SET NULL,
@@ -425,7 +425,7 @@ CREATE TABLE IF NOT EXISTS agents (
   user_locked BOOLEAN DEFAULT FALSE,
   must_change_password BOOLEAN DEFAULT FALSE,
   timezone VARCHAR(64) DEFAULT 'Asia/Kolkata',
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   contact_email VARCHAR(255),
   contact_phone VARCHAR(20),
   -- What the public application form captures. `requested_parent_code` keeps
@@ -499,7 +499,7 @@ CREATE TABLE IF NOT EXISTS affiliates (
   onboarding_complete BOOLEAN DEFAULT FALSE,
   terms_accepted_at DATETIME,
   timezone VARCHAR(64) DEFAULT 'Asia/Kolkata',
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   notification_prefs JSON,
   webhook_url VARCHAR(500),
   -- Captured by the public /apply form.
@@ -743,7 +743,7 @@ CREATE TABLE IF NOT EXISTS affiliate_commission_ledger (
   base_amount DECIMAL(18,2) DEFAULT 0,
   rate DECIMAL(6,2) DEFAULT 0,
   amount DECIMAL(18,2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   status ENUM('pending','approved','paid','rejected','clawed_back') DEFAULT 'pending',
   period_start DATE NOT NULL,
   period_end DATE NOT NULL,
@@ -766,7 +766,7 @@ CREATE TABLE IF NOT EXISTS affiliate_payouts (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
   affiliate_id BIGINT UNSIGNED NOT NULL,
   amount DECIMAL(18,2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'INR',
+  currency VARCHAR(10) DEFAULT 'USDT',
   method_id BIGINT UNSIGNED,
   method_label VARCHAR(120),
   method_details VARCHAR(255),
@@ -1170,14 +1170,14 @@ INSERT INTO platform_settings (id, setting_key, setting_value, updated_at) VALUE
   (4, 'min_withdrawal', '500', '2026-06-26 06:58:40'),
   (5, 'auto_approve_withdrawal_limit', '10000', '2026-06-26 06:58:40'),
   (6, 'game_status', '{\"enabled\": true}', '2026-06-26 06:58:40'),
-  (7, 'affiliate_program', '{\"default_commission_type\": \"revenue_share\", \"default_commission_rate\": 30, \"default_cpa_amount\": 500, \"default_override_rate\": 5, \"default_hybrid_cpa_days\": 30, \"cpa_min_deposit\": 500, \"cookie_window_days\": 30, \"attribution_model\": \"last_click\", \"min_payout_threshold\": 5000, \"payout_cycle\": \"monthly\", \"auto_approve_days\": 7, \"max_override_depth\": 3, \"deduct_bonus_from_ngr\": true, \"negative_ngr_carry_forward\": true, \"fraud_max_referrals_per_ip\": 5, \"fraud_block_disposable_emails\": true, \"fraud_flag_self_referral\": true, \"click_retention_days\": 180, \"currency\": \"INR\"}', '2026-08-12 00:00:00'),
+  (7, 'affiliate_program', '{\"default_commission_type\": \"revenue_share\", \"default_commission_rate\": 30, \"default_cpa_amount\": 500, \"default_override_rate\": 5, \"default_hybrid_cpa_days\": 30, \"cpa_min_deposit\": 500, \"cookie_window_days\": 30, \"attribution_model\": \"last_click\", \"min_payout_threshold\": 5000, \"payout_cycle\": \"monthly\", \"auto_approve_days\": 7, \"max_override_depth\": 3, \"deduct_bonus_from_ngr\": true, \"negative_ngr_carry_forward\": true, \"fraud_max_referrals_per_ip\": 5, \"fraud_block_disposable_emails\": true, \"fraud_flag_self_referral\": true, \"click_retention_days\": 180, \"currency\": \"USDT\"}', '2026-08-12 00:00:00'),
   -- Agent programme: what a newly approved agent is opened with, and what the
   -- public landing page quotes. Read by core/agent_services.get_program_settings.
-  (8, 'agent_program', '{\"default_level\": \"agent\", \"default_partnership\": 25, \"default_commission_rate\": 2, \"default_opening_credit\": 0, \"min_partnership\": 0, \"max_partnership\": 100, \"review_hours\": 24, \"currency\": \"INR\"}', '2026-08-19 00:00:00')
+  (8, 'agent_program', '{\"default_level\": \"agent\", \"default_partnership\": 25, \"default_commission_rate\": 2, \"default_opening_credit\": 0, \"min_partnership\": 0, \"max_partnership\": 100, \"review_hours\": 24, \"currency\": \"USDT\"}', '2026-08-19 00:00:00')
 ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value);
 
 INSERT INTO bonuses (id, name, display_title, description, bonus_type, value_type, value_amount, min_deposit, max_bonus_cap, referrer_reward, wagering_multiplier, credit_target, status, start_date, end_date, claim_method, promo_code, per_user_limit, total_budget, total_awarded, total_claims, bonus_validity_days, allowed_countries, excluded_countries, created_at, updated_at) VALUES
-  (2, 'welcome100_copy', 'Welcome Bonus ₹100', NULL, 'no_deposit', 'fixed', 100.00, 0.00, 100.00, 0.00, 35.00, 'bonus', 'paused', '2026-06-26 06:58:40', '2027-06-26 06:58:40', 'auto', NULL, NULL, NULL, 0.00, 0, 30, NULL, NULL, '2026-07-16 12:19:18', '2026-07-18 09:47:14')
+  (2, 'welcome100_copy', 'Welcome Bonus USDT 100', NULL, 'no_deposit', 'fixed', 100.00, 0.00, 100.00, 0.00, 35.00, 'bonus', 'paused', '2026-06-26 06:58:40', '2027-06-26 06:58:40', 'auto', NULL, NULL, NULL, 0.00, 0, 30, NULL, NULL, '2026-07-16 12:19:18', '2026-07-18 09:47:14')
 ON DUPLICATE KEY UPDATE name = name;
 
 INSERT INTO banners (id, title, image_url, link_url, sort_order, status, created_at, updated_at) VALUES
@@ -1639,7 +1639,7 @@ CALL _cadiplay_add_column('affiliates', 'kyc_status',          "kyc_status ENUM(
 CALL _cadiplay_add_column('affiliates', 'onboarding_complete', "onboarding_complete BOOLEAN DEFAULT FALSE");
 CALL _cadiplay_add_column('affiliates', 'terms_accepted_at',   "terms_accepted_at DATETIME");
 CALL _cadiplay_add_column('affiliates', 'timezone',            "timezone VARCHAR(64) DEFAULT 'Asia/Kolkata'");
-CALL _cadiplay_add_column('affiliates', 'currency',            "currency VARCHAR(10) DEFAULT 'INR'");
+CALL _cadiplay_add_column('affiliates', 'currency',            "currency VARCHAR(10) DEFAULT 'USDT'");
 CALL _cadiplay_add_column('affiliates', 'notification_prefs',  "notification_prefs JSON");
 CALL _cadiplay_add_column('affiliates', 'webhook_url',         "webhook_url VARCHAR(500)");
 -- Application fields, captured by the public /apply form.
@@ -1676,7 +1676,7 @@ CALL _cadiplay_add_column('agents', 'bet_locked',        "bet_locked BOOLEAN DEF
 CALL _cadiplay_add_column('agents', 'user_locked',       "user_locked BOOLEAN DEFAULT FALSE AFTER bet_locked");
 CALL _cadiplay_add_column('agents', 'must_change_password', "must_change_password BOOLEAN DEFAULT FALSE AFTER user_locked");
 CALL _cadiplay_add_column('agents', 'timezone',          "timezone VARCHAR(64) DEFAULT 'Asia/Kolkata'");
-CALL _cadiplay_add_column('agents', 'currency',          "currency VARCHAR(10) DEFAULT 'INR'");
+CALL _cadiplay_add_column('agents', 'currency',          "currency VARCHAR(10) DEFAULT 'USDT'");
 CALL _cadiplay_add_column('agents', 'contact_email',     "contact_email VARCHAR(255)");
 CALL _cadiplay_add_column('agents', 'contact_phone',     "contact_phone VARCHAR(20)");
 CALL _cadiplay_add_column('agents', 'last_login_at',     "last_login_at DATETIME");

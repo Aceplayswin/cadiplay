@@ -1,7 +1,7 @@
 'use client';
 
 import { Users, GitCommit, Percent, TrendingUp } from 'lucide-react';
-import { inr, num } from '../../../../lib/format';
+import { usdt, num } from '../../../../lib/format';
 
 /**
  * Network totals.
@@ -26,7 +26,7 @@ export default function OverrideSummary({ summary, loading }) {
     },
     {
       label: 'Total Overrides',
-      value: inr(summary?.total_override_earned ?? 0),
+      value: usdt(summary?.total_override_earned ?? 0),
       icon: TrendingUp,
       accent: 'text-sky-600 dark:text-sky-400',
     },

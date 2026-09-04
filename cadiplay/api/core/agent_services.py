@@ -72,7 +72,7 @@ DEFAULT_PROGRAM_SETTINGS = {
     'min_partnership': 0,
     'max_partnership': 100,
     'review_hours': 24,
-    'currency': 'INR',
+    'currency': 'USDT',
 }
 
 MONEY = DecimalField(max_digits=20, decimal_places=2)

@@ -6,7 +6,7 @@ import {
   DataTable,
   TxReference,
   useAdminData,
-  inr,
+  usdt,
 } from '@/components/admin/AdminShell';
 
 // Same category set the games catalog uses, so the category filter lines up with
@@ -43,7 +43,7 @@ export default function AdminBetsPage() {
       sortable: false,
       render: (r) => <TxReference reference={r.reference} />,
     },
-    { key: 'bet_amount', label: 'Bet Amount', render: (r) => inr(r.bet_amount) },
+    { key: 'bet_amount', label: 'Bet Amount', render: (r) => usdt(r.bet_amount) },
     {
       key: 'status',
       label: 'Result',
@@ -61,7 +61,7 @@ export default function AdminBetsPage() {
         return (
           <span className={`font-semibold ${up ? 'text-emerald-400' : 'text-rose-400'}`}>
             {up ? '+' : '−'}
-            {inr(Math.abs(r.profit_loss))}
+            {usdt(Math.abs(r.profit_loss))}
           </span>
         );
       },
@@ -73,7 +73,7 @@ export default function AdminBetsPage() {
       // so money on each account can be tracked over time.
       render: (r) => (
         <span className="font-semibold text-white">
-          {r.wallet_balance != null ? inr(r.wallet_balance) : '—'}
+          {r.wallet_balance != null ? usdt(r.wallet_balance) : '—'}
         </span>
       ),
     },

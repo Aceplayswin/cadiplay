@@ -1,16 +1,16 @@
 // Shared formatting. Mirrors cadiplay/affiliate's helpers so the consoles read
-// identically — the platform is INR throughout.
+// identically — the platform is USDT throughout.
 
 /** Money, always two decimals, so a column of numbers lines up. */
 export function money(value) {
-  return Number(value || 0).toLocaleString('en-IN', {
+  return Number(value || 0).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
 }
 
 export function num(value) {
-  return Number(value || 0).toLocaleString('en-IN');
+  return Number(value || 0).toLocaleString('en-US');
 }
 
 export function pct(value, digits = 1) {

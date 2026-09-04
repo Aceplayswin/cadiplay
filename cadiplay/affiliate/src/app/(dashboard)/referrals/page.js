@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Users, UserCheck, TrendingUp, DollarSign } from 'lucide-react';
+import { Users, UserCheck, TrendingUp, Coins } from 'lucide-react';
 import { useAffiliateData } from '../../../hooks/useAffiliateData';
 import { CardSkeleton, DataState } from '../../../components/ui/DataState';
 import { Pagination } from '../../../components/ui/Pagination';
-import { inr, num } from '../../../lib/format';
+import { usdt, num } from '../../../lib/format';
 import StatusFilter from './_components/StatusFilter';
 import ReferralTable from './_components/ReferralTable';
 import ReferralDetailPanel from './_components/ReferralDetailPanel';
@@ -73,8 +73,8 @@ export default function ReferralsPage() {
     },
     {
       label: 'Total Commission',
-      value: inr(summary?.total_commission ?? 0),
-      icon: DollarSign,
+      value: usdt(summary?.total_commission ?? 0),
+      icon: Coins,
       accent: 'text-violet-600 dark:text-violet-400',
     },
   ];

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, User, FileText, DollarSign, Users,
+  ArrowLeft, User, FileText, Coins, Users,
   List, CreditCard, Key, Activity, Loader2,
 } from 'lucide-react';
 import {
@@ -16,7 +16,7 @@ import {
   confirmDialog,
   toast,
   fmtDate,
-  inr,
+  usdt,
   Field,
   Input,
   Select,
@@ -27,7 +27,7 @@ import { adminApi } from '@/services/adminApi';
 const TABS = [
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'kyc', label: 'KYC Docs', icon: FileText },
-  { id: 'commission', label: 'Commission', icon: DollarSign },
+  { id: 'commission', label: 'Commission', icon: Coins },
   { id: 'users', label: 'Referred Users', icon: Users },
   { id: 'ledger', label: 'Ledger', icon: List },
   { id: 'payouts', label: 'Payout History', icon: CreditCard },
@@ -289,11 +289,11 @@ export default function AffiliateDetailPage() {
                 </div>
                 <div className="bg-slate-950 p-4 rounded-lg">
                   <p className="text-xs text-slate-500">Total Deposits</p>
-                  <p className="text-xl font-bold text-white">{inr(data.stats.total_deposits)}</p>
+                  <p className="text-xl font-bold text-white">{usdt(data.stats.total_deposits)}</p>
                 </div>
                 <div className="bg-slate-950 p-4 rounded-lg border border-emerald-500/20">
                   <p className="text-xs text-emerald-500">Total Earnings</p>
-                  <p className="text-xl font-bold text-emerald-400">{inr(data.stats.total_earnings)}</p>
+                  <p className="text-xl font-bold text-emerald-400">{usdt(data.stats.total_earnings)}</p>
                 </div>
               </div>
             </div>
@@ -339,8 +339,8 @@ export default function AffiliateDetailPage() {
               { key: 'player_ref', label: 'Player', render: (r) => <span className="font-medium text-white">{r.player_ref}</span> },
               { key: 'signed_up_at', label: 'Signed Up', render: (r) => fmtDate(r.signed_up_at) },
               { key: 'ftd_at', label: 'First Deposit', render: (r) => (r.ftd_at ? fmtDate(r.ftd_at) : <span className="text-slate-600">—</span>) },
-              { key: 'lifetime_deposits', label: 'Deposits', render: (r) => <span className="text-emerald-400">{inr(r.lifetime_deposits)}</span> },
-              { key: 'lifetime_commission', label: 'Commission', render: (r) => <span className="text-slate-300">{inr(r.lifetime_commission)}</span> },
+              { key: 'lifetime_deposits', label: 'Deposits', render: (r) => <span className="text-emerald-400">{usdt(r.lifetime_deposits)}</span> },
+              { key: 'lifetime_commission', label: 'Commission', render: (r) => <span className="text-slate-300">{usdt(r.lifetime_commission)}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
             rows={data.referred_users}
@@ -361,7 +361,7 @@ export default function AffiliateDetailPage() {
               )},
               { key: 'base_label', label: 'Base', render: (r) => <span className="text-slate-400">{r.base_label}</span> },
               { key: 'rate', label: 'Rate', render: (r) => <span className="text-amber-400">{r.rate > 0 ? `${r.rate}%` : '—'}</span> },
-              { key: 'amount', label: 'Earned', render: (r) => <span className="font-bold text-emerald-400">{inr(r.amount)}</span> },
+              { key: 'amount', label: 'Earned', render: (r) => <span className="font-bold text-emerald-400">{usdt(r.amount)}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
               { key: 'ledger_actions', label: '', render: (r) => (
                 <div className="flex justify-end gap-1.5">
@@ -385,7 +385,7 @@ export default function AffiliateDetailPage() {
             columns={[
               { key: 'requested_at', label: 'Requested', render: (r) => fmtDate(r.requested_at) },
               { key: 'processed_at', label: 'Processed', render: (r) => (r.processed_at ? fmtDate(r.processed_at) : <span className="text-slate-600">—</span>) },
-              { key: 'amount', label: 'Amount', render: (r) => <span className="font-bold text-emerald-400">{inr(r.amount)}</span> },
+              { key: 'amount', label: 'Amount', render: (r) => <span className="font-bold text-emerald-400">{usdt(r.amount)}</span> },
               { key: 'method_label', label: 'Method', render: (r) => <span className="text-slate-300">{r.method_label}</span> },
               { key: 'reference', label: 'Reference', render: (r) => <span className="font-mono text-xs text-slate-500">{r.reference || '—'}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
@@ -491,7 +491,7 @@ function CommissionTab({ data, onSave, busy }) {
             <Field label="Rev share (%)">
               <Input type="number" min="0" max="100" step="0.5" value={terms.commissionRate} onChange={set('commissionRate')} />
             </Field>
-            <Field label="CPA amount (₹)">
+            <Field label="CPA amount (USDT)">
               <Input type="number" min="0" value={terms.cpaAmount} onChange={set('cpaAmount')} />
             </Field>
           </div>
@@ -500,7 +500,7 @@ function CommissionTab({ data, onSave, busy }) {
             <Field label={`Override to parent (%)${data.parent_name ? ` — ${data.parent_name}` : ''}`}>
               <Input type="number" min="0" max="100" step="0.5" value={terms.overrideRate} onChange={set('overrideRate')} />
             </Field>
-            <Field label="Payout threshold (₹)">
+            <Field label="Payout threshold (USDT)">
               <Input type="number" min="0" value={terms.payoutThreshold} onChange={set('payoutThreshold')} />
             </Field>
           </div>

@@ -40,12 +40,12 @@ import { T5SectionBar, T5Card } from '../components/ui';
 const SLIDES = [
   {
     title: 'WELCOME BONUS 5%',
-    sub: 'On your first deposit — up to ₹5,000',
+    sub: 'On your first deposit — up to USDT 5,000',
     cta: 'Claim Now',
     bg: 'linear-gradient(120deg, #101c33 0%, #1b2a4d 45%, #3b2a12 100%)',
   },
   {
-    title: 'DEPOSIT BONUS ₹100',
+    title: 'DEPOSIT BONUS USDT 100',
     sub: 'Deposit now and get extra — no wagering',
     cta: 'Deposit',
     bg: 'linear-gradient(120deg, #16213f 0%, #24345c 45%, #4a2c1a 100%)',
@@ -100,7 +100,7 @@ const BONUSES = [
     icon: '💰',
     label: 'First Deposit',
     headline: '100% UP TO',
-    sub: '₹20,000 bonus on first deposit',
+    sub: 'USDT 20,000 bonus on first deposit',
     href: '/deposit',
   },
   {
@@ -113,7 +113,7 @@ const BONUSES = [
   {
     icon: '👥',
     label: 'Refer & Earn',
-    headline: '₹500 PER',
+    headline: 'USDT 500 PER',
     sub: 'Per friend referred & deposited',
     href: '/refer',
   },

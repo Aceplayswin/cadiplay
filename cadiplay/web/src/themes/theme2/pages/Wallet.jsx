@@ -14,7 +14,7 @@ function Stat({ label, value }) {
     <div className="rounded-xl border border-white/5 bg-[#070d16] px-3 py-2.5">
       <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-0.5 text-sm font-bold text-white">
-        ₹{Number(value ?? 0).toLocaleString('en-IN')}
+        USDT {Number(value ?? 0).toLocaleString('en-US')}
       </p>
     </div>
   );
@@ -38,7 +38,7 @@ export default function Theme2Wallet() {
       <T2Card className="mt-6 p-6">
         <p className="text-sm text-slate-400">Available balance</p>
         <p className="mt-1 bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-4xl font-black text-transparent">
-          ₹{(wallet?.available ?? 0).toLocaleString('en-IN')}
+          USDT {(wallet?.available ?? 0).toLocaleString('en-US')}
         </p>
         <div className="mt-5 grid grid-cols-3 gap-3">
           <Stat label="Bonus" value={wallet?.bonus} />

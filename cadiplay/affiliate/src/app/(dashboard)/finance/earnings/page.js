@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Download, TrendingUp, DollarSign, Wallet, Percent, Receipt } from 'lucide-react';
+import { Download, TrendingUp, Coins, Wallet, Percent, Receipt } from 'lucide-react';
 import { useAffiliate } from '../../../../context/AffiliateContext';
 import { useAffiliateData } from '../../../../hooks/useAffiliateData';
 import { CardSkeleton, DataState } from '../../../../components/ui/DataState';
 import { Pagination } from '../../../../components/ui/Pagination';
-import { inr } from '../../../../lib/format';
+import { usdt } from '../../../../lib/format';
 import EarningsFilters from './_components/EarningsFilters';
 import EarningsTable from './_components/EarningsTable';
 import StatementsModal from './_components/StatementsModal';
@@ -53,14 +53,14 @@ export default function EarningsPage() {
   // Totals span the whole ledger rather than the current page — these cards are
   // about the account, not about what happens to be on screen.
   const cards = [
-    { label: 'Paid Earnings', value: inr(summary?.paid ?? 0), icon: Wallet, accent: 'text-brand-600 dark:text-brand-400' },
-    { label: 'Approved', value: inr(summary?.approved ?? 0), icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
-    { label: 'Pending', value: inr(summary?.pending ?? 0), icon: DollarSign, accent: 'text-amber-500 dark:text-amber-400' },
+    { label: 'Paid Earnings', value: usdt(summary?.paid ?? 0), icon: Wallet, accent: 'text-brand-600 dark:text-brand-400' },
+    { label: 'Approved', value: usdt(summary?.approved ?? 0), icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
+    { label: 'Pending', value: usdt(summary?.pending ?? 0), icon: Coins, accent: 'text-amber-500 dark:text-amber-400' },
     {
       label: 'Commission Basis',
       // The affiliate's real terms, not a fixed "45% Rev Share".
       value: summary?.commission_type === 'cpa'
-        ? `${inr(me?.cpa_amount ?? 0)} CPA`
+        ? `${usdt(me?.cpa_amount ?? 0)} CPA`
         : `${summary?.commission_rate ?? 0}% Rev Share`,
       icon: Percent,
       accent: 'text-violet-600 dark:text-violet-400',

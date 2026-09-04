@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AlertCircle, X, Check, ArrowUpRight, CreditCard, Globe } from 'lucide-react';
 import { affiliateApi } from '../../../../../services/affiliateApi';
-import { inr } from '../../../../../lib/format';
+import { usdt } from '../../../../../lib/format';
 
 const METHOD_ICONS = {
   bank: CreditCard,
@@ -98,7 +98,7 @@ export default function RequestPayoutModal({
                   Available
                 </p>
                 <p className="mt-2 text-3xl font-black text-slate-900 dark:text-slate-100">
-                  {inr(balance)}
+                  {usdt(balance)}
                 </p>
               </div>
               <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 p-4">
@@ -106,7 +106,7 @@ export default function RequestPayoutModal({
                   Minimum
                 </p>
                 <p className="mt-2 text-3xl font-black text-slate-900 dark:text-slate-100">
-                  {inr(minimumThreshold)}
+                  {usdt(minimumThreshold)}
                 </p>
               </div>
               <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 p-4">

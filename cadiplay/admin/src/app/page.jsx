@@ -21,7 +21,7 @@ import {
   StatCard,
   StatusBadge,
   useAdminData,
-  inr,
+  usdt,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -40,9 +40,9 @@ export default function AdminDashboardPage() {
         { label: 'Total Users', value: stats.totalUsers, icon: Users, accent: 'brand' },
         { label: 'Active Players', value: stats.activePlayers, icon: Activity, accent: 'emerald', hint: 'Last 15 min' },
         { label: 'Signups Today', value: stats.signupsToday, icon: UserPlus, accent: 'sky' },
-        { label: 'Total Liability', value: inr(stats.totalLiability), icon: Wallet, accent: 'sky', hint: 'Player balances' },
-        { label: 'Deposits Today', value: inr(stats.depositsToday.amount), icon: ArrowDownToLine, accent: 'emerald', hint: `${stats.depositsToday.count} transactions` },
-        { label: 'Withdrawals Today', value: inr(stats.withdrawalsToday.amount), icon: ArrowUpFromLine, accent: 'rose', hint: `${stats.withdrawalsToday.count} transactions` },
+        { label: 'Total Liability', value: usdt(stats.totalLiability), icon: Wallet, accent: 'sky', hint: 'Player balances' },
+        { label: 'Deposits Today', value: usdt(stats.depositsToday.amount), icon: ArrowDownToLine, accent: 'emerald', hint: `${stats.depositsToday.count} transactions` },
+        { label: 'Withdrawals Today', value: usdt(stats.withdrawalsToday.amount), icon: ArrowUpFromLine, accent: 'rose', hint: `${stats.withdrawalsToday.count} transactions` },
       ]
     : [];
 
@@ -136,7 +136,7 @@ export default function AdminDashboardPage() {
                       {a.type.replace(/_/g, ' ')} · {fmtDate(a.created_at)}
                     </p>
                   </div>
-                  <span className="text-sm font-bold text-white">{inr(a.amount)}</span>
+                  <span className="text-sm font-bold text-white">{usdt(a.amount)}</span>
                   <StatusBadge status={a.status} />
                 </div>
               );
@@ -167,7 +167,7 @@ export default function AdminDashboardPage() {
                       <span className="capitalize text-slate-300">
                         {c.category.replace(/_/g, ' ')}
                       </span>
-                      <span className="text-slate-500">{inr(c.volume)}</span>
+                      <span className="text-slate-500">{usdt(c.volume)}</span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-slate-800">
                       <div

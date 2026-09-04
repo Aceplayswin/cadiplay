@@ -14,7 +14,7 @@ import {
   confirmDialog,
   toast,
   useAdminData,
-  inr,
+  usdt,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -27,7 +27,7 @@ export default function AdminWithdrawalsPage() {
   const approve = async (row) => {
     const ok = await confirmDialog({
       title: 'Approve withdrawal?',
-      text: `Approve payout of ${inr(row.amount)} to ${row.full_name || row.username}.`,
+      text: `Approve payout of ${usdt(row.amount)} to ${row.full_name || row.username}.`,
       confirmText: 'Approve',
       icon: 'question',
     });
@@ -73,7 +73,7 @@ export default function AdminWithdrawalsPage() {
         </div>
       ),
     },
-    { key: 'amount', label: 'Amount', render: (r) => <span className="font-semibold text-rose-400">{inr(r.amount)}</span> },
+    { key: 'amount', label: 'Amount', render: (r) => <span className="font-semibold text-rose-400">{usdt(r.amount)}</span> },
     {
       key: 'reference_number',
       label: 'UTR',
@@ -135,7 +135,7 @@ export default function AdminWithdrawalsPage() {
       >
         <form id="reject-form" onSubmit={reject} className="space-y-4">
           <p className="text-sm text-slate-400">
-            Rejecting returns {inr(rejectRow?.amount)} to the player&apos;s main balance.
+            Rejecting returns {usdt(rejectRow?.amount)} to the player&apos;s main balance.
           </p>
           <Field label="Reason (optional)">
             <Textarea

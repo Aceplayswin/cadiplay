@@ -14,7 +14,7 @@ const COLUMNS = [
 
 export function Theme2Footer() {
   const branding = useBranding();
-  const name = branding.product_name || 'WAXCASINO';
+  const name = branding.product_name || 'CADIPLAY';
   const token = useAuthStore((s) => s.token);
   const isHydrated = useAuthStore((s) => s.isHydrated);
   const isLoggedIn = isHydrated && Boolean(token);

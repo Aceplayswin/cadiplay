@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Download, BarChart3, Globe2, Link2, Users } from 'lucide-react';
 import { useAffiliateData } from '../../../hooks/useAffiliateData';
 import { affiliateDownload } from '../../../services/affiliateApi';
-import { inr, num } from '../../../lib/format';
+import { usdt, num } from '../../../lib/format';
 import { toast } from '../../../lib/toast';
 
 
@@ -84,7 +84,7 @@ export default function ReportsPage() {
         primary: item.clicks,
         secondary: item.signups,
         tertiary: item.ftds,
-        extra: inr(item.commission),
+        extra: usdt(item.commission),
       })),
     [records],
   );
@@ -292,7 +292,7 @@ export default function ReportsPage() {
             Revenue
           </p>
           <p className="mt-3 text-3xl font-black font-display text-slate-900 dark:text-slate-100">
-            {inr(summary.totalD)}
+            {usdt(summary.totalD)}
           </p>
         </div>
       </div>

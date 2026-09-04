@@ -12,7 +12,7 @@ const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 // Static fallback title; useBranding sets the real product name at runtime
 // once branding loads (Next.js metadata can't be dynamic from a client fetch).
 export const metadata = {
-  title: 'Affiliate Portal',
+  title: 'Cadiplay Affiliates',
   description:
     'Partner portal for the affiliate programme — tracking links, '
     + 'referrals, commission and payouts.',

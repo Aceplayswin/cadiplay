@@ -14,7 +14,7 @@ import { useBranding } from '@/hooks/useBranding';
 
 export default function AuthShell({ children, backHref = '/', backLabel = 'Back to Home' }) {
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'the platform';
+  const brandName = productName || 'Cadiplay';
   return (
     <div className="min-h-screen text-slate-800 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex flex-col justify-center">
       <div className="max-w-md w-full mx-auto relative z-10">

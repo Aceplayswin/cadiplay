@@ -12,7 +12,7 @@ import {
   confirmDialog,
   toast,
   fmtDate,
-  inr,
+  usdt,
   useAdminData,
 } from '@/components/admin/AdminShell';
 import { adminApi } from '@/services/adminApi';
@@ -106,7 +106,7 @@ export default function AffiliateListPage() {
       });
       toast.success(
         `${result.entries_written} entries written, ${result.entries_skipped} skipped, `
-        + `${inr(result.total_amount)} total`,
+        + `${usdt(result.total_amount)} total`,
       );
       reload();
     } catch (e) {
@@ -118,8 +118,8 @@ export default function AffiliateListPage() {
 
   const formatCommission = (r) => {
     if (r.commission_type === 'revenue_share') return `${r.commission_rate}% Rev Share`;
-    if (r.commission_type === 'cpa') return `${inr(r.cpa_amount)} CPA`;
-    return `${r.commission_rate}% + ${inr(r.cpa_amount)} Hybrid`;
+    if (r.commission_type === 'cpa') return `${usdt(r.cpa_amount)} CPA`;
+    return `${r.commission_rate}% + ${usdt(r.cpa_amount)} Hybrid`;
   };
 
   const columns = [
@@ -180,9 +180,9 @@ export default function AffiliateListPage() {
       label: 'Earnings',
       render: (r) => (
         <div>
-          <p className="font-semibold text-emerald-400">{inr(r.total_earnings)}</p>
+          <p className="font-semibold text-emerald-400">{usdt(r.total_earnings)}</p>
           {r.pending_earnings > 0 && (
-            <p className="text-xs text-slate-500">{inr(r.pending_earnings)} pending</p>
+            <p className="text-xs text-slate-500">{usdt(r.pending_earnings)} pending</p>
           )}
         </div>
       ),
@@ -221,7 +221,7 @@ export default function AffiliateListPage() {
   return (
     <AdminShell
       title="Affiliates"
-      subtitle={`${data?.summary?.active ?? 0} active · ${inr(data?.summary?.total_earnings ?? 0)} lifetime commission`}
+      subtitle={`${data?.summary?.active ?? 0} active · ${usdt(data?.summary?.total_earnings ?? 0)} lifetime commission`}
       actions={
         <Button icon={PlayCircle} busy={running} onClick={runCommissions}>
           Run commissions now

@@ -37,7 +37,7 @@ from core.affiliate_models import (Affiliate, AffiliateApiNonce, AffiliateClick,
                                    AffiliateReferral)
 from core.affiliate_services import (ZERO, get_program_settings, money,
                                      commission_rate_for, cpa_amount_for,
-                                     override_rate_for, notify, inr)
+                                     override_rate_for, notify, usdt)
 from core.models import GameRound, UserBonus
 from tenants.state import tenant_atomic
 
@@ -66,7 +66,7 @@ def _dedupe_key(entry_type: str, period: date, referral_id=None,
 
 def _write_entry(*, affiliate_id, entry_type, base_kind, base_amount, rate, amount,
                  period, referral_id=None, source_affiliate_id=None, run_id=None,
-                 currency='INR', dry_run=False) -> str:
+                 currency='USDT', dry_run=False) -> str:
     """Insert or update one ledger entry. Returns 'written', 'skipped' or 'noop'.
 
     The three-way branch is the whole safety story:
@@ -203,7 +203,7 @@ def _process_revenue_share(affiliate, referrals, period, start, end, settings,
             base_kind=AffiliateCommissionLedger.BaseKind.NGR,
             base_amount=base, rate=rate, amount=amount, period=period,
             referral_id=referral_id, run_id=run_id,
-            currency=affiliate.currency or 'INR', dry_run=dry_run,
+            currency=affiliate.currency or 'USDT', dry_run=dry_run,
         )
         if result == 'written':
             written += 1
@@ -253,7 +253,7 @@ def _process_cpa(affiliate, referrals, period, start, end, settings, run_id,
             base_kind=AffiliateCommissionLedger.BaseKind.FTD,
             base_amount=referral.first_deposit_amount, rate=ZERO, amount=bounty,
             period=period, referral_id=referral.id, run_id=run_id,
-            currency=affiliate.currency or 'INR', dry_run=dry_run,
+            currency=affiliate.currency or 'USDT', dry_run=dry_run,
         )
         if result == 'written':
             written += 1
@@ -331,7 +331,7 @@ def _process_overrides(period, settings, run_id, dry_run) -> tuple[int, int, Dec
                     base_kind=AffiliateCommissionLedger.BaseKind.NETWORK_COMMISSION,
                     base_amount=base, rate=rate, amount=amount, period=period,
                     source_affiliate_id=current.id, run_id=run_id,
-                    currency=parent.currency or 'INR', dry_run=dry_run,
+                    currency=parent.currency or 'USDT', dry_run=dry_run,
                 )
                 if result == 'written':
                     written += 1
@@ -545,7 +545,7 @@ def _notify_new_commission(start: date, end: date, run_id) -> None:
         if not row['total']:
             continue
         notify(row['affiliate_id'], 'commission', 'Commission calculated',
-               f'{row["n"]} new entries totalling {inr(row["total"])} '
+               f'{row["n"]} new entries totalling {usdt(row["total"])} '
                f'for {start.isoformat()}.',
                {'run_id': run_id, 'amount': float(row['total'])})
 

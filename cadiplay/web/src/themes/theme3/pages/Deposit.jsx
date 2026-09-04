@@ -110,7 +110,7 @@ export default function Theme3Deposit() {
       {step === 'amount' && (
         <div className="mt-6 space-y-6">
           <T3Card className="p-6">
-            <label className="text-sm text-[#6b6579]">Enter Amount (₹)</label>
+            <label className="text-sm text-[#6b6579]">Enter Amount (USDT)</label>
             <input
               type="number"
               value={amount}
@@ -127,18 +127,18 @@ export default function Theme3Deposit() {
                   onClick={() => setAmount(String(a))}
                   className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-[#4a4458] shadow-sm transition hover:border-[#c79a3b]/50 hover:text-[#9a7a24]"
                 >
-                  ₹{a.toLocaleString('en-IN')}
+                  USDT {a.toLocaleString('en-US')}
                 </button>
               ))}
             </div>
             {numAmount > 0 && (
               <div className="mt-4 rounded-xl border border-[#2fbf71]/25 bg-[#2fbf71]/10 p-4 text-sm text-[#1c8a52]">
-                <p>You deposit: ₹{numAmount.toLocaleString('en-IN')}</p>
-                {bonus > 0 && <p>You get bonus: ₹{bonus.toLocaleString('en-IN')}</p>}
-                <p className="font-black">Total playable: ₹{(numAmount + bonus).toLocaleString('en-IN')}</p>
+                <p>You deposit: USDT {numAmount.toLocaleString('en-US')}</p>
+                {bonus > 0 && <p>You get bonus: USDT {bonus.toLocaleString('en-US')}</p>}
+                <p className="font-black">Total playable: USDT {(numAmount + bonus).toLocaleString('en-US')}</p>
               </div>
             )}
-            <p className="mt-3 text-xs text-[#9a94a8]">Minimum deposit ₹{MIN_DEPOSIT}.</p>
+            <p className="mt-3 text-xs text-[#9a94a8]">Minimum deposit USDT {MIN_DEPOSIT}.</p>
           </T3Card>
 
           <button
@@ -158,7 +158,7 @@ export default function Theme3Deposit() {
           <T3Card className="p-6">
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#6b6579]">Depositing</span>
-              <span className="text-lg font-black text-[#9a7a24]">₹{numAmount.toLocaleString('en-IN')}</span>
+              <span className="text-lg font-black text-[#9a7a24]">USDT {numAmount.toLocaleString('en-US')}</span>
             </div>
             <h2 className="mt-5 text-sm font-black uppercase tracking-wide text-[#6b6579]">
               Choose payment method
@@ -200,7 +200,7 @@ export default function Theme3Deposit() {
               disabled={creating}
               className={`${t3BtnPrimary} flex-[2]`}
             >
-              {creating ? 'Starting…' : `Proceed to pay ₹${numAmount.toLocaleString('en-IN')}`}
+              {creating ? 'Starting…' : `Proceed to pay USDT ${numAmount.toLocaleString('en-US')}`}
             </button>
           </div>
         </div>
@@ -225,11 +225,11 @@ export default function Theme3Deposit() {
             <Clock className="mx-auto h-14 w-14 text-[#9a7a24]" />
             <h2 className="mt-4 text-xl font-black text-[#1b1726]">Deposit submitted</h2>
             <p className="mt-1 text-sm text-[#6b6579]">
-              ₹{Number(receipt.amount).toLocaleString('en-IN')} is awaiting confirmation. Your wallet will
+              USDT {Number(receipt.amount).toLocaleString('en-US')} is awaiting confirmation. Your wallet will
               be credited once our team approves the payment.
             </p>
             <div className="mt-6 space-y-2 rounded-xl border border-black/[0.06] bg-[#faf6ec] p-4 text-left text-sm">
-              <Row label="Amount" value={`₹${Number(receipt.amount).toLocaleString('en-IN')}`} />
+              <Row label="Amount" value={`USDT ${Number(receipt.amount).toLocaleString('en-US')}`} />
               <Row label="Reference" value={receipt.reference} />
               <Row label="Transaction ID" value={`#${transactionId}`} />
               <Row label="Status" value="Pending approval" last />

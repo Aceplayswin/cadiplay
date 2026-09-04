@@ -5,7 +5,7 @@ import { Archive, Copy, Check, Link2, QrCode, Search } from 'lucide-react';
 import { affiliateApi } from '../../../../services/affiliateApi';
 import { DataState } from '../../../../components/ui/DataState';
 import { confirmDialog, toast } from '../../../../lib/toast';
-import { inr, num } from '../../../../lib/format';
+import { usdt, num } from '../../../../lib/format';
 
 export default function LinkDirectoryTab({ links, loading, error, onReload, onShowQr }) {
   const [search, setSearch] = useState('');
@@ -137,7 +137,7 @@ export default function LinkDirectoryTab({ links, loading, error, onReload, onSh
                     <td className="p-4">
                       <span className="px-1.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold border border-emerald-100 dark:border-emerald-900/30">{convRate}%</span>
                     </td>
-                    <td className="p-4 font-bold text-brand-600 dark:text-brand-400 font-display">{inr(link.commission)}</td>
+                    <td className="p-4 font-bold text-brand-600 dark:text-brand-400 font-display">{usdt(link.commission)}</td>
                    
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-1.5">

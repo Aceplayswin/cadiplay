@@ -50,7 +50,7 @@ async function loadBranding() {
 
 export default async function manifest() {
   const b = (await loadBranding()) ?? {};
-  const name = b.product_name || 'Gaming App';
+  const name = b.product_name || 'Cadiplay';
 
   // Prefer the dedicated app icon, then the logo, for the installed/home-screen
   // icon; keep the bundled defaults appended as a guaranteed-valid fallback so

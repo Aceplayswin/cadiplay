@@ -1,14 +1,14 @@
 // Shared formatting. Mirrors cadiplay/admin's helpers so the two consoles read
-// identically — the affiliate programme is INR like the rest of the platform.
+// identically — the affiliate programme is USDT like the rest of the platform.
 
-export function inr(value) {
-  return `₹${Number(value || 0).toLocaleString('en-IN', {
+export function usdt(value) {
+  return `USDT ${Number(value || 0).toLocaleString('en-US', {
     maximumFractionDigits: 2,
   })}`;
 }
 
 export function num(value) {
-  return Number(value || 0).toLocaleString('en-IN');
+  return Number(value || 0).toLocaleString('en-US');
 }
 
 export function pct(value, digits = 1) {

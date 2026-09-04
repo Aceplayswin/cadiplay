@@ -46,7 +46,7 @@ export function GetAppModal({ open, onClose }) {
 
   if (!mounted || !open) return null;
 
-  const name = branding.product_name || 'the app';
+  const name = branding.product_name || 'Cadiplay';
 
   const handleInstall = async () => {
     setBusy(true);

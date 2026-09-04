@@ -16,7 +16,7 @@ const STEPS = [
 
 export default function OnboardingShell({ currentStep, children }) {
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'the platform';
+  const brandName = productName || 'Cadiplay';
   return (
     <div className="min-h-screen text-slate-800 py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       <div className="max-w-2xl w-full mx-auto relative z-10">

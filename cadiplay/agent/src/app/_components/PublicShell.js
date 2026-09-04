@@ -27,7 +27,7 @@ export function PublicHeader({ active }) {
           </span>
           <span>
             <span className="block text-lg font-bold leading-none text-ink">
-              {(productName || 'the platform').toUpperCase()}
+              {(productName || 'Cadiplay').toUpperCase()}
             </span>
             <span className="block text-[10px] uppercase tracking-[0.18em] text-blue-400">
               Agent Network

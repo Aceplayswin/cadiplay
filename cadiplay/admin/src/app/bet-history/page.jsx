@@ -19,7 +19,7 @@ import {
   Pagination,
   TxReference,
   toast,
-  inr,
+  usdt,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -47,14 +47,14 @@ const ROUND_COLUMNS = [
     label: 'Time',
     render: (r) => <span className="text-slate-400">{fmtDate(r.created_at)}</span>,
   },
-  { key: 'bet_amount', label: 'Stake', align: 'right', render: (r) => inr(r.bet_amount) },
-  { key: 'win_amount', label: 'Win', align: 'right', render: (r) => inr(r.win_amount) },
+  { key: 'bet_amount', label: 'Stake', align: 'right', render: (r) => usdt(r.bet_amount) },
+  { key: 'win_amount', label: 'Win', align: 'right', render: (r) => usdt(r.win_amount) },
   {
     key: 'balance_after',
     label: 'Balance after',
     align: 'right',
     render: (r) => (
-      <span className="text-slate-400">{r.balance_after == null ? '—' : inr(r.balance_after)}</span>
+      <span className="text-slate-400">{r.balance_after == null ? '—' : usdt(r.balance_after)}</span>
     ),
   },
   {
@@ -68,7 +68,7 @@ const ROUND_COLUMNS = [
       ) : (
         <span className={r.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
           {r.profit_loss >= 0 ? '+' : '−'}
-          {inr(Math.abs(r.profit_loss))}
+          {usdt(Math.abs(r.profit_loss))}
         </span>
       ),
   },
@@ -143,7 +143,7 @@ export default function AdminBetHistoryPage() {
         </span>
       ),
     },
-    { key: 'total_bet', label: 'Bet Amount', render: (r) => inr(r.total_bet) },
+    { key: 'total_bet', label: 'Bet Amount', render: (r) => usdt(r.total_bet) },
     { key: 'result', label: 'Result', render: (r) => <ResultBadge record={r} /> },
     {
       key: 'last_balance',
@@ -152,7 +152,7 @@ export default function AdminBetHistoryPage() {
       // round, so money on each account can be tracked over time.
       render: (r) => (
         <span className="font-semibold text-white">
-          {r.last_balance != null ? inr(r.last_balance) : '—'}
+          {r.last_balance != null ? usdt(r.last_balance) : '—'}
         </span>
       ),
     },
@@ -186,12 +186,12 @@ export default function AdminBetHistoryPage() {
     <AdminShell title="Bet History" subtitle="Play sessions across all players">
       {summary && (
         <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard label="Sessions" value={total.toLocaleString('en-IN')} icon={Dices} />
-          <StatCard label="Total staked" value={inr(summary.total_bet)} accent="sky" />
-          <StatCard label="Total paid out" value={inr(summary.total_win)} accent="rose" />
+          <StatCard label="Sessions" value={total.toLocaleString('en-US')} icon={Dices} />
+          <StatCard label="Total staked" value={usdt(summary.total_bet)} accent="sky" />
+          <StatCard label="Total paid out" value={usdt(summary.total_win)} accent="rose" />
           <StatCard
             label="Gross gaming revenue"
-            value={inr(summary.gross_gaming_revenue)}
+            value={usdt(summary.gross_gaming_revenue)}
             accent="emerald"
             hint="Stakes minus payouts"
           />
@@ -306,7 +306,7 @@ function ResultBadge({ record }) {
   return (
     <span className={`font-semibold ${up ? 'text-emerald-400' : 'text-rose-400'}`}>
       {up ? '+' : '−'}
-      {inr(Math.abs(record.profit_loss))}
+      {usdt(Math.abs(record.profit_loss))}
     </span>
   );
 }

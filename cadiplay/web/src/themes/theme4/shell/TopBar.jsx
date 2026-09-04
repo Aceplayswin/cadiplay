@@ -66,7 +66,7 @@ export function Theme4TopBar() {
   const wallet = useAuthStore((s) => s.wallet);
   const isHydrated = useAuthStore((s) => s.isHydrated);
   // Real balance, not `available` — a pending withdrawal only holds funds, it
-  // does not debit them, so netting the hold off made this read ₹0.00.
+  // does not debit them, so netting the hold off made this read USDT 0.00.
   const balance = wallet?.main ?? wallet?.real ?? 0;
   const { tryDemo, demoLoading } = useDemoLogin({ redirectTo: '/' });
   const [getAppOpen, setGetAppOpen] = useState(false);
@@ -124,7 +124,7 @@ export function Theme4TopBar() {
                 <div className="hidden items-center gap-2 rounded border border-white/25 bg-[#0a5560]/60 py-1 pl-3 pr-1 sm:flex">
                   <Wallet className="h-4 w-4 text-white/80" />
                   <span className="text-sm font-black text-white">
-                    ₹{Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    USDT {Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                   <Link
                     href="/deposit"

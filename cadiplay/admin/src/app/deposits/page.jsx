@@ -14,7 +14,7 @@ import {
   confirmDialog,
   toast,
   useAdminData,
-  inr,
+  usdt,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -28,7 +28,7 @@ export default function AdminDepositsPage() {
   const confirm = async (row) => {
     const ok = await confirmDialog({
       title: 'Confirm deposit?',
-      text: `Credit ${inr(row.amount)} to ${row.full_name || row.username}'s wallet.`,
+      text: `Credit ${usdt(row.amount)} to ${row.full_name || row.username}'s wallet.`,
       confirmText: 'Confirm & credit',
       icon: 'question',
     });
@@ -80,7 +80,7 @@ export default function AdminDepositsPage() {
         </div>
       ),
     },
-    { key: 'amount', label: 'Amount', render: (r) => <span className="font-semibold text-emerald-400">{inr(r.amount)}</span> },
+    { key: 'amount', label: 'Amount', render: (r) => <span className="font-semibold text-emerald-400">{usdt(r.amount)}</span> },
     {
       key: 'payment_method',
       label: 'Method',
@@ -149,7 +149,7 @@ export default function AdminDepositsPage() {
       >
         <form id="reject-deposit-form" onSubmit={reject} className="space-y-4">
           <p className="text-sm text-slate-400">
-            Rejecting marks this {inr(rejectRow?.amount)} deposit as rejected. No funds are credited.
+            Rejecting marks this {usdt(rejectRow?.amount)} deposit as rejected. No funds are credited.
           </p>
           <Field label="Reason (optional)">
             <Textarea

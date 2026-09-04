@@ -130,7 +130,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mx-auto mt-5 max-w-2xl text-base text-ink-muted sm:text-lg">
-              The {productName || 'platform'} agent panel gives you a live view of every bet under
+              The {productName || 'Cadiplay'} agent panel gives you a live view of every bet under
               you, a downline you control, and the reports to settle it — sports
               and casino, in one place.
             </p>

@@ -12,7 +12,7 @@ import { Gift, Sparkles } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 
-const inr = (n) => `₹${Number(n ?? 0).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-US')}`;
 
 const SOURCE_LABEL = {
   joining: 'Welcome bonus',
@@ -70,7 +70,7 @@ export default function Theme1Bonus() {
           <p className="text-[0.65rem] uppercase tracking-wide text-brand-300">
             Bonus balance
           </p>
-          <p className="mt-1 text-3xl font-bold text-white">{inr(wallet?.bonus)}</p>
+          <p className="mt-1 text-3xl font-bold text-white">{usdt(wallet?.bonus)}</p>
           <p className="mt-1 text-xs text-slate-500">
             Becomes withdrawable once wagering is cleared
           </p>
@@ -80,7 +80,7 @@ export default function Theme1Bonus() {
             Real balance
           </p>
           <p className="mt-1 text-3xl font-bold text-white">
-            {inr(wallet?.real ?? wallet?.main)}
+            {usdt(wallet?.real ?? wallet?.main)}
           </p>
           <p className="mt-1 text-xs text-slate-500">Yours to withdraw any time</p>
         </div>
@@ -136,7 +136,7 @@ function BonusCard({ bonus }) {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-xl font-bold text-brand-300">{inr(bonus.amount)}</p>
+          <p className="text-xl font-bold text-brand-300">{usdt(bonus.amount)}</p>
           <span
             className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-[0.65rem] font-semibold capitalize ${tone}`}
           >
@@ -150,7 +150,7 @@ function BonusCard({ bonus }) {
           <div className="flex items-center justify-between text-xs text-slate-400">
             <span>Wagering progress</span>
             <span>
-              {inr(done)} / {inr(required)}
+              {usdt(done)} / {usdt(required)}
             </span>
           </div>
           <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-white/[0.06]">

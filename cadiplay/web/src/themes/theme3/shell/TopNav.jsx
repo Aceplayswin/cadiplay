@@ -30,10 +30,10 @@ function BrandMark({ name }) {
   return (
     <Link href="/" className="flex shrink-0 items-center gap-2">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-[#e9c56b] to-[#b8862f] text-sm font-black text-[#241b0e] shadow-[0_6px_16px_-6px_rgba(199,154,59,0.9)]">
-        {(name || 'V').charAt(0).toUpperCase()}
+        {(name || 'CADIPLAY').charAt(0).toUpperCase()}
       </span>
       <span className="hidden font-display text-base font-black tracking-tight text-[#1b1726] sm:block">
-        {name || 'VELPLAY'}
+        {name || 'CADIPLAY'}
       </span>
     </Link>
   );
@@ -50,7 +50,7 @@ export function Theme3TopNav() {
   const wallet = useAuthStore((s) => s.wallet);
   const isHydrated = useAuthStore((s) => s.isHydrated);
   // Real balance, not `available` — a pending withdrawal only holds funds, it
-  // does not debit them, so netting the hold off made this read ₹0.00.
+  // does not debit them, so netting the hold off made this read USDT 0.00.
   const balance = wallet?.main ?? wallet?.real ?? 0;
   const { tryDemo, demoLoading } = useDemoLogin({ redirectTo: '/' });
 
@@ -111,7 +111,7 @@ export function Theme3TopNav() {
               <div className="hidden items-center gap-2 rounded-full border border-black/[0.06] bg-white py-1 pl-3 pr-1 shadow-sm sm:flex">
                 <Wallet className="h-4 w-4 text-[#c79a3b]" />
                 <span className="text-sm font-black text-[#1b1726]">
-                  ₹{Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  USDT {Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <Link
                   href="/deposit"

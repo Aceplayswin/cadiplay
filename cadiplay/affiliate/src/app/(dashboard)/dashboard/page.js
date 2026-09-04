@@ -5,7 +5,7 @@ import React from 'react';
 import {
   MousePointerClick,
   UserPlus,
-  BadgeDollarSign,
+  Coins,
   Activity,
   TrendingUp,
   Wallet,
@@ -44,7 +44,7 @@ export default function DashboardPage() {
   const cards = [
     { key: 'clicks', title: 'Total Clicks', icon: MousePointerClick },
     { key: 'signups', title: 'Signups', icon: UserPlus },
-    { key: 'ftds', title: 'First Deposits (FTDs)', icon: BadgeDollarSign },
+    { key: 'ftds', title: 'First Deposits (FTDs)', icon: Coins },
     { key: 'active_players', title: 'Active Players', icon: Activity },
     { key: 'commission', title: 'Commission (This Period)', icon: TrendingUp, isCurrency: true },
     { key: 'pending_payout', title: 'Pending Payout', icon: Wallet, isCurrency: true },
@@ -76,7 +76,7 @@ export default function DashboardPage() {
           {me && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 dark:bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-400/20 dark:border-brand-500/30">
               {me.commission_type === 'cpa'
-                ? `CPA: ₹${me.cpa_amount}`
+                ? `CPA: USDT ${me.cpa_amount}`
                 : `Rev Share: ${me.commission_rate}%`}
             </span>
           )}

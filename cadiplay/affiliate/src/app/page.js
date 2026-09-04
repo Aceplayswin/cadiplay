@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchProgram } from '../services/affiliateApi';
-import { inr } from '../lib/format';
+import { usdt } from '../lib/format';
 import { useBranding } from '@/hooks/useBranding';
 import {
   TrendingUp,
-  DollarSign,
+  Coins,
   Zap,
   ArrowRight,
   Layers,
@@ -25,7 +25,7 @@ import {
 
 export default function LandingPage() {
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'the platform';
+  const brandName = productName || 'Cadiplay';
 
 
   // Inputs for the earnings calculator down in the "Calculator" section
@@ -36,7 +36,7 @@ export default function LandingPage() {
   const [dealType, setDealType] = useState('revshare');                 // 'revshare' | 'cpa'
 
   // Programme terms come from the API, so the calculator quotes the rates the
-  // platform actually pays. They were hardcoded at 45% / $120, which drifted the
+  // platform actually pays. They were hardcoded at 45% / USDT 120, which drifted the
   // moment anyone changed the real defaults in admin.
   const [programme, setProgramme] = useState(null);
 
@@ -100,7 +100,7 @@ export default function LandingPage() {
             <img src={logoUrl || '/logo/image.png'} alt={brandName} className="h-9 w-auto object-contain"
               onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
             <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-brand-600 to-brand-300 hidden items-center justify-center">
-              <DollarSign className="w-5 h-5 text-black" />
+              <Coins className="w-5 h-5 text-black" />
 
             </div>
             <div>
@@ -335,7 +335,7 @@ export default function LandingPage() {
                 </button>
                 <button onClick={() => setDealType('cpa')}
                   className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${dealType === 'cpa' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>
-                  {inr(cpaAmount)} CPA
+                  {usdt(cpaAmount)} CPA
                 </button>
               </div>
             </div>
@@ -365,7 +365,7 @@ export default function LandingPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1.5">
                     <span className="text-slate-600">Avg. deposit</span>
-                    <span className="font-bold text-brand-600 font-display">{inr(avgDeposit)}</span>
+                    <span className="font-bold text-brand-600 font-display">{usdt(avgDeposit)}</span>
                   </div>
                   <input type="range" min="50"
                     max="1000" step="25"
@@ -382,7 +382,7 @@ export default function LandingPage() {
                 <div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Monthly Earnings</div>
                   <div className="text-3xl font-extrabold text-brand-600 font-display mt-1">
-                    {inr(estimatedEarnings)}
+                    {usdt(estimatedEarnings)}
                   </div>
                 </div>
                 <Link href="/apply" className="px-5 py-2.5 text-xs font-bold text-black bg-gradient-to-r from-brand-400 to-brand-500 rounded-lg shadow-md hover:scale-105 transition-all shrink-0">

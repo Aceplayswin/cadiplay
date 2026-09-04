@@ -10,7 +10,7 @@ import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { usePromotions } from '@/hooks/usePromotions';
 
-const inr = (n) => `₹${Number(n || 0).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n || 0).toLocaleString('en-US')}`;
 
 // Map a bonus type to a short tag label + the most sensible call-to-action.
 const TYPE_LABEL = {
@@ -28,10 +28,10 @@ const TYPE_LABEL = {
 
 function rewardText(p) {
   if (p.value_type === 'percentage') {
-    const cap = p.max_bonus_cap ? ` up to ${inr(p.max_bonus_cap)}` : '';
+    const cap = p.max_bonus_cap ? ` up to ${usdt(p.max_bonus_cap)}` : '';
     return `${p.value_amount}% bonus${cap}`;
   }
-  return `${inr(p.value_amount)} bonus`;
+  return `${usdt(p.value_amount)} bonus`;
 }
 
 function ctaFor(p) {
@@ -57,7 +57,7 @@ export default function Theme1Promotions() {
         method: 'POST',
         body: JSON.stringify({ code: code.trim() }),
       });
-      setMsg({ type: 'ok', text: `${res.title} claimed — ${inr(res.amount)} added to your bonus balance.` });
+      setMsg({ type: 'ok', text: `${res.title} claimed — ${usdt(res.amount)} added to your bonus balance.` });
       setCode('');
     } catch (err) {
       setMsg({ type: 'err', text: err instanceof Error ? err.message : 'Could not claim this code.' });
@@ -135,7 +135,7 @@ export default function Theme1Promotions() {
                 <p className="mt-1 text-sm text-brand-300">{rewardText(p)}</p>
                 {p.description && <p className="mt-1 text-sm text-slate-400">{p.description}</p>}
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-500">
-                  {p.min_deposit > 0 && <span>Min deposit {inr(p.min_deposit)}</span>}
+                  {p.min_deposit > 0 && <span>Min deposit {usdt(p.min_deposit)}</span>}
                   {p.wagering_multiplier > 0 && <span>Wagering {p.wagering_multiplier}×</span>}
                   {p.has_promo_code && <span className="text-brand-400">Promo code required</span>}
                 </div>

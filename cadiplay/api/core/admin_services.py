@@ -62,7 +62,7 @@ def _serialize_user(u: User, wallet: Wallet | None = None, user_settings: UserSe
         'phone': u.phone,
         'email': u.email,
         'country_code': u.country_code,
-        'currency': prefs.currency if prefs else 'INR',
+        'currency': prefs.currency if prefs else 'USDT',
         'kyc_status': prefs.kyc_status if prefs else UserSetting.KycStatus.NONE,
         'account_status': u.account_status,
         'email_verified': prefs.email_verified if prefs else False,

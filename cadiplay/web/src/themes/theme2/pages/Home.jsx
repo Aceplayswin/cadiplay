@@ -50,8 +50,8 @@ const TAB_CATEGORIES = {
 };
 
 const PROMOS = [
-  { title: 'Welcome Bonus', amount: '100% up to $1000', cta: 'Claim Now' },
-  { title: 'Reload Bonus', amount: '50% up to $500', cta: 'Claim Now' },
+  { title: 'Welcome Bonus', amount: '100% up to USDT 1000', cta: 'Claim Now' },
+  { title: 'Reload Bonus', amount: '50% up to USDT 500', cta: 'Claim Now' },
   { title: 'Cashback Bonus', amount: '10% Weekly Cashback', cta: 'Claim Now' },
   { title: 'VIP Exclusive', amount: 'Up to 35% Rakeback', cta: 'Claim Now' },
 ];
@@ -67,11 +67,11 @@ const CHAT = [
 ];
 
 const BIG_WINS = [
-  { user: 'Brooklyn S.', game: 'Book of Dead', amount: '$12,540' },
-  { user: 'Wade Warren', game: 'Sweet Bonanza', amount: '$8,230' },
-  { user: 'Esther H.', game: 'Gates of Olympus', amount: '$6,780' },
-  { user: 'Dianne Lane', game: 'Mega Wheel', amount: '$5,100' },
-  { user: 'Cody Fisher', game: 'Sugar Rush', amount: '$4,890' },
+  { user: 'Brooklyn S.', game: 'Book of Dead', amount: 'USDT 12,540' },
+  { user: 'Wade Warren', game: 'Sweet Bonanza', amount: 'USDT 8,230' },
+  { user: 'Esther H.', game: 'Gates of Olympus', amount: 'USDT 6,780' },
+  { user: 'Dianne Lane', game: 'Mega Wheel', amount: 'USDT 5,100' },
+  { user: 'Cody Fisher', game: 'Sugar Rush', amount: 'USDT 4,890' },
 ];
 
 /* ── small pieces ── */
@@ -440,7 +440,7 @@ export default function Theme2Home() {
           </p>
           <div className="space-y-2 border-t border-white/5 pt-3 text-xs">
             <div className="flex justify-between text-slate-400"><span>Total Odds</span><span className="font-bold text-white">0.00</span></div>
-            <div className="flex justify-between text-slate-400"><span>Total Bet</span><span className="font-bold text-white">$0.00</span></div>
+            <div className="flex justify-between text-slate-400"><span>Total Bet</span><span className="font-bold text-white">USDT 0.00</span></div>
           </div>
           <button className="mt-3 w-full rounded-lg bg-gradient-to-r from-amber-400 to-amber-600 py-2.5 text-sm font-bold text-black">Place Bet</button>
         </div>

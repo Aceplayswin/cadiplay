@@ -269,7 +269,7 @@ export default function Theme1Home() {
                     </h1>
                     <p className="mt-4 max-w-md text-sm text-muted">
                       Sign up in seconds and claim up to{' '}
-                      <span className="font-bold text-brand-300">₹5,000</span> in instant bonus credits — no wagering tricks.
+                      <span className="font-bold text-brand-300">USDT 5,000</span> in instant bonus credits — no wagering tricks.
                     </p>
                   </div>
                   <div className="relative mt-8 flex flex-wrap items-center gap-3">
@@ -277,7 +277,7 @@ export default function Theme1Home() {
                       href="/register"
                       className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-brand-400 to-brand-600 px-6 py-3 text-sm font-bold text-surface-950 shadow-glow transition hover:from-brand-300 hover:to-brand-500"
                     >
-                      Claim ₹5,000 <ArrowRight className="h-4 w-4" />
+                      Claim USDT 5,000 <ArrowRight className="h-4 w-4" />
                     </a>
                     <span className="text-xs font-medium text-muted">⚡ Credited instantly</span>
                   </div>
@@ -289,14 +289,14 @@ export default function Theme1Home() {
                     <div className="pointer-events-none absolute -right-6 -top-6 h-32 w-32 rounded-full bg-brand-500/25 blur-2xl" />
                     <p className="text-xs font-bold uppercase tracking-widest text-brand-300">Deposit bonus</p>
                     <p className="mt-2 font-display text-5xl font-black text-app-fg">
-                      ₹100<span className="text-2xl text-brand-300">/-</span>
+                      USDT 100
                     </p>
                     <p className="mt-1 text-xs font-semibold uppercase tracking-wider text-muted">Extra · No wagering</p>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="rounded-3xl border border-hairline/[0.07] bg-panel/70 p-5">
                       <Trophy className="h-5 w-5 text-brand-400" />
-                      <p className="mt-3 font-display text-2xl font-black text-app-fg">₹8.4Cr</p>
+                      <p className="mt-3 font-display text-2xl font-black text-app-fg">USDT 8.4M</p>
                       <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted/80">Paid this week</p>
                     </div>
                     <div className="rounded-3xl border border-hairline/[0.07] bg-panel/70 p-5">

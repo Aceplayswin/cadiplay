@@ -58,7 +58,7 @@ export default function Theme5Profile() {
             className="flex justify-between rounded-lg border border-black/[0.06] bg-white px-4 py-3 text-sm shadow-sm"
           >
             <span className="capitalize text-[#0f1b33]">{t.type}</span>
-            <span className="font-black text-[#0f1b33]">₹{parseFloat(t.amount).toLocaleString('en-IN')}</span>
+            <span className="font-black text-[#0f1b33]">USDT {parseFloat(t.amount).toLocaleString('en-US')}</span>
             <span className="text-[#94a3b8]">{t.status}</span>
           </li>
         ))}

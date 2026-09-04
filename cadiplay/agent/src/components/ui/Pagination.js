@@ -18,8 +18,8 @@ export function Pagination({ page, total, perPage, onPage, noun = 'row' }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 px-1 py-3 text-sm">
       <p className="text-ink-muted">
-        Showing {first.toLocaleString('en-IN')}–{last.toLocaleString('en-IN')} of{' '}
-        {total.toLocaleString('en-IN')} {noun}
+        Showing {first.toLocaleString('en-US')}–{last.toLocaleString('en-US')} of{' '}
+        {total.toLocaleString('en-US')} {noun}
         {total === 1 ? '' : 's'}
       </p>
       <div className="flex items-center gap-1">

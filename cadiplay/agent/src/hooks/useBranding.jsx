@@ -3,9 +3,10 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { fetchBranding } from '@/services/tenant';
 
-// Neutral defaults so the UI never hardcodes a brand and never flashes empty.
+// Defaults so the UI never flashes empty before branding loads; Cadiplay is the
+// platform's default brand name.
 const DEFAULT_BRANDING = {
-  product_name: '',
+  product_name: 'Cadiplay',
   logo_url: '',
   favicon_url: '',
 };

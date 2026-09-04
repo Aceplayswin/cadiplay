@@ -15,7 +15,7 @@ import {
   ErrorState,
   toast,
   fmtDate,
-  inr,
+  usdt,
   useAdminData,
 } from '@/components/admin/AdminShell';
 import { adminApi } from '@/services/adminApi';
@@ -275,7 +275,7 @@ export default function AgentApplicationsPage() {
                   <option value="">None — open at the top of the tree</option>
                   {parents.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} ({p.level_label}) · {inr(p.available_credit)} free
+                      {p.name} ({p.level_label}) · {usdt(p.available_credit)} free
                     </option>
                   ))}
                 </Select>
@@ -295,7 +295,7 @@ export default function AgentApplicationsPage() {
                   </Select>
                 </Field>
 
-                <Field label="Opening credit (₹)">
+                <Field label="Opening credit (USDT)">
                   <Input
                     type="number"
                     min="0"
@@ -306,7 +306,7 @@ export default function AgentApplicationsPage() {
               </div>
               <p className="-mt-2 text-xs text-slate-500">
                 {selectedParent
-                  ? `Debited from ${selectedParent.name}, who has ${inr(selectedParent.available_credit)} free of open bets.`
+                  ? `Debited from ${selectedParent.name}, who has ${usdt(selectedParent.available_credit)} free of open bets.`
                   : 'Injected by the platform — a root account has no upline to debit.'}
               </p>
 

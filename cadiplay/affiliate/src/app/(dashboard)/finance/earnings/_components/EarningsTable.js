@@ -1,6 +1,6 @@
 'use client';
 
-import { fmtDateShort, inr, label } from '../../../../../lib/format';
+import { fmtDateShort, usdt, label } from '../../../../../lib/format';
 
 const STATUS_BADGES = {
   paid:        'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30',
@@ -67,7 +67,7 @@ export default function EarningsTable({ items }) {
                   {e.rate > 0 ? `${e.rate}%` : '—'}
                 </td>
                 <td className={`p-4 font-black font-display text-sm ${e.amount >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600'}`}>
-                  {e.amount >= 0 ? `+${inr(e.amount)}` : `-${inr(Math.abs(e.amount))}`}
+                  {e.amount >= 0 ? `+${usdt(e.amount)}` : `-${usdt(Math.abs(e.amount))}`}
                 </td>
                 <td className="p-4">
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize whitespace-nowrap ${STATUS_BADGES[e.status] || STATUS_BADGES.pending}`}>

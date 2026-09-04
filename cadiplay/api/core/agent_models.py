@@ -117,7 +117,7 @@ class Agent(models.Model):
     must_change_password = models.BooleanField(default=False)
 
     timezone = models.CharField(max_length=64, default='Asia/Kolkata')
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USDT')
     contact_email = models.CharField(max_length=255, null=True, blank=True)
     contact_phone = models.CharField(max_length=20, null=True, blank=True)
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, ChevronRight } from 'lucide-react';
-import { fmtDateShort, inr, label } from '../../../../lib/format';
+import { fmtDateShort, usdt, label } from '../../../../lib/format';
 
 // Keys match the API's kyc_status values.
 const KYC_STYLES = {
@@ -81,9 +81,9 @@ export default function ReferralTable({ players, search, onSearchChange, onSelec
                     </span>
                   </td>
                   <td className="p-4 text-slate-600 dark:text-slate-300 font-medium">{p.ftd_at ? fmtDateShort(p.ftd_at) : '—'}</td>
-                  <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{p.ftd_amount > 0 ? inr(p.ftd_amount) : '—'}</td>
-                  <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{inr(p.lifetime_deposits)}</td>
-                  <td className="p-4 font-bold text-brand-600 dark:text-brand-400 font-display">{inr(p.lifetime_commission)}</td>
+                  <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{p.ftd_amount > 0 ? usdt(p.ftd_amount) : '—'}</td>
+                  <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{usdt(p.lifetime_deposits)}</td>
+                  <td className="p-4 font-bold text-brand-600 dark:text-brand-400 font-display">{usdt(p.lifetime_commission)}</td>
                   <td className="p-4">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border capitalize ${STATUS_STYLES[p.status]}`}>
                       {p.status}

@@ -52,7 +52,7 @@ CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 SETTINGS_KEY = 'affiliate_program'
 
 # Fallbacks used only when the platform_settings row is missing entirely (a DB
-# that predates the migration). Amounts are INR.
+# that predates the migration). Amounts are USDT.
 DEFAULT_PROGRAM_SETTINGS = {
     'default_commission_type': 'revenue_share',
     'default_commission_rate': 30,
@@ -72,7 +72,7 @@ DEFAULT_PROGRAM_SETTINGS = {
     'fraud_block_disposable_emails': True,
     'fraud_flag_self_referral': True,
     'click_retention_days': 180,
-    'currency': 'INR',
+    'currency': 'USDT',
 }
 
 DISPOSABLE_EMAIL_DOMAINS = {
@@ -136,15 +136,15 @@ def money(value) -> Decimal:
 def f(value) -> float:
     """Serialize a Decimal for JSON.
 
-    The house convention. Loses precision past 2^53, which INR amounts at this
+    The house convention. Loses precision past 2^53, which USDT amounts at this
     scale will not reach.
     """
     return float(value or 0)
 
 
-def inr(value) -> str:
+def usdt(value) -> str:
     """Server-formatted money, for labels the client shows verbatim."""
-    return f'₹{Decimal(str(value or 0)):,.2f}'.replace('.00', '')
+    return f'USDT {Decimal(str(value or 0)):,.2f}'.replace('.00', '')
 
 
 def _rate_or_default(affiliate_value, default_value) -> Decimal:
@@ -367,7 +367,7 @@ def serialize_ledger_entry(entry: AffiliateCommissionLedger,
         # A label rather than the client re-deriving one: the server knows
         # whether the base is NGR or an FTD, and the currency.
         'base_label': f'{_BASE_LABELS.get(entry.base_kind, entry.base_kind)}: '
-                      f'{inr(entry.base_amount)}',
+                      f'{usdt(entry.base_amount)}',
         'rate': f(entry.rate),
         'amount': f(entry.amount),
         'currency': entry.currency,
@@ -944,7 +944,7 @@ def record_deposit(user_id: int, amount, transaction_id=None) -> bool:
     try/except, so this can never roll back a credited deposit.
 
     Deliberately does **not** award CPA. The nightly run does that, so every
-    rupee of commission passes through the same pending -> approved -> paid
+    unit of commission passes through the same pending -> approved -> paid
     lifecycle. Paying a bounty inline would create money the approval workflow
     never sees.
     """
@@ -972,7 +972,7 @@ def record_deposit(user_id: int, amount, transaction_id=None) -> bool:
 
     if referral.first_deposit_at is None:
         notify(referral.affiliate_id, 'ftd', 'First deposit',
-               f'A referred player made their first deposit of {inr(amount)}.',
+               f'A referred player made their first deposit of {usdt(amount)}.',
                {'referral_id': referral.id})
     return True
 
@@ -1189,7 +1189,7 @@ def get_activity(affiliate: Affiliate, limit: int = 12) -> dict:
             events.append({
                 'type': 'deposit',
                 'text': f'P-{referral.user_id:05d} deposited '
-                        f'{inr(referral.first_deposit_amount)}',
+                        f'{usdt(referral.first_deposit_amount)}',
                 'at': _iso(referral.first_deposit_at),
             })
     for payout in AffiliatePayout.objects.filter(
@@ -1197,7 +1197,7 @@ def get_activity(affiliate: Affiliate, limit: int = 12) -> dict:
     ).order_by('-created_at')[:limit]:
         events.append({
             'type': 'payout',
-            'text': f'Payout {inr(payout.amount)} — {payout.status}',
+            'text': f'Payout {usdt(payout.amount)} — {payout.status}',
             'at': _iso(payout.processed_at or payout.requested_at or payout.created_at),
         })
 
@@ -1450,13 +1450,13 @@ def get_referral_detail(affiliate: Affiliate, referral_id: int) -> dict:
     if referral.first_deposit_at:
         activity.append({
             'type': 'deposit',
-            'text': f'First deposit of {inr(referral.first_deposit_amount)}',
+            'text': f'First deposit of {usdt(referral.first_deposit_amount)}',
             'at': _iso(referral.first_deposit_at),
         })
     for entry in entries[:5]:
         activity.append({
             'type': 'commission',
-            'text': f'{entry.get_entry_type_display()} of {inr(entry.amount)}',
+            'text': f'{entry.get_entry_type_display()} of {usdt(entry.amount)}',
             'at': _iso(entry.created_at),
         })
     activity.sort(key=lambda e: e['at'] or '', reverse=True)
@@ -1762,8 +1762,8 @@ def request_payout(affiliate: Affiliate, *, amount=None, method_id=None) -> dict
             raise ValueError('You have no approved commission available to withdraw.')
         if available < threshold:
             raise ValueError(
-                f'Minimum payout is {inr(threshold)}. Your available balance is '
-                f'{inr(available)}.'
+                f'Minimum payout is {usdt(threshold)}. Your available balance is '
+                f'{usdt(available)}.'
             )
 
         # A partial amount claims whole entries up to that value: splitting a
@@ -1779,7 +1779,7 @@ def request_payout(affiliate: Affiliate, *, amount=None, method_id=None) -> dict
             claimed.append(entry.id)
             running += entry.amount
         if running < threshold:
-            raise ValueError(f'Minimum payout is {inr(threshold)}.')
+            raise ValueError(f'Minimum payout is {usdt(threshold)}.')
 
         payout = AffiliatePayout.objects.create(
             affiliate_id=affiliate.id,
