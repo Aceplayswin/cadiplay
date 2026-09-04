@@ -209,7 +209,7 @@ LOCK TABLES `products` WRITE;
 /*!40000 ALTER TABLE `products` DISABLE KEYS */;
 set autocommit=0;
 INSERT INTO `products` (`id`,`name`,`api_key`,`status`,`created_at`,`updated_at`) VALUES
-(1,'Ranamatch','pk_a945fd8c6ae803dabeab492ea9cad9de1ff8b35f318d1f60','active','2026-07-13 14:36:03','2026-07-13 14:36:03');
+(1,'cadiplay','pk_a945fd8c6ae803dabeab492ea9cad9de1ff8b35f318d1f60','active','2026-07-13 14:36:03','2026-07-13 14:36:03');
 /*!40000 ALTER TABLE `products` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -242,7 +242,7 @@ LOCK TABLES `urls` WRITE;
 /*!40000 ALTER TABLE `urls` DISABLE KEYS */;
 set autocommit=0;
 INSERT INTO `urls` VALUES
-(1,1,'https://ranamatch.com/','https://api.ranamatch.com/','2026-07-13 14:36:03','2026-07-13 14:36:03');
+(1,1,'https://cadiplay.com/','https://api.cadiplay.com/','2026-07-13 14:36:03','2026-07-13 14:36:03');
 /*!40000 ALTER TABLE `urls` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;

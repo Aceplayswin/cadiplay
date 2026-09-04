@@ -738,7 +738,7 @@ searchable round history.
 **Port 8000.** Owns the master DB and provisions each product's database **once** at
 creation. At runtime it never connects to a product DB — it reads product data over the
 signed webhook (§5.2) and delivers each product its config over HTTP (§5.1). Deployed at
-`ranamatch.com`.
+`cadiplay.com`.
 
 **App layout:** `config/` (settings, urls, health), `core/` (per‑product model mirror used
 by the webhook/data reads; `seed_master` command), `middleware/db_router.py`, `services/`
@@ -1478,7 +1478,7 @@ npm run android        # or: npm run ios
 
 ### Production notes (from code/READMEs)
 
-- Super Admin → `ranamatch.com`; products → `<product>.com`.
+- Super Admin → `cadiplay.com`; products → `<product>.com`.
 - Product API HTTP path can run under **gunicorn**; WebSockets need the **Daphne/ASGI**
   path. Run behind a reverse proxy that routes `/ws` to the ASGI server.
 - Set `NODE_ENV=production` (turns off `DEBUG` and CORS allow‑all — you must then set

@@ -1181,8 +1181,8 @@ INSERT INTO bonuses (id, name, display_title, description, bonus_type, value_typ
 ON DUPLICATE KEY UPDATE name = name;
 
 INSERT INTO banners (id, title, image_url, link_url, sort_order, status, created_at, updated_at) VALUES
-  (1, 'offer', 'https://api.ranamatch.com/media/uploads/6/c4c51c6e21414b3fb70ae4cc5f70c4b1.png', NULL, 1, 'active', '2026-07-16 11:41:26', '2026-07-18 09:03:33'),
-  (2, 'Offer 2', 'https://api.ranamatch.com/media/uploads/6/b9e85682706c4f5288bb7e279be50f89.png', NULL, 0, 'active', '2026-07-16 11:42:15', '2026-07-18 09:03:03')
+  (1, 'offer', 'https://api.cadiplay.com/media/uploads/6/c4c51c6e21414b3fb70ae4cc5f70c4b1.png', NULL, 1, 'active', '2026-07-16 11:41:26', '2026-07-18 09:03:33'),
+  (2, 'Offer 2', 'https://api.cadiplay.com/media/uploads/6/b9e85682706c4f5288bb7e279be50f89.png', NULL, 0, 'active', '2026-07-16 11:42:15', '2026-07-18 09:03:03')
 ON DUPLICATE KEY UPDATE id = id;
 
 INSERT INTO faqs (id, question, answer, sort_order, status) VALUES
