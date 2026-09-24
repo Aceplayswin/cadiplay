@@ -1216,7 +1216,7 @@ Bearer <jwt>`. Tenant header: `X-Tenant: <slug>` (or resolved by host).
 | POST | `/auth/otp/send` | — | `{phone, channel?}` | Dev returns OTP |
 | POST | `/auth/otp/verify` | — | `{phone, otp}` | |
 | POST | `/auth/register/otp` | — | `{fullName, phone, password, countryCode?}` | OTP must be verified first |
-| POST | `/auth/demo` | — | — | 30‑min demo session, USDT 50k/USDT 5k |
+| POST | `/auth/demo` | — | — | 30‑min demo session, USDT 1k/USDT 5k |
 | POST | `/auth/login` | — | `{phone, password}` | → `{token, userId}` |
 | GET/PUT/PATCH | `/settings` | user | preference fields | editable: languages, currency, notifications, marketing |
 | GET | `/wallet` | user | — | balances + `available` |
@@ -1356,7 +1356,7 @@ provider stack. `BrandProvider` fetches branding (applies CSS vars/title/favicon
 | Withdrawal locks funds immediately | `create_withdrawal` | Prevents double‑spend during review |
 | Reject withdrawal unlocks funds | `admin_withdrawal_reject` | Restores balance |
 | Welcome bonus on register | `register_with_otp` (`WELCOME_BONUS`) | Acquisition |
-| Demo session: 30 min, USDT 50k main + USDT 5k bonus | `create_demo_session` | Try‑before‑signup |
+| Demo session: 30 min, USDT 1k main + USDT 5k bonus | `create_demo_session` | Try‑before‑signup |
 | Min launch balance (default USDT 100) | `game_services.launch_game` | Aggregator launch gate |
 | Games master switch | `platform_settings.game_status` | Kill‑switch for all launches |
 | Per‑game `is_active` | `games.is_active` | Granular game toggle |

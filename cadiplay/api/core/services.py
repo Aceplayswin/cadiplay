@@ -254,7 +254,7 @@ def create_demo_session() -> dict:
     )
     Wallet.objects.create(
         user=user,
-        main_balance=Decimal('50000'),
+        main_balance=Decimal('1000'),
         bonus_balance=Decimal('5000'),
     )
     token = sign_token(
