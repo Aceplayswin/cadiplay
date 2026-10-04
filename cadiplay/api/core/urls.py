@@ -100,7 +100,7 @@ urlpatterns = [
     path('admin/staff', views.admin_staff),
     path('admin/staff/create', views.admin_staff_create),
     path('admin/staff/<int:staff_id>', views.admin_staff_update),
-    # Report export (CSV)
+    # Report export (Excel)
     path('admin/reports', views.admin_reports),
     path('admin/reports/<str:kind>/export', views.admin_report_export),
     # Mobile app (APK) distribution

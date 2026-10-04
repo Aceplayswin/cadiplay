@@ -1,20 +1,21 @@
 'use client';
 
 import Link from 'next/link';
-import { Dices, Twitter, Send, MessageCircle, Instagram } from 'lucide-react';
+import { Dices } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
 import { useAuthStore } from '@/store/auth';
+import { SocialIconRow, WhatsAppSupportLink } from '@/components/SocialLinks';
 
 const COLUMNS = [
   { title: 'Casino', links: ['All Games', 'Slots', 'Live Casino', 'Table Games', 'Jackpot Games'] },
   { title: 'Sports', links: ['Sportsbook', 'Live Betting', 'Upcoming Matches', 'Virtual Sports'] },
-  { title: 'Support', links: ['Help Center', 'Live Chat', 'FAQ', 'Responsible Gaming', 'Contact Us'] },
+  { title: 'Support', links: ['Help Center', 'FAQ', 'Responsible Gaming', 'Contact Us'] },
   { title: 'Promotions', links: ['All Bonuses', 'VIP Club', 'Tournaments', 'Affiliate Program'] },
 ];
 
 export function Theme2Footer() {
   const branding = useBranding();
-  const name = branding.product_name || 'CADIPLAY';
+  const name = branding.product_name || 'WAXCASINO';
   const token = useAuthStore((s) => s.token);
   const isHydrated = useAuthStore((s) => s.isHydrated);
   const isLoggedIn = isHydrated && Boolean(token);
@@ -25,7 +26,10 @@ export function Theme2Footer() {
         <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-3 sm:flex-row">
           <p className="text-xs text-slate-500">© 2026 {name}. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-slate-400">
-            <Link href="/support/chat" className="transition hover:text-amber-400">Support</Link>
+            <WhatsAppSupportLink
+              className="inline-flex items-center gap-1.5 font-bold text-emerald-400 transition hover:text-emerald-300"
+              iconClassName="h-3.5 w-3.5"
+            />
             <span>18+ · Play responsibly</span>
           </div>
         </div>
@@ -47,13 +51,10 @@ export function Theme2Footer() {
                 <span className="block text-[0.55rem] font-bold tracking-[0.3em] text-amber-400/70">WIN BIG</span>
               </span>
             </Link>
-            <div className="mt-5 flex gap-3">
-              {[Twitter, Send, MessageCircle, Instagram].map((Icon, i) => (
-                <a key={i} href="#" className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-slate-400 transition hover:border-amber-400/50 hover:text-amber-400">
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
+            <SocialIconRow
+              className="mt-5 flex gap-3"
+              itemClassName="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-slate-400 transition hover:border-amber-400/50 hover:text-amber-400"
+            />
           </div>
 
           {COLUMNS.map((col) => (
@@ -66,6 +67,9 @@ export function Theme2Footer() {
                   </li>
                 ))}
               </ul>
+              {col.title === 'Support' && (
+                <WhatsAppSupportLink className="mt-3 inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm font-bold text-emerald-400 transition hover:bg-emerald-500/20" />
+              )}
             </div>
           ))}
         </div>

@@ -4,10 +4,9 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { fetchBranding } from '@/services/tenant';
 import { applyThemeColors } from '@/themes/palettes';
 
-// Defaults so the UI never flashes empty before branding loads; Cadiplay is the
-// platform's default brand name.
+// Neutral defaults so the UI never hardcodes a brand and never flashes empty.
 const DEFAULT_BRANDING = {
-  product_name: 'Cadiplay',
+  product_name: '',
   logo_url: '',
   favicon_url: '',
   app_icon_url: '',
@@ -45,7 +44,21 @@ function applyBranding(branding) {
     upsertMeta('apple-mobile-web-app-title', branding.product_name);
   }
   if (branding.favicon_url) {
-    upsertLink("link[rel~='icon']", (l) => (l.rel = 'icon')).href = branding.favicon_url;
+    // The static metadata in layout.jsx emits several <link rel="icon"> tags (one
+    // per bundled size). Rewriting only the first would leave the others pointing
+    // at the default icons, and the browser may pick one of those by size — so
+    // every icon link is repointed, and the sizes/type hints that described the
+    // bundled PNGs are dropped since they no longer describe this file.
+    const links = document.querySelectorAll("link[rel~='icon']");
+    if (links.length) {
+      links.forEach((l) => {
+        l.href = branding.favicon_url;
+        l.removeAttribute('sizes');
+        l.removeAttribute('type');
+      });
+    } else {
+      upsertLink("link[rel~='icon']", (l) => (l.rel = 'icon')).href = branding.favicon_url;
+    }
   }
   // Brand the installed-app icon: iOS reads apple-touch-icon at "Add to Home
   // Screen" time, so pointing it at the product's icon (like the favicon above)

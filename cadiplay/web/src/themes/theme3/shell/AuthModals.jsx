@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { Lock, Phone, User as UserIcon, Gift } from 'lucide-react';
 import { api } from '@/services/api';
+import { registerAttribution } from '@/lib/referral';
 import { useAuthStore } from '@/store/auth';
 import { useUnifiedLogin } from '@/hooks/useUnifiedLogin';
 import { useBranding } from '@/hooks/useBranding';
@@ -22,7 +23,7 @@ function LoginModal() {
   const { close, open } = useAuthModal();
   const { identifier, setIdentifier, password, setPassword, loading, submit } = useUnifiedLogin();
   const branding = useBranding();
-  const brandInitial = (branding.product_name || 'Cadiplay').charAt(0).toUpperCase();
+  const brandInitial = (branding.product_name || 'V').charAt(0).toUpperCase();
 
   const handleSubmit = async (e) => {
     await submit(e); // shows its own SweetAlert + redirects on success
@@ -98,7 +99,7 @@ function RegisterModal() {
   const { close, open } = useAuthModal();
   const setAuth = useAuthStore((s) => s.setAuth);
   const branding = useBranding();
-  const brandInitial = (branding.product_name || 'Cadiplay').charAt(0).toUpperCase();
+  const brandInitial = (branding.product_name || 'V').charAt(0).toUpperCase();
 
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
@@ -113,11 +114,11 @@ function RegisterModal() {
     try {
       const result = await api('/api/v1/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ phone, fullName, password, referralCode: referralCode.trim() || undefined }),
+        body: JSON.stringify({ phone, fullName, password, ...registerAttribution(referralCode) }),
       });
       setAuth({ token: result.token, userId: result.userId, username: result.username });
       close();
-      window.location.assign('/onboarding');
+      window.location.assign('/');
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed');
     } finally {

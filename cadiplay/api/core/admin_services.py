@@ -1088,7 +1088,7 @@ def get_bet_history_rounds(session_uid: str) -> dict:
 
 
 # --------------------------------------------------------------------------- #
-# Report export (CSV)
+# Report export (Excel)
 # --------------------------------------------------------------------------- #
 
 def _d(value) -> str:
@@ -1265,7 +1265,7 @@ def list_report_kinds() -> list[dict]:
 
 
 def build_report(kind: str, date_from=None, date_to=None, member_id=None):
-    """Resolve a report kind to ``(header, rows)`` for CSV streaming."""
+    """Resolve a report kind to ``(header, rows)`` for the Excel export."""
     entry = REPORT_KINDS.get(kind)
     if not entry:
         raise ValueError(f'Unknown report: {kind}')

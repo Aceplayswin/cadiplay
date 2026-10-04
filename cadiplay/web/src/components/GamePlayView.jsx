@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useGamePlay } from '@/hooks/useGamePlay';
 
@@ -137,17 +138,10 @@ export function GamePlayView({ slug, variant = 'theme1' }) {
   }
 
   // Aggregator games redirect the whole tab to the provider's URL (full screen,
-  // no Cadiplay chrome). While that navigation kicks in, show a minimal notice
+  // no Dollara chrome). While that navigation kicks in, show a minimal notice
   // with a manual retry in case the browser blocked the redirect.
   if (redirecting) {
-    return (
-      <main className={s.loading}>
-        Opening {game.name}…{' '}
-        <button type="button" onClick={launchGame} className={s.link}>
-          Tap to retry
-        </button>
-      </main>
-    );
+    return <Redirecting name={game.name} onRetry={launchGame} styles={s} />;
   }
 
   return (
@@ -182,7 +176,7 @@ export function GamePlayView({ slug, variant = 'theme1' }) {
           </>
         ) : (
           <>
-            <label className={s.label}>Bet amount (USD)</label>
+            <label className={s.label}>Bet amount (₹)</label>
             <input
               type="number"
               value={betAmount}
@@ -190,7 +184,7 @@ export function GamePlayView({ slug, variant = 'theme1' }) {
               className={s.input}
             />
             <p className={s.limits}>
-              Min USD {game.min_bet} · Max USD {game.max_bet}
+              Min ₹{game.min_bet} · Max ₹{game.max_bet}
             </p>
             {token ? (
               <button type="button" onClick={placeBet} className={s.btn}>
@@ -205,6 +199,37 @@ export function GamePlayView({ slug, variant = 'theme1' }) {
           </>
         )}
       </div>
+    </main>
+  );
+}
+
+/**
+ * The hand-off screen shown while the tab navigates to the provider.
+ *
+ * The retry link is held back for a few seconds: the redirect normally starts
+ * immediately, so showing "Tap to retry" straight away made every successful
+ * launch flash a retry prompt, which read as a failure. It only appears if the
+ * navigation genuinely has not happened yet (a browser that blocked it).
+ */
+function Redirecting({ name, onRetry, styles }) {
+  const [showRetry, setShowRetry] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShowRetry(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <main className={styles.loading}>
+      Opening {name}…
+      {showRetry && (
+        <>
+          {' '}
+          <button type="button" onClick={onRetry} className={styles.link}>
+            Tap to retry
+          </button>
+        </>
+      )}
     </main>
   );
 }

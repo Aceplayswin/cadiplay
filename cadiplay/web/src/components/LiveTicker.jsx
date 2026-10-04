@@ -10,7 +10,7 @@ export function LiveTicker() {
   const [live, setLive] = useState([]);
 
   useEffect(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:9001/ws';
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:5000/ws';
     let ws = null;
     try {
       ws = new WebSocket(wsUrl);
@@ -71,11 +71,11 @@ function TickerSection({ title, items, highlight }) {
           <li
             key={`${item.username}-${i}`}
             className={`rounded-lg bg-panel/50 px-2 py-1.5 text-xs ${
-              highlight && item.amount >= 100 ? 'animate-pulse-glow border border-brand-500/30' : ''
+              highlight && item.amount >= 10000 ? 'animate-pulse-glow border border-brand-500/30' : ''
             }`}
           >
             <span className="text-app-fg/80">{item.username}</span>
-            <span className="ml-1 text-green-400">USDT {item.amount.toLocaleString('en-US')}</span>
+            <span className="ml-1 text-green-400">₹{item.amount.toLocaleString('en-IN')}</span>
             <span className="block text-muted/80">{item.timestamp}</span>
           </li>
         ))}

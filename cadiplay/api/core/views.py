@@ -2,14 +2,12 @@ import json
 import logging
 
 from django.conf import settings
-import csv
 from datetime import datetime
 
 from django.http import (
     HttpResponse,
     HttpResponseRedirect,
     JsonResponse,
-    StreamingHttpResponse,
 )
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -22,6 +20,7 @@ from core import (
     game_services,
     services,
 )
+from core.excel import XLSX_CONTENT_TYPE, xlsx_bytes
 from core.ai import chat_respond, fraud_score, welcome_call
 from core.game_services import GameError
 from core.money import present_wallet, stored_amount, usdt_amount

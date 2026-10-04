@@ -35,11 +35,11 @@ export default function Theme1Profile() {
             <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-brand-500/10 blur-2xl" />
             <p className="text-sm text-slate-400">Available balance</p>
             <p className="mt-1 text-4xl font-extrabold text-gradient-gold">
-              USDT {(wallet?.available ?? 0).toLocaleString('en-US')}
+              ₹{(wallet?.available ?? 0).toLocaleString('en-IN')}
             </p>
             {wallet?.bonus != null && (
               <p className="mt-1 text-xs text-slate-500">
-                Bonus: USDT {Number(wallet.bonus).toLocaleString('en-US')}
+                Bonus: ₹{Number(wallet.bonus).toLocaleString('en-IN')}
               </p>
             )}
             <div className="mt-5 grid grid-cols-2 gap-3">
@@ -82,7 +82,7 @@ export default function Theme1Profile() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={isCredit(t.type) ? 'text-green-400' : 'text-white'}>
-                      {isCredit(t.type) ? '+' : '−'}USDT {parseFloat(t.amount).toLocaleString('en-US')}
+                      {isCredit(t.type) ? '+' : '−'}₹{parseFloat(t.amount).toLocaleString('en-IN')}
                     </span>
                     <StatusPill status={t.status} />
                   </div>
@@ -106,7 +106,6 @@ export default function Theme1Profile() {
               <Row label="Full name" value={user?.full_name} />
               <Row label="MemberId" value={user?.username} />
               <Row label="Phone" value={user?.phone} />
-              <Row label="KYC status" value={user?.kyc_status} />
               <Row label="Account status" value={user?.account_status} last />
             </div>
           </section>
@@ -119,15 +118,14 @@ export default function Theme1Profile() {
               <ActionTile href="/withdraw" label="Withdraw" icon="↓" />
               <ActionTile href="/bet-history" label="Bet History" icon="🎲" />
               <ActionTile href="/promotions" label="Promos" icon="🎁" />
-              <ActionTile href="/refer" label="Refer" icon="👥" />
             </div>
           </section>
 
           <Link
-            href="/settings"
+            href="/change-password"
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-3 text-sm font-semibold text-white transition hover:bg-white/5"
           >
-            Settings
+            Change Password
           </Link>
 
           <button

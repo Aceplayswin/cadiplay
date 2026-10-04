@@ -1,5 +1,4 @@
 import { Inter, Outfit } from 'next/font/google';
-import { AttributionCapture } from '@/components/AttributionCapture';
 import { AuthHydrate } from '@/components/AuthHydrate';
 import { ThemeHydrate, themeInitScript } from '@/components/ThemeHydrate';
 import { BrandProvider } from '@/hooks/useBranding';
@@ -13,9 +12,9 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 export const metadata = {
-  title: 'Cadiplay - Online Gaming Platform',
+  title: 'Mahakal World',
   description: 'Play casino, sports, slots, lottery and AI games',
-  applicationName: 'Cadiplay',
+  applicationName: 'Mahakal World',
   // Installable PWA. The manifest itself is branded per product at /manifest.webmanifest
   // (src/app/manifest.js); these are the build-time defaults, re-pointed to the
   // brand's logo/name at runtime by useBranding.
@@ -24,7 +23,7 @@ export const metadata = {
     capable: true,
     // Opaque dark status bar so standalone content never hides under the notch.
     statusBarStyle: 'black',
-    title: 'Cadiplay',
+    title: 'Mahakal World',
   },
   icons: {
     icon: [
@@ -51,10 +50,6 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="font-sans antialiased">
-        {/* Captures ?ref/&sub/&clk from an affiliate tracking link. Renders
-            nothing, needs no context, and must run on every route because a
-            tracking link can point at any landing page. */}
-        <AttributionCapture />
         <InstallProvider>
           <ThemeHydrate>
             <BrandProvider>

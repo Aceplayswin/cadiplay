@@ -13,7 +13,7 @@ import { Landmark, Smartphone, Bitcoin, Clock } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 
-const MIN_WITHDRAWAL = 50;
+const MIN_WITHDRAWAL = 500;
 
 const METHODS = [
   { id: 'bank_transfer', label: 'Bank Transfer', desc: 'NEFT / IMPS to your account', icon: Landmark },
@@ -30,7 +30,7 @@ export default function Theme1Withdraw() {
   const [step, setStep] = useState('amount'); // amount | details | review | processing | done
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('bank_transfer');
-  const [dest, setDest] = useState({ accountName: '', accountNumber: '', ifsc: '', upiId: '', address: '' });
+  const [dest, setDest] = useState({ accountName: '', accountNumber: '', ifsc: '', bankName: '', upiId: '', address: '' });
   const [transactionId, setTransactionId] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -56,7 +56,7 @@ export default function Theme1Withdraw() {
   const stepIndex = { amount: 0, details: 1, review: 2, done: 2 }[step];
 
   const destValid = () => {
-    if (method === 'bank_transfer') return dest.accountName && dest.accountNumber.length >= 6 && dest.ifsc;
+    if (method === 'bank_transfer') return dest.accountName && dest.accountNumber.length >= 6 && dest.ifsc && dest.bankName;
     if (method === 'upi') return /.+@.+/.test(dest.upiId);
     if (method === 'crypto') return dest.address.length >= 10;
     return false;
@@ -80,7 +80,24 @@ export default function Theme1Withdraw() {
     try {
       const res = await api('/api/v1/wallet/withdraw', {
         method: 'POST',
-        body: JSON.stringify({ amount: numAmount, paymentMethod: method }),
+        body: JSON.stringify({
+          amount: numAmount,
+          paymentMethod: method,
+          // Map this form's field names onto the API contract
+          // (services.WITHDRAWAL_DESTINATION_FIELDS) so the payout details
+          // actually reach the admin queue.
+          destination:
+            method === 'bank_transfer'
+              ? {
+                  accountName: dest.accountName,
+                  accountNumber: dest.accountNumber,
+                  ifsc: dest.ifsc,
+                  bankName: dest.bankName,
+                }
+              : method === 'upi'
+                ? { upiId: dest.upiId }
+                : { network: dest.network || 'TRC20', walletAddress: dest.address },
+        }),
       });
       setTransactionId(res.transactionId);
       await refreshSession();
@@ -97,7 +114,7 @@ export default function Theme1Withdraw() {
     timers.current = [];
     setStep('amount');
     setAmount('');
-    setDest({ accountName: '', accountNumber: '', ifsc: '', upiId: '', address: '' });
+    setDest({ accountName: '', accountNumber: '', ifsc: '', bankName: '', upiId: '', address: '' });
     setTransactionId(null);
     setError(null);
   };
@@ -121,10 +138,10 @@ export default function Theme1Withdraw() {
           <section className="card-glass p-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-400">Available to withdraw</span>
-              <span className="font-semibold text-green-400">USDT {available.toLocaleString('en-US')}</span>
+              <span className="font-semibold text-green-400">₹{available.toLocaleString('en-IN')}</span>
             </div>
             <div className="mt-4 flex items-center rounded-lg border border-white/10 bg-surface-700 px-4">
-              <span className="text-base font-semibold text-slate-500">USDT</span>
+              <span className="text-2xl text-slate-500">₹</span>
               <input
                 type="number"
                 value={amount}
@@ -147,7 +164,7 @@ export default function Theme1Withdraw() {
               ))}
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              Minimum withdrawal USDT {MIN_WITHDRAWAL}.
+              Minimum withdrawal ₹{MIN_WITHDRAWAL}.
               {numAmount > available && <span className="text-red-400"> Amount exceeds balance.</span>}
             </p>
           </section>
@@ -194,6 +211,7 @@ export default function Theme1Withdraw() {
                   <Input label="Account holder name" value={dest.accountName} onChange={(v) => setDest({ ...dest, accountName: v })} placeholder="As per bank records" />
                   <Input label="Account number" value={dest.accountNumber} onChange={(v) => setDest({ ...dest, accountNumber: v })} placeholder="Bank account number" inputMode="numeric" />
                   <Input label="IFSC code" value={dest.ifsc} onChange={(v) => setDest({ ...dest, ifsc: v.toUpperCase() })} placeholder="e.g. HDFC0001234" />
+                  <Input label="Bank Name" value={dest.bankName} onChange={(v) => setDest({ ...dest, bankName: v })} placeholder="e.g. HDFC Bank" />
                 </>
               )}
               {method === 'upi' && (
@@ -231,12 +249,12 @@ export default function Theme1Withdraw() {
           <section className="card-glass p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Review withdrawal</h2>
             <div className="mt-4 space-y-2 text-sm">
-              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-US')}`} />
-              <Row label="Processing fee" value="USDT 0" />
+              <Row label="Amount" value={`₹${numAmount.toLocaleString('en-IN')}`} />
+              <Row label="Processing fee" value="₹0" />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Est. time" value="2–24 hours" />
-              <Row label="You'll receive" value={`USDT ${numAmount.toLocaleString('en-US')}`} strong last />
+              <Row label="You'll receive" value={`₹${numAmount.toLocaleString('en-IN')}`} strong last />
             </div>
             <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
               <Clock className="h-3.5 w-3.5" /> Funds are locked from your balance while we process this request.
@@ -275,15 +293,15 @@ export default function Theme1Withdraw() {
               paid out once our team approves it — or returned if it&apos;s rejected.
             </p>
             <div className="mt-6 space-y-2 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left text-sm">
-              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-US')}`} />
+              <Row label="Amount" value={`₹${numAmount.toLocaleString('en-IN')}`} />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Request ID" value={`#${transactionId}`} />
               {/* Spell out balance vs. hold. Showing "available" alone here read as
                   though the payout had already been taken out of the account. */}
-              <Row label="Wallet balance" value={`USDT ${walletBalance.toLocaleString('en-US')}`} />
-              <Row label="On hold for this request" value={`USDT ${heldForWithdrawal.toLocaleString('en-US')}`} />
-              <Row label="Available to play" value={`USDT ${available.toLocaleString('en-US')}`} last />
+              <Row label="Wallet balance" value={`₹${walletBalance.toLocaleString('en-IN')}`} />
+              <Row label="On hold for this request" value={`₹${heldForWithdrawal.toLocaleString('en-IN')}`} />
+              <Row label="Available to play" value={`₹${available.toLocaleString('en-IN')}`} last />
             </div>
           </section>
           <div className="flex gap-3">

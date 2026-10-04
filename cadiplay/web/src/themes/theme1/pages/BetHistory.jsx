@@ -14,8 +14,9 @@ import { useRouter } from 'next/navigation';
 import { ChevronDown, Clock, Loader2 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
+import { formatDateTime as formatDate, formatDateTime as formatTime } from '@/lib/datetime';
 
-const usd = (n) => `USD ${Number(n ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const inr = (n) => `₹${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 export default function Theme1BetHistory() {
   const router = useRouter();
@@ -165,10 +166,10 @@ export default function Theme1BetHistory() {
                             )}
                           </td>
                           <td className="px-5 py-3 text-right text-slate-300">
-                            {usd(r.total_bet)}
+                            {inr(r.total_bet)}
                           </td>
                           <td className="px-5 py-3 text-right text-slate-300">
-                            {usd(r.total_win)}
+                            {inr(r.total_win)}
                           </td>
                           <td className="px-5 py-3 text-right">
                             <ResultCell record={r} />
@@ -215,7 +216,7 @@ function ResultCell({ record }) {
   return (
     <span className={`font-semibold ${up ? 'text-green-400' : 'text-red-400'}`}>
       {up ? '+' : '−'}
-      {usd(Math.abs(Number(record.profit_loss)))}
+      {inr(Math.abs(Number(record.profit_loss)))}
     </span>
   );
 }
@@ -257,10 +258,10 @@ function RoundDetails({ detail }) {
               </td>
               <td className="py-2 pr-4">{rd.game_name || '—'}</td>
               <td className="py-2 pr-4 text-slate-400">{formatTime(rd.created_at)}</td>
-              <td className="py-2 pr-4 text-right">{usd(rd.bet_amount)}</td>
-              <td className="py-2 pr-4 text-right">{usd(rd.win_amount)}</td>
+              <td className="py-2 pr-4 text-right">{inr(rd.bet_amount)}</td>
+              <td className="py-2 pr-4 text-right">{inr(rd.win_amount)}</td>
               <td className="py-2 pr-4 text-right text-slate-400">
-                {rd.balance_after == null ? '—' : usd(rd.balance_after)}
+                {rd.balance_after == null ? '—' : inr(rd.balance_after)}
               </td>
               <td className="py-2 text-right">
                 {rd.result === 'pending' ? (
@@ -268,7 +269,7 @@ function RoundDetails({ detail }) {
                 ) : (
                   <span className={rd.profit_loss >= 0 ? 'text-green-400' : 'text-red-400'}>
                     {rd.profit_loss >= 0 ? '+' : '−'}
-                    {usd(Math.abs(rd.profit_loss))}
+                    {inr(Math.abs(rd.profit_loss))}
                   </span>
                 )}
               </td>
@@ -292,35 +293,9 @@ function Summary({ label, value, tone, hint }) {
   return (
     <div className="card-glass p-4">
       <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
-      <p className={`mt-1 text-lg font-bold ${color}`}>{usd(value)}</p>
+      <p className={`mt-1 text-lg font-bold ${color}`}>{inr(value)}</p>
       {hint && <p className="mt-0.5 text-[0.65rem] text-slate-500">{hint}</p>}
     </div>
   );
 }
 
-function formatDate(iso) {
-  if (!iso) return '';
-  try {
-    return new Date(iso).toLocaleDateString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    });
-  } catch {
-    return '';
-  }
-}
-
-function formatTime(iso) {
-  if (!iso) return '';
-  try {
-    return new Date(iso).toLocaleString('en-IN', {
-      day: '2-digit',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  } catch {
-    return '';
-  }
-}

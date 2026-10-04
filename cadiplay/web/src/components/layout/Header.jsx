@@ -20,7 +20,7 @@ import {
   Spade,
   Tv,
   HeartHandshake,
-  Settings,
+  KeyRound,
   Search,
   Download,
   Wallet,
@@ -29,6 +29,7 @@ import {
   User,
 } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
+import { DEMO_ACCOUNT_ENABLED, useDemoLogin } from '@/hooks/useDemoLogin';
 import { NAV_GAME_LINKS } from '@/lib/gameRoutes';
 import { ThemeToggleButton } from '@/components/ThemeToggle';
 import { UserAuthActions } from '@/components/UserAuthActions';
@@ -88,6 +89,7 @@ export function Header() {
   const brandName = branding.product_name;
   const token = useAuthStore((s) => s.token);
   const wallet = useAuthStore((s) => s.wallet);
+  const { tryDemo, demoLoading } = useDemoLogin({ redirectTo: '/' });
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [getAppOpen, setGetAppOpen] = useState(false);
@@ -120,11 +122,12 @@ export function Header() {
     ...MOBILE_TABS_BASE,
     { label: 'Account', href: token ? '/profile' : '/login', icon: User },
   ];
-  // Show the player's real balance, NOT `available`. A pending withdrawal only
-  // holds funds — nothing is debited until an admin approves it — so netting the
-  // hold off here made the pill read USDT 0.00 and look like the money was already
-  // taken. The hold is called out in the tooltip and on the wallet page instead.
-  const balance = wallet?.main ?? wallet?.real ?? 0;
+  // Show the player's real + bonus balance, NOT `available`. A pending
+  // withdrawal only holds funds — nothing is debited until an admin approves
+  // it — so netting the hold off here made the pill read too low and look
+  // like the money was already taken. The hold is called out in the tooltip
+  // and on the wallet page instead.
+  const balance = wallet?.total ?? 0;
   const heldForWithdrawal = wallet?.pendingWithdrawal ?? wallet?.locked ?? 0;
   return (
     <>
@@ -165,7 +168,7 @@ export function Header() {
         </nav>
 
         <div className="shrink-0 space-y-1 border-t border-hairline/[0.06] px-2 py-3">
-          <RailItem item={{ label: 'Settings', href: token ? '/settings' : '/login', icon: Settings }} />
+          <RailItem item={{ label: 'Change Password', href: token ? '/change-password' : '/login', icon: KeyRound }} />
         </div>
       </aside>
 
@@ -230,6 +233,17 @@ export function Header() {
             <span className="hidden sm:inline">Get the app</span>
           </button>
 
+          {DEMO_ACCOUNT_ENABLED && !token && (
+            <button
+              type="button"
+              onClick={tryDemo}
+              disabled={demoLoading}
+              className="hidden rounded-xl border border-hairline/10 px-4 py-2 text-xs font-bold text-app-fg transition hover:border-brand-400/50 hover:bg-panel disabled:opacity-60 xl:inline-flex"
+            >
+              {demoLoading ? 'Starting…' : 'Play Demo'}
+            </button>
+          )}
+
           {/* Wallet / balance pill — body opens the wallet page, the + opens deposit */}
           <div className="hidden items-center gap-2 rounded-full border border-hairline/10 bg-panel/60 py-1 pl-3 pr-1 md:flex">
             <Link
@@ -239,13 +253,13 @@ export function Header() {
                 !token
                   ? 'Sign in'
                   : heldForWithdrawal > 0
-                    ? `View wallet — USDT ${Number(heldForWithdrawal).toLocaleString('en-US')} on hold for a pending withdrawal`
+                    ? `View wallet — ₹${Number(heldForWithdrawal).toLocaleString('en-IN')} on hold for a pending withdrawal`
                     : 'View wallet'
               }
             >
               <Wallet className="h-4 w-4 text-brand-400" />
               <span className="text-sm font-bold text-app-fg">
-                USDT {Number(balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₹{Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </Link>
             <Link

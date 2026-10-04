@@ -14,7 +14,7 @@ export default function Theme4Support() {
   const { token } = useAuthStore();
   const branding = useBranding();
   const [messages, setMessages] = useState([
-    { role: 'bot', text: `Hi! I'm your ${branding.product_name || 'CADIPLAY'} assistant. How can I help?` },
+    { role: 'bot', text: `Hi! I'm your ${branding.product_name || 'DOLLARA'} assistant. How can I help?` },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

@@ -1,47 +1,78 @@
 'use client';
 
-// Theme5 Deposit — same cashier flow as theme1: choose amount → choose method →
-// pay through the shared gateway sheet → request submitted for review. The
-// gateway step reuses <PaymentGateway/> (the app's one checkout surface) as-is;
-// everything else here is theme5's own navy/blue styling. The wallet is NOT
-// credited on the user's action — the deposit stays pending until the product
-// admin confirms it from the admin panel.
+// Theme5 Deposit — same data flow as theme2/3/4 (shared wallet endpoints), light
+// portal style. The methods come from the admin console (Cashier → Payment
+// Methods) and the block under the chosen one is decided by its TYPE — UPI: QR
+// code + UPI ID, bank: the receiving account, crypto: network + wallet address.
+// Every method is paid out of band from the player's own app, so a screenshot
+// is the evidence an admin checks before crediting.
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Clock, Smartphone, Landmark, Bitcoin } from 'lucide-react';
-import { api } from '@/services/api';
+import { Upload, X, Check, Loader2 } from 'lucide-react';
+import { api, upload } from '@/services/api';
+import { affiliateAttribution } from '@/lib/referral';
 import { useAuthStore } from '@/store/auth';
-import { PaymentGateway } from '@/components/payments/PaymentGateway';
-import { T5Card, t5Input, t5BtnPrimary, t5BtnOutline, T5FormPage } from '../components/ui';
+import { useDepositMethods } from '@/hooks/useDepositMethods';
+import { ReceivingDetails } from '@/components/payments/ReceivingDetails';
+import { amountWithinLimits, hasDestination, methodDescription } from '@/lib/paymentDestination';
+import { T5Card, t5Input, t5BtnPrimary, T5FormPage } from '../components/ui';
 
-const MIN_DEPOSIT = 30;
-const QUICK_AMOUNTS = [30, 50, 100, 200, 500];
-const PAYMENT_METHODS = [
-  { id: 'upi', label: 'UPI (Instant)', desc: 'Google Pay, PhonePe, Paytm', icon: Smartphone, eta: 'Instant' },
-  { id: 'imps', label: 'IMPS', desc: 'Instant transfer', icon: Landmark, eta: 'Instant' },
-  { id: 'bank_transfer', label: 'Bank Transfer', desc: '5-30 min verification', icon: Landmark, eta: '5-30 min' },
-  { id: 'crypto', label: 'Cryptocurrency', desc: 'BTC, ETH, USDT', icon: Bitcoin, eta: '10-30 min' },
-];
+const QUICK_AMOUNTS = [500, 1000, 2500, 5000, 10000];
 
-const STEPS = ['Amount', 'Method', 'Payment'];
+const MAX_PROOF_BYTES = 5 * 1024 * 1024;
+const PROOF_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
+
+// Theme5 (light / blue) palette for the shared "send payment to" block; the
+// card itself is a T5Card wrapped around it.
+const RECEIVING_STYLES = {
+  card: '',
+  title: 'font-black text-[#0f1b33]',
+  note: 'mt-1 text-xs text-[#94a3b8]',
+  rows: 'mt-4 space-y-2',
+  row: 'flex items-center justify-between gap-3 rounded-lg border border-black/10 bg-white px-4 py-3',
+  label: 'text-[0.65rem] font-black uppercase tracking-wide text-[#94a3b8]',
+  value: 'break-all font-bold text-[#0f1b33]',
+  mono: 'font-mono text-sm',
+  copyBtn:
+    'shrink-0 rounded-md border border-black/10 px-3 py-1.5 text-xs font-bold text-[#1d4ed8] transition hover:border-[#1d4ed8] hover:bg-[#eff4ff]',
+  qrFrame: 'mt-4 flex justify-center',
+  qrImg: 'h-44 w-44 max-w-full rounded-lg border border-black/10 bg-white object-contain p-1',
+  instructions: 'mt-4 whitespace-pre-line rounded-lg bg-[#eff4ff] p-3 text-xs text-[#0f1b33]',
+};
 
 export default function Theme5Deposit() {
   const router = useRouter();
   const { token, isHydrated, hydrate } = useAuthStore();
-
-  const [step, setStep] = useState('amount'); // amount | method | pay | done
   const [amount, setAmount] = useState('');
-  const [method, setMethod] = useState('upi');
-  const [transactionId, setTransactionId] = useState(null);
-  const [creating, setCreating] = useState(false);
-  const [error, setError] = useState(null);
-  const [receipt, setReceipt] = useState(null); // { amount, reference }
+  const [method, setMethod] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  // UTR / reference the player copies out of their payment app.
+  const [reference, setReference] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  // Payment screenshot: the local File, its object-URL preview, the uploaded
+  // URL once stored, and any validation/upload error.
+  const [proofFile, setProofFile] = useState(null);
+  const [proofPreview, setProofPreview] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
+  const [proofError, setProofError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+  // Methods the admin has configured, each carrying the account the player
+  // pays into. No static fallback: an empty list is shown as unavailable.
+  const {
+    methods,
+    loading: methodsLoading,
+    error: methodsError,
+  } = useDepositMethods(isHydrated && Boolean(token));
 
   const numAmount = parseFloat(amount) || 0;
-  const valid = numAmount >= MIN_DEPOSIT;
-  const bonus = numAmount >= 1000 ? numAmount * 0.5 : 0;
+  const selectedMethod = methods.find((pm) => pm.code === method) ?? null;
+  // Every admin-configured method is paid manually, so proof is always asked
+  // for once a method is chosen.
+  const needsProof = Boolean(selectedMethod);
+  const limit = amountWithinLimits(selectedMethod, numAmount);
 
   useEffect(() => {
     hydrate();
@@ -51,243 +82,306 @@ export default function Theme5Deposit() {
     if (isHydrated && !token) router.replace('/login');
   }, [isHydrated, token, router]);
 
-  const stepIndex = { amount: 0, method: 1, pay: 2, done: 2 }[step];
+  // A method the admin has since disabled must not stay selected.
+  useEffect(() => {
+    if (method && !methods.some((pm) => pm.code === method)) setMethod('');
+  }, [methods, method]);
 
-  // Create the pending deposit (the "order") before opening the gateway.
-  const startPayment = async () => {
-    setError(null);
-    setCreating(true);
+  // A reference or screenshot belongs to one payment: changing the method
+  // means that payment was never made, so the proof starts over.
+  useEffect(() => {
+    setReference('');
+    setSubmitError('');
+    setProofFile(null);
+    setProofPreview('');
+    setProofUrl('');
+    setProofError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [method]);
+
+  // Object URLs are leaked memory until revoked; drop the old one whenever the
+  // preview changes and on unmount.
+  useEffect(() => {
+    if (!proofPreview) return undefined;
+    return () => URL.revokeObjectURL(proofPreview);
+  }, [proofPreview]);
+
+  // Picking a file uploads it straight away, so the screenshot is already
+  // stored (and validated by the server) before the deposit is submitted.
+  const pickProof = async (file) => {
+    if (!file) return;
+    setProofError('');
+    setProofUrl('');
+    if (!PROOF_TYPES.includes(file.type)) {
+      setProofError('Upload a PNG, JPG or WEBP image.');
+      return;
+    }
+    if (file.size > MAX_PROOF_BYTES) {
+      setProofError('Screenshot too large (max 5MB).');
+      return;
+    }
+    setProofFile(file);
+    setProofPreview(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const res = await upload('/api/v1/wallet/deposit/proof', file);
+      setProofUrl(res.url);
+    } catch (e) {
+      setProofError(e instanceof Error ? e.message : 'Upload failed');
+      setProofFile(null);
+      setProofPreview('');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const clearProof = () => {
+    setProofFile(null);
+    setProofPreview('');
+    setProofUrl('');
+    setProofError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const submit = async () => {
+    if (!selectedMethod) return;
+    setLoading(true);
+    setSubmitError('');
     try {
       const res = await api('/api/v1/wallet/deposit', {
         method: 'POST',
-        body: JSON.stringify({ amount: numAmount, paymentMethod: method }),
+        body: JSON.stringify({
+          amount: numAmount,
+          paymentMethod: selectedMethod.code,
+          referenceNumber: reference.trim() || null,
+          paymentProofUrl: proofUrl || null,
+          ...affiliateAttribution(),
+        }),
       });
-      setTransactionId(res.transactionId);
-      setStep('pay');
+      setResult(res);
+      // Clear the form: the request is queued and the same screenshot must not
+      // be submitted again by accident.
+      setAmount('');
+      setReference('');
+      clearProof();
     } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Could not start payment';
+      const msg = e instanceof Error ? e.message : 'Deposit failed';
       if (/log in again|unauthorized/i.test(msg)) {
         router.replace('/login');
         return;
       }
-      setError(msg);
+      setSubmitError(msg);
     } finally {
-      setCreating(false);
+      setLoading(false);
     }
   };
 
-  // Called by the gateway once the user completes "payment". This does NOT
-  // credit the wallet — it just records the reference the user supplied so the
-  // admin can match it. The deposit created in startPayment stays pending until
-  // an admin confirms it.
-  const confirmPayment = async (reference) => {
-    setReceipt({ amount: numAmount, reference });
-    setStep('done');
-  };
-
-  const reset = () => {
-    setStep('amount');
-    setAmount('');
-    setMethod('upi');
-    setTransactionId(null);
-    setReceipt(null);
-    setError(null);
-  };
-
-  if (!isHydrated || !token) return null;
+  const canSubmit =
+    !loading &&
+    !uploading &&
+    numAmount > 0 &&
+    Boolean(selectedMethod) &&
+    limit.ok &&
+    (!needsProof || Boolean(proofUrl));
 
   return (
-    <T5FormPage title="Deposit">
-      {step !== 'done' && <Stepper steps={STEPS} current={stepIndex} />}
-
-      {error && (
-        <p className="mt-4 rounded-lg border border-[#f4547a]/30 bg-[#f4547a]/10 px-3 py-2 text-sm text-[#c23a5e]">
-          {error}
-        </p>
-      )}
-
-      {/* ── Step 1: Amount ── */}
-      {step === 'amount' && (
-        <div className="mt-6 space-y-6">
-          <T5Card className="p-6">
-            <label className="text-sm text-[#64748b]">Enter Amount (USDT)</label>
-            <input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0"
-              className={`${t5Input} mt-2 text-2xl`}
-              autoFocus
-            />
-            <div className="mt-4 flex flex-wrap gap-2">
-              {QUICK_AMOUNTS.map((a) => (
-                <button
-                  key={a}
-                  type="button"
-                  onClick={() => setAmount(String(a))}
-                  className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#0f1b33] shadow-sm transition hover:border-[#1d4ed8] hover:text-[#1d4ed8]"
-                >
-                  USDT {a.toLocaleString('en-US')}
-                </button>
-              ))}
-            </div>
-            {numAmount > 0 && (
-              <div className="mt-4 rounded-lg border border-[#22a34a]/25 bg-[#22a34a]/10 p-4 text-sm text-[#15803d]">
-                <p>You deposit: USDT {numAmount.toLocaleString('en-US')}</p>
-                {bonus > 0 && <p>You get bonus: USDT {bonus.toLocaleString('en-US')}</p>}
-                <p className="font-black">Total playable: USDT {(numAmount + bonus).toLocaleString('en-US')}</p>
-              </div>
-            )}
-            <p className="mt-3 text-xs text-[#94a3b8]">Minimum deposit USDT {MIN_DEPOSIT}.</p>
-          </T5Card>
-
-          <button
-            type="button"
-            onClick={() => valid && setStep('method')}
-            disabled={!valid}
-            className={`${t5BtnPrimary} w-full`}
-          >
-            Continue
-          </button>
-        </div>
-      )}
-
-      {/* ── Step 2: Method ── */}
-      {step === 'method' && (
-        <div className="mt-6 space-y-6">
-          <T5Card className="p-6">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-[#64748b]">Depositing</span>
-              <span className="text-lg font-black text-[#1d4ed8]">USDT {numAmount.toLocaleString('en-US')}</span>
-            </div>
-            <h2 className="mt-5 text-sm font-black uppercase tracking-wide text-[#64748b]">
-              Choose payment method
-            </h2>
-            <div className="mt-4 space-y-2">
-              {PAYMENT_METHODS.map((pm) => {
-                const Icon = pm.icon;
-                const active = method === pm.id;
-                return (
-                  <button
-                    key={pm.id}
-                    type="button"
-                    onClick={() => setMethod(pm.id)}
-                    className={`flex w-full items-center gap-3 rounded-lg border p-4 text-left transition ${
-                      active ? 'border-[#1d4ed8] bg-[#eff4ff]' : 'border-black/10 bg-white hover:bg-[#f8fafc]'
-                    }`}
-                  >
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#eff4ff] text-[#1d4ed8]">
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block font-bold text-[#0f1b33]">{pm.label}</span>
-                      <span className="block text-xs text-[#94a3b8]">{pm.desc}</span>
-                    </span>
-                    <span className="shrink-0 text-xs text-[#94a3b8]">{pm.eta}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </T5Card>
-
-          <div className="flex gap-3">
-            <button type="button" onClick={() => setStep('amount')} className={`${t5BtnOutline} flex-1`}>
-              Back
+    <T5FormPage
+      title="Deposit"
+      tabs={[
+        { label: 'Deposit', href: '/deposit', active: true },
+        { label: 'Withdrawals', href: '/withdraw' },
+      ]}
+    >
+      <T5Card className="mt-4 p-6">
+        <label className="text-sm text-[#64748b]">Enter Amount (₹)</label>
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0"
+          className={`${t5Input} mt-2 text-2xl`}
+        />
+        <div className="mt-4 flex flex-wrap gap-2">
+          {QUICK_AMOUNTS.map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setAmount(String(a))}
+              className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#0f1b33] shadow-sm transition hover:border-[#1d4ed8] hover:text-[#1d4ed8]"
+            >
+              ₹{a.toLocaleString('en-IN')}
             </button>
+          ))}
+        </div>
+      </T5Card>
+
+      <T5Card className="mt-4 p-6">
+        <h2 className="font-black text-[#0f1b33]">Payment Method</h2>
+        {methodsLoading ? (
+          <p className="mt-4 text-sm text-[#94a3b8]">Loading payment methods…</p>
+        ) : methods.length === 0 ? (
+          <p className="mt-4 rounded-lg border border-black/10 bg-white p-4 text-sm text-[#64748b]">
+            {methodsError
+              ? 'Payment methods are temporarily unavailable. Please try again shortly.'
+              : 'No payment methods are available right now. Please contact support.'}
+          </p>
+        ) : (
+          <div className="mt-4 space-y-2">
+            {methods.map((pm) => (
+              <label
+                key={pm.code}
+                className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 transition ${
+                  method === pm.code ? 'border-[#1d4ed8] bg-[#eff4ff]' : 'border-black/10 bg-white'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="method"
+                  value={pm.code}
+                  checked={method === pm.code}
+                  onChange={() => setMethod(pm.code)}
+                  className="accent-[#1d4ed8]"
+                />
+                <div className="min-w-0">
+                  <p className="font-bold text-[#0f1b33]">{pm.name}</p>
+                  <p className="text-xs text-[#94a3b8]">{methodDescription(pm)}</p>
+                </div>
+              </label>
+            ))}
+          </div>
+        )}
+        {selectedMethod && numAmount > 0 && !limit.ok && (
+          <p className="mt-3 text-sm font-bold text-[#b45309]">{limit.message}</p>
+        )}
+      </T5Card>
+
+      {/* Where to send the money — the block for the selected method's type. */}
+      {selectedMethod && hasDestination(selectedMethod) && (
+        <T5Card className="mt-4 p-6">
+          <ReceivingDetails
+            method={selectedMethod}
+            styles={RECEIVING_STYLES}
+            note="Transfer the amount to this account, then upload your payment proof below."
+          />
+        </T5Card>
+      )}
+
+      {/* Manual payment: the player pays from their own app, then proves it.
+          Nothing is credited here — an admin reviews the screenshot first. */}
+      {needsProof && (
+        <T5Card className="mt-4 p-6">
+          <h2 className="font-black text-[#0f1b33]">Payment proof</h2>
+          <p className="mt-1 text-xs text-[#94a3b8]">
+            Pay using {selectedMethod.name}, then upload a screenshot of the
+            completed payment. Our team verifies it and credits your wallet.
+          </p>
+
+          <label className="mt-4 block text-sm text-[#64748b]">
+            UTR / Reference number <span className="text-[#94a3b8]">(optional)</span>
+          </label>
+          <input
+            type="text"
+            value={reference}
+            onChange={(e) => {
+              setReference(e.target.value);
+              if (submitError) setSubmitError('');
+            }}
+            placeholder="e.g. 412345678901"
+            className={`${t5Input} mt-2`}
+            aria-invalid={Boolean(submitError)}
+          />
+          {submitError ? (
+            <p className="mt-2 text-sm font-medium text-red-600">{submitError}</p>
+          ) : null}
+
+          <label className="mt-4 block text-sm text-[#64748b]">Screenshot</label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={(e) => pickProof(e.target.files?.[0])}
+            className="hidden"
+          />
+
+          {!proofPreview ? (
             <button
               type="button"
-              onClick={startPayment}
-              disabled={creating}
-              className={`${t5BtnPrimary} flex-[2]`}
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-2 flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed border-black/15 bg-white px-4 py-8 text-center transition hover:border-[#1d4ed8] hover:bg-[#eff4ff]"
             >
-              {creating ? 'Starting…' : `Proceed to pay USDT ${numAmount.toLocaleString('en-US')}`}
+              <Upload className="h-6 w-6 text-[#1d4ed8]" />
+              <span className="text-sm font-bold text-[#0f1b33]">
+                Tap to upload your payment screenshot
+              </span>
+              <span className="text-xs text-[#94a3b8]">PNG, JPG or WEBP · up to 5MB</span>
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Step 3: Payment (shared gateway) ── */}
-      {step === 'pay' && (
-        <div className="mt-6">
-          <PaymentGateway
-            amount={numAmount}
-            method={method}
-            onConfirm={confirmPayment}
-            onCancel={() => setStep('method')}
-          />
-        </div>
-      )}
-
-      {/* ── Done (submitted, pending admin approval) ── */}
-      {step === 'done' && receipt && (
-        <div className="mt-8 space-y-6">
-          <T5Card className="p-8 text-center">
-            <Clock className="mx-auto h-14 w-14 text-[#1d4ed8]" />
-            <h2 className="mt-4 text-xl font-black text-[#0f1b33]">Deposit submitted</h2>
-            <p className="mt-1 text-sm text-[#64748b]">
-              USDT {Number(receipt.amount).toLocaleString('en-US')} is awaiting confirmation. Your wallet will
-              be credited once our team approves the payment.
-            </p>
-            <div className="mt-6 space-y-2 rounded-lg border border-black/[0.06] bg-[#f8fafc] p-4 text-left text-sm">
-              <Row label="Amount" value={`USDT ${Number(receipt.amount).toLocaleString('en-US')}`} />
-              <Row label="Reference" value={receipt.reference} />
-              <Row label="Transaction ID" value={`#${transactionId}`} />
-              <Row label="Status" value="Pending approval" last />
+          ) : (
+            <div className="mt-2 rounded-lg border border-black/10 bg-white p-3">
+              <div className="flex items-start gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={proofPreview}
+                  alt="Payment screenshot preview"
+                  className="h-24 w-24 shrink-0 rounded-md border border-black/10 object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-[#0f1b33]">
+                    {proofFile?.name}
+                  </p>
+                  <p className="mt-0.5 text-xs text-[#94a3b8]">
+                    {((proofFile?.size ?? 0) / 1024).toFixed(0)} KB
+                  </p>
+                  {uploading && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#1d4ed8]">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading…
+                    </p>
+                  )}
+                  {proofUrl && !uploading && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#15803d]">
+                      <Check className="h-3.5 w-3.5" /> Uploaded
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={clearProof}
+                  aria-label="Remove screenshot"
+                  className="rounded-md p-1 text-[#94a3b8] transition hover:bg-black/5 hover:text-[#0f1b33]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
             </div>
-          </T5Card>
-          <div className="flex gap-3">
-            <button type="button" onClick={reset} className={`${t5BtnOutline} flex-1`}>
-              New deposit
-            </button>
-            <Link href="/wallet" className={`${t5BtnPrimary} flex-1 text-center`}>
-              Go to wallet
-            </Link>
-          </div>
+          )}
+
+          {proofError && (
+            <p className="mt-2 text-xs font-bold text-[#f4547a]">{proofError}</p>
+          )}
+        </T5Card>
+      )}
+
+      <button
+        type="button"
+        onClick={submit}
+        disabled={!canSubmit}
+        className={`${t5BtnPrimary} mt-4 w-full`}
+      >
+        {loading ? 'Processing...' : uploading ? 'Uploading screenshot…' : 'Submit deposit request'}
+      </button>
+      {needsProof && !proofUrl && !uploading && (
+        <p className="mt-2 text-center text-xs text-[#94a3b8]">
+          Upload your payment screenshot to submit.
+        </p>
+      )}
+      {result && (
+        <div className="mt-4 rounded-lg border border-[#1d4ed8]/25 bg-[#eff4ff] p-4 text-center">
+          <p className="text-sm font-black text-[#1d4ed8]">Deposit submitted — pending approval</p>
+          <p className="mt-1 text-xs text-[#64748b]">
+            Request ID: {result.transactionId}. Our team is reviewing your payment
+            proof — your wallet is credited once it is approved.
+          </p>
         </div>
       )}
     </T5FormPage>
-  );
-}
-
-function Stepper({ steps, current }) {
-  return (
-    <div className="mt-6 flex items-center">
-      {steps.map((label, i) => {
-        const done = i < current;
-        const active = i === current;
-        return (
-          <div key={label} className="flex flex-1 items-center last:flex-none">
-            <div className="flex flex-col items-center">
-              <span
-                className={`grid h-8 w-8 place-items-center rounded-full text-xs font-bold transition ${
-                  done
-                    ? 'bg-[#22a34a] text-white'
-                    : active
-                      ? 'bg-[#1d4ed8] text-white'
-                      : 'bg-[#eef1f4] text-[#94a3b8]'
-                }`}
-              >
-                {done ? '✓' : i + 1}
-              </span>
-              <span className={`mt-1.5 text-[0.7rem] ${active ? 'font-bold text-[#0f1b33]' : 'text-[#94a3b8]'}`}>
-                {label}
-              </span>
-            </div>
-            {i < steps.length - 1 && (
-              <div className={`mx-2 h-px flex-1 ${i < current ? 'bg-[#22a34a]/60' : 'bg-black/10'}`} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function Row({ label, value, last }) {
-  return (
-    <div className={`flex items-center justify-between py-1.5 ${last ? '' : 'border-b border-black/[0.06]'}`}>
-      <span className="text-[#94a3b8]">{label}</span>
-      <span className="font-bold text-[#0f1b33]">{value}</span>
-    </div>
   );
 }

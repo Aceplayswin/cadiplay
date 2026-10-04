@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { ShieldCheck } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
 import { useAuthStore } from '@/store/auth';
+import { SocialIconRow, WhatsAppSupportLink } from '@/components/SocialLinks';
 
 const LINK_GROUPS = [
   { title: 'Play', links: ['Sports', 'Live Casino', 'Slots', 'Crash Games', 'Lottery'] },
-  { title: 'Account', links: ['Deposit', 'Withdraw', 'My Bets', 'Bonuses', 'KYC'] },
+  { title: 'Account', links: ['Deposit', 'Withdraw', 'My Bets', 'Bonuses'] },
   { title: 'Company', links: ['About', 'Affiliates', 'Blog', 'Careers', 'Contact'] },
   { title: 'Legal', links: ['Terms', 'Privacy', 'Responsible Gaming', 'Fairness'] },
 ];
@@ -38,6 +39,10 @@ export function Footer() {
               <span className="text-xs text-muted">© 2026 {brandName}</span>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted">
+              <WhatsAppSupportLink
+                className="inline-flex items-center gap-1.5 font-bold text-emerald-400 transition-colors hover:text-emerald-300"
+                iconClassName="h-3.5 w-3.5"
+              />
               <span className="rounded border border-hairline/10 px-1.5 py-0.5 text-red-400">18+</span>
               <span>Play responsibly</span>
             </div>
@@ -86,6 +91,14 @@ export function Footer() {
             <p className="max-w-xs text-xs leading-relaxed text-muted">
               The premier platform for live, uninterrupted betting across Cricket, Soccer, Aviator, Andar Bahar and 2,000+ games.
             </p>
+            <SocialIconRow
+              className="flex gap-3"
+              itemClassName="grid h-9 w-9 place-items-center rounded-full border border-hairline/10 text-muted transition hover:border-brand-400/50 hover:text-brand-400"
+            />
+            <div className="space-y-2">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-app-fg">Support</h3>
+              <WhatsAppSupportLink className="inline-flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm font-bold text-emerald-400 transition-colors hover:bg-emerald-500/20" />
+            </div>
           </div>
 
           {LINK_GROUPS.map((group) => (

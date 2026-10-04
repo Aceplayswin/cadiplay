@@ -87,7 +87,7 @@ async function main() {
   // inside WEB_ROOT would recurse into itself).
   const dest = destArg
     ? resolve(isAbsolute(destArg) ? destArg : join(process.cwd(), destArg))
-    : resolve(WEB_ROOT, '..', '..', '..', `cadiplay-web-${themeKey}`);
+    : resolve(WEB_ROOT, '..', '..', '..', `dollara-web-${themeKey}`);
 
   if (dest === WEB_ROOT || !relative(WEB_ROOT, dest).startsWith('..')) {
     fail(`Destination must be outside the app itself (got ${dest}).`);
@@ -116,7 +116,7 @@ async function main() {
   // Record what this copy is, for whoever picks it up later.
   await writeFile(
     join(dest, 'THEME'),
-    `${themeKey}\n\nSingle-theme build extracted from cadiplay/web on ${new Date().toISOString()}.\n` +
+    `${themeKey}\n\nSingle-theme build extracted from dollara/web on ${new Date().toISOString()}.\n` +
       `Run: npm install && npm run dev\n`,
     'utf8',
   );

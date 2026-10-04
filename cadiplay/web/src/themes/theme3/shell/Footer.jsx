@@ -8,12 +8,12 @@ import Link from 'next/link';
 import { Download } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
 import { NAV_GAME_LINKS } from '@/lib/gameRoutes';
+import { SocialIconRow, WhatsAppSupportLink } from '@/components/SocialLinks';
 
 const QUICK_NAV = [
   { label: 'Live Betting', href: NAV_GAME_LINKS.sports },
   { label: 'Cricket Hub', href: NAV_GAME_LINKS.sports },
   { label: 'Casino Lobby', href: NAV_GAME_LINKS.casino },
-  { label: 'Direct Support', href: '/support/chat' },
   { label: 'Promotions', href: '/register' },
   { label: 'Get App', href: '/' },
 ];
@@ -22,7 +22,7 @@ const PAY_MODES = ['UPI', 'GPay', 'PhonePe', 'Net Banking', 'Paytm'];
 
 export function Theme3Footer() {
   const branding = useBranding();
-  const name = branding.product_name || 'CADIPLAY';
+  const name = branding.product_name || 'VELPLAY365';
   const year = new Date().getFullYear();
 
   return (
@@ -64,6 +64,10 @@ export function Theme3Footer() {
                 <Download className="h-3.5 w-3.5" /> GET APP
               </Link>
             </div>
+            <SocialIconRow
+              className="mt-5 flex gap-3"
+              itemClassName="grid h-9 w-9 place-items-center rounded-full border border-white/15 text-white/60 transition hover:border-[#e9c56b]/50 hover:text-[#e9c56b]"
+            />
           </div>
 
           {/* Quick navigation */}
@@ -78,6 +82,7 @@ export function Theme3Footer() {
                 </li>
               ))}
             </ul>
+            <WhatsAppSupportLink className="mt-4 inline-flex items-center gap-2 rounded-lg border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-sm font-black text-emerald-300 transition hover:bg-emerald-400/20" />
           </div>
 
           {/* Payments */}
@@ -111,7 +116,6 @@ export function Theme3Footer() {
             <span>© Copyright {year} {name}</span>
             <Link href="/" className="hover:text-[#e9c56b]">Responsible Gambling</Link>
             <Link href="/" className="hover:text-[#e9c56b]">Terms &amp; Condition</Link>
-            <Link href="/" className="hover:text-[#e9c56b]">KYC Policy</Link>
           </p>
           <p className="mt-3 text-xs font-black uppercase tracking-[0.14em] text-[#e9c56b]">
             Gambling can be addictive, please play responsibly

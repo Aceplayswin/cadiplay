@@ -37,7 +37,6 @@ export default function Theme2Profile() {
         <Row label="Name" value={user?.full_name} />
         <Row label="MemberId" value={user?.username} />
         <Row label="Phone" value={user?.phone} />
-        <Row label="KYC" value={user?.kyc_status} />
         <Row label="Account" value={user?.account_status} />
       </T2Card>
 
@@ -52,7 +51,7 @@ export default function Theme2Profile() {
         {txs.slice(0, 10).map((t) => (
           <li key={t.id} className="flex justify-between rounded-xl border border-white/5 bg-[#0d1420] px-4 py-3 text-sm">
             <span className="capitalize text-slate-300">{t.type}</span>
-            <span className="text-white">USDT {parseFloat(t.amount).toLocaleString('en-US')}</span>
+            <span className="text-white">₹{parseFloat(t.amount).toLocaleString('en-IN')}</span>
             <span className="text-slate-500">{t.status}</span>
           </li>
         ))}

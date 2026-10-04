@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
+import { useDemoLogin } from '@/hooks/useDemoLogin';
 
 const SWAL_BASE = { confirmButtonColor: '#F5C542', background: '#0d1420', color: '#e2e8f0' };
 
@@ -16,19 +17,20 @@ const SWAL_BASE = { confirmButtonColor: '#F5C542', background: '#0d1420', color:
  * console is now a separate app with its own login, so this UI is player-only
  * and the two apps never share a session.
  */
-export function useUnifiedLogin({ swal = {}, onSuccess } = {}) {
+export function useUnifiedLogin({ swal = {} } = {}) {
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
 
   const [identifier, setIdentifier] = useState(''); // phone
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { tryDemo, demoLoading } = useDemoLogin({ swal });
 
   const swalOpts = { ...SWAL_BASE, ...swal };
 
   const submit = async (e) => {
     e?.preventDefault?.();
-    if (loading) return;
+    if (loading || demoLoading) return;
     setLoading(true);
     try {
       const result = await api('/api/v1/auth/login', {
@@ -36,15 +38,9 @@ export function useUnifiedLogin({ swal = {}, onSuccess } = {}) {
         body: JSON.stringify({ phone: identifier, password }),
       });
       setAuth({ token: result.token, userId: result.userId, isDemo: false });
-      onSuccess?.();
-      await Swal.fire({
-        title: 'Welcome back!',
-        text: 'You have successfully logged in.',
-        icon: 'success',
-        timer: 1200,
-        showConfirmButton: false,
-        ...swalOpts,
-      });
+      // Straight to the lobby. A success popup on every sign-in told the player
+      // nothing they could not see for themselves and delayed the page they
+      // actually asked for; failures below still surface as a dialog.
       router.push('/');
     } catch (err) {
       Swal.fire({
@@ -64,6 +60,8 @@ export function useUnifiedLogin({ swal = {}, onSuccess } = {}) {
     password,
     setPassword,
     loading,
+    demoLoading,
     submit,
+    tryDemo,
   };
 }

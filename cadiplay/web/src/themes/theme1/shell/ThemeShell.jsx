@@ -1,6 +1,6 @@
 'use client';
 
-// Theme 1 shell — the original Cadiplay chrome: full-height side rail + top bar
+// Theme 1 shell — the original Dollara chrome: full-height side rail + top bar
 // (Header), matching layout offsets, and the Footer. Pages render only their
 // body content inside this frame (they no longer render Header/Footer).
 
