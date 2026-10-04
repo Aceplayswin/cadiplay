@@ -13,7 +13,7 @@ import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { T2Card, t2Input, t2BtnPrimary, t2BtnGhost } from '../components/ui';
 
-const MIN_WITHDRAWAL = 5;
+const MIN_WITHDRAWAL = 50;
 
 const METHODS = [
   { id: 'bank_transfer', label: 'Bank Transfer', desc: 'NEFT / IMPS to your account', icon: Landmark },

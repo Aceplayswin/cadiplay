@@ -1740,6 +1740,22 @@ export const inr = (n) =>
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
+
+/** Already-converted bet amounts (API already divided stored units by 100). */
+export const usd = (n) =>
+  `USD ${Number(n || 0).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+/** Stored ledger units shown as USD on bet screens. */
+export const usdStored = (n) =>
+  `USD ${(Number(n || 0) / 100).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+
+export const usdt = usdStored;
 // Dates are shown in full across the console — day, month, year and a
 // wall-clock time down to the second. Ops and finance reconcile against these
 // strings, and a stamp rounded to the minute loses the ordering of events that

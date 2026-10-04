@@ -98,6 +98,25 @@ class UserSetting(models.Model):
         db_table = 'user_settings'
 
 
+class LoginHistory(models.Model):
+    """One row per player sign-in. Used for last-IP on the admin user list."""
+
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, db_column='user_id'
+    )
+    admin_id = models.BigIntegerField(null=True, blank=True)
+    ip_address = models.CharField(max_length=45, null=True, blank=True)
+    user_agent = models.TextField(null=True, blank=True)
+    device_type = models.CharField(max_length=50, null=True, blank=True)
+    country_code = models.CharField(max_length=2, null=True, blank=True)
+    session_id = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'login_history'
+
+
 class Wallet(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_column='user_id')

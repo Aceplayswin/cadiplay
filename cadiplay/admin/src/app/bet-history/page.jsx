@@ -19,7 +19,8 @@ import {
   Pagination,
   TxReference,
   toast,
-  inr,
+  usd,
+  usdStored,
   fmtDate,
   fmtDateOnly,
   fmtTime,
@@ -78,17 +79,17 @@ const ROUND_COLUMNS = [
     align: 'right',
     render: (r) => (
       <span className="text-slate-400">
-        {r.balance_before == null ? '—' : inr(r.balance_before)}
+        {r.balance_before == null ? '—' : usd(r.balance_before)}
       </span>
     ),
   },
-  { key: 'bet_amount', label: 'Bet amount', align: 'right', render: (r) => inr(r.bet_amount) },
+  { key: 'bet_amount', label: 'Bet amount (USD)', align: 'right', render: (r) => usd(r.bet_amount) },
   {
     key: 'balance_after',
     label: 'Balance after',
     align: 'right',
     render: (r) => (
-      <span className="text-slate-400">{r.balance_after == null ? '—' : inr(r.balance_after)}</span>
+      <span className="text-slate-400">{r.balance_after == null ? '—' : usd(r.balance_after)}</span>
     ),
   },
   // One wager per row, so the result is that round's own outcome: the payout a
@@ -106,7 +107,7 @@ const ROUND_COLUMNS = [
         <div className="flex flex-col items-end leading-tight">
           <span className={r.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
             {r.profit_loss >= 0 ? '+' : '−'}
-            {inr(Math.abs(r.profit_loss))}
+            {usd(Math.abs(r.profit_loss))}
           </span>
           <span className="text-xs text-slate-500">
             {r.profit_loss >= 0 ? 'Win' : 'Loss'}
@@ -212,17 +213,18 @@ export default function AdminBetHistoryPage() {
       label: 'Balance Before',
       render: (r) => (
         <span className="text-slate-400">
-          {r.first_balance != null ? inr(r.first_balance) : '—'}
+          {r.first_balance != null ? usd(r.first_balance) : '—'}
         </span>
       ),
     },
-    { key: 'total_bet', label: 'Bet Amount', render: (r) => inr(r.total_bet) },
+    { key: 'ip', label: 'IP Address', render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span> },
+    { key: 'total_bet', label: 'Bet Amount (USD)', render: (r) => usd(r.total_bet) },
     {
       key: 'last_balance',
       label: 'Balance After',
       render: (r) => (
         <span className="text-slate-400">
-          {r.last_balance != null ? inr(r.last_balance) : '—'}
+          {r.last_balance != null ? usd(r.last_balance) : '—'}
         </span>
       ),
     },
@@ -258,11 +260,11 @@ export default function AdminBetHistoryPage() {
       {summary && (
         <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Sessions" value={total.toLocaleString('en-IN')} icon={Dices} />
-          <StatCard label="Total staked" value={inr(summary.total_bet)} accent="sky" />
-          <StatCard label="Total paid out" value={inr(summary.total_win)} accent="rose" />
+          <StatCard label="Total staked" value={usdStored(summary.total_bet)} accent="sky" />
+          <StatCard label="Total paid out" value={usdStored(summary.total_win)} accent="rose" />
           <StatCard
             label="Gross gaming revenue"
-            value={inr(summary.gross_gaming_revenue)}
+            value={usdStored(summary.gross_gaming_revenue)}
             accent="emerald"
             hint="Stakes minus payouts"
           />
@@ -274,7 +276,7 @@ export default function AdminBetHistoryPage() {
         rows={data?.records ?? []}
         loading={loading}
         searchable
-        searchKeys={['username', 'full_name', 'game_name', 'session_uid']}
+        searchKeys={['username', 'full_name', 'game_name', 'session_uid', 'ip']}
         searchPlaceholder="Search player, game or session…"
         onServerSearch={handleServerSearch}
         searchingServer={searchingServer}
@@ -380,7 +382,7 @@ function ResultBadge({ record }) {
   return (
     <span className={`font-semibold ${up ? 'text-emerald-400' : 'text-rose-400'}`}>
       {up ? '+' : '−'}
-      {inr(Math.abs(record.profit_loss))}
+      {usd(Math.abs(record.profit_loss))}
     </span>
   );
 }

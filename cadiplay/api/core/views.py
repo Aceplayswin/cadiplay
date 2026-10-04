@@ -267,8 +267,7 @@ def register(request):
             affiliate_ref=body.get('affiliateRef'),
             affiliate_sub=body.get('affiliateSub'),
             affiliate_click_id=body.get('affiliateClickId'),
-            signup_ip=(request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
-                       or request.META.get('REMOTE_ADDR')),
+            signup_ip=services.client_ip(request),
             email=body.get('email'),
         )
         return JsonResponse(result, status=201)
@@ -287,12 +286,7 @@ def register(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def demo_session(request):
-    try:
-        return JsonResponse(services.create_demo_session(), status=201)
-    except ValueError as e:
-        return _error_response(e)
-    except Exception as e:
-        return _error_response(e, status=500)
+    return JsonResponse({'error': 'Demo play is not available'}, status=403)
 
 
 @csrf_exempt
@@ -300,7 +294,12 @@ def demo_session(request):
 def login(request):
     try:
         body = _json_body(request)
-        return JsonResponse(services.login_user(body['phone'], body['password']))
+        return JsonResponse(services.login_user(
+            body['phone'],
+            body['password'],
+            ip=services.client_ip(request),
+            user_agent=request.META.get('HTTP_USER_AGENT'),
+        ))
     except (KeyError, json.JSONDecodeError) as e:
         return _error_response(e)
     except ValueError as e:
@@ -394,6 +393,7 @@ def wallet_deposit(request):
             'USDT',
             # Optional UTR / reference the user pastes from their payment app.
             reference_number=(body.get('referenceNumber') or body.get('reference_number')),
+            ip=services.client_ip(request),
         )
         return JsonResponse(result, status=201)
     except (KeyError, json.JSONDecodeError) as e:
@@ -425,7 +425,10 @@ def wallet_withdraw(request):
     try:
         body = _json_body(request)
         result = services.create_withdrawal(
-            request.auth.sub, float(stored_amount(body['amount'])), body['paymentMethod']
+            request.auth.sub,
+            float(stored_amount(body['amount'])),
+            body['paymentMethod'],
+            ip=services.client_ip(request),
         )
         return JsonResponse(result, status=201)
     except (KeyError, json.JSONDecodeError) as e:
@@ -577,7 +580,9 @@ def games_launch(request):
     """Request a launch URL from the aggregator and open a game session."""
     try:
         body = _json_body(request)
-        return JsonResponse(game_services.launch_game(request.auth.sub, body))
+        return JsonResponse(game_services.launch_game(
+            request.auth.sub, body, ip=services.client_ip(request),
+        ))
     except json.JSONDecodeError as e:
         return JsonResponse({'status_code': 'invalid_params', 'error': str(e)}, status=400)
     except GameError as e:
@@ -734,8 +739,17 @@ def admin_users(request):
         services.list_users(
             request.GET.get('status'),
             request.GET.get('kycStatus'),
-            int(request.GET.get('limit', 50)),
+            int(request.GET.get('limit', 200)),
             int(request.GET.get('offset', 0)),
+            search=request.GET.get('search'),
+            user_id=request.GET.get('userId'),
+            username=request.GET.get('username'),
+            full_name=request.GET.get('fullName'),
+            phone=request.GET.get('phone'),
+            ip=request.GET.get('ip'),
+            date_from=request.GET.get('dateFrom'),
+            date_to=request.GET.get('dateTo'),
+            affiliate_id=request.GET.get('affiliateId'),
         ),
         safe=False,
     )
@@ -1387,6 +1401,7 @@ def admin_withdrawals_pending(request):
             'created_at': t.created_at.isoformat(),
             'username': t.user.username,
             'full_name': t.user.full_name,
+            'ip': t.ip_address,
         }
         for t in txs
     ]

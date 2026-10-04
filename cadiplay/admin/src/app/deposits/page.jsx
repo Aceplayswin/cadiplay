@@ -174,6 +174,11 @@ export default function AdminDepositsPage() {
       ),
     },
     {
+      key: 'ip',
+      label: 'IP Address',
+      render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span>,
+    },
+    {
       key: 'amount',
       label: 'Amount',
       render: (r) => <span className="font-semibold text-emerald-400">{inr(r.amount)}</span>,
@@ -303,7 +308,7 @@ export default function AdminDepositsPage() {
         rows={items}
         loading={loading}
         searchable
-        searchKeys={['username', 'full_name', 'reference_number']}
+        searchKeys={['username', 'full_name', 'reference_number', 'ip']}
         searchPlaceholder="Search deposits…"
         noun="deposit"
         pageSize={15}

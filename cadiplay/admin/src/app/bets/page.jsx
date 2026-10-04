@@ -6,7 +6,7 @@ import {
   DataTable,
   TxReference,
   useAdminData,
-  usdt,
+  usdStored,
 } from '@/components/admin/AdminShell';
 
 // Same category set the games catalog uses, so the category filter lines up with
@@ -43,7 +43,8 @@ export default function AdminBetsPage() {
       sortable: false,
       render: (r) => <TxReference reference={r.reference} />,
     },
-    { key: 'bet_amount', label: 'Bet Amount', render: (r) => usdt(r.bet_amount) },
+    { key: 'ip', label: 'IP Address', render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span> },
+    { key: 'bet_amount', label: 'Bet Amount (USD)', render: (r) => usdStored(r.bet_amount) },
     {
       key: 'status',
       label: 'Result',
@@ -61,7 +62,7 @@ export default function AdminBetsPage() {
         return (
           <span className={`font-semibold ${up ? 'text-emerald-400' : 'text-rose-400'}`}>
             {up ? '+' : '−'}
-            {usdt(Math.abs(r.profit_loss))}
+            {usdStored(Math.abs(r.profit_loss))}
           </span>
         );
       },
@@ -73,7 +74,7 @@ export default function AdminBetsPage() {
       // so money on each account can be tracked over time.
       render: (r) => (
         <span className="font-semibold text-white">
-          {r.wallet_balance != null ? usdt(r.wallet_balance) : '—'}
+          {r.wallet_balance != null ? usdStored(r.wallet_balance) : '—'}
         </span>
       ),
     },
@@ -101,7 +102,7 @@ export default function AdminBetsPage() {
         rows={bets}
         loading={loading}
         searchable
-        searchKeys={['username', 'game_name']}
+        searchKeys={['username', 'game_name', 'ip']}
         searchPlaceholder="Search bets…"
         noun="bet"
         pageSize={20}

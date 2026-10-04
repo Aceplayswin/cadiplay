@@ -22,11 +22,11 @@ import {
 } from '@/components/admin/AdminShell';
 
 const DESCRIPTIONS = {
-  users: 'Every registered player with balances and activity dates.',
-  transactions: 'All money movements — deposits, withdrawals, bonuses, settlements.',
-  deposits: 'Player deposits and manual wallet credits, with method and reference.',
-  withdrawals: 'Withdrawal requests and manual wallet debits, with approval status.',
-  'bet-history': 'Play sessions per player: stakes, payouts and result.',
+  users: 'Every registered player with balances, activity dates and IP address.',
+  transactions: 'All money movements — deposits, withdrawals, bonuses, settlements — with IP.',
+  deposits: 'Player deposits and manual wallet credits, with method, reference and IP.',
+  withdrawals: 'Withdrawal requests and manual wallet debits, with approval status and IP.',
+  'bet-history': 'Play sessions per player: stakes, payouts, result and IP address.',
   rounds: 'Individual game rounds, including unsettled ones.',
   bonuses: 'Issued bonuses with wagering progress.',
   casino: 'Casino rounds only, with game, category and provider.',

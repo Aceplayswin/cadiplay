@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import Swal from 'sweetalert2';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
-import { useDemoLogin } from '@/hooks/useDemoLogin';
 
 const SWAL_BASE = { confirmButtonColor: '#F5C542', background: '#0d1420', color: '#e2e8f0' };
 
@@ -24,13 +23,12 @@ export function useUnifiedLogin({ swal = {}, onSuccess } = {}) {
   const [identifier, setIdentifier] = useState(''); // phone
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { tryDemo, demoLoading } = useDemoLogin({ swal });
 
   const swalOpts = { ...SWAL_BASE, ...swal };
 
   const submit = async (e) => {
     e?.preventDefault?.();
-    if (loading || demoLoading) return;
+    if (loading) return;
     setLoading(true);
     try {
       const result = await api('/api/v1/auth/login', {
@@ -66,8 +64,6 @@ export function useUnifiedLogin({ swal = {}, onSuccess } = {}) {
     password,
     setPassword,
     loading,
-    demoLoading,
     submit,
-    tryDemo,
   };
 }

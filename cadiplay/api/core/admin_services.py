@@ -74,6 +74,10 @@ def _serialize_user(u: User, wallet: Wallet | None = None, user_settings: UserSe
         'main_balance': float(wallet.main_balance) if wallet else 0,
         'bonus_balance': float(wallet.bonus_balance) if wallet else 0,
         'locked_balance': float(wallet.locked_balance) if wallet else 0,
+        'ip': (prefs.last_ip or prefs.signup_ip) if prefs else None,
+        'signup_ip': prefs.signup_ip if prefs else None,
+        'last_logged_ip': prefs.last_ip if prefs else None,
+        'affiliate_id': prefs.affiliate_id if prefs else None,
     }
 
 
@@ -141,6 +145,7 @@ def _serialize_transaction(t: Transaction) -> dict:
         'reference_number': t.reference_number,
         'notes': t.notes,
         'created_at': t.created_at.isoformat(),
+        'ip': t.ip_address,
     }
 
 
@@ -359,6 +364,8 @@ def list_admin_bets(limit: int = 50, offset: int = 0, user_id: int | None = None
             # instead of showing as a premature loss.
             'status': 'pending' if is_pending else ('won' if net >= 0 else 'lost'),
             'created_at': r.created_at.isoformat(),
+            'ip': r.session.ip_address if r.session_id else None,
+            'currency': r.currency or 'USD',
         })
     return rows
 
@@ -1041,6 +1048,7 @@ def list_bet_history(
         row['user_id'] = s.user_id
         row['username'] = s.user.username
         row['full_name'] = s.user.full_name
+        row['ip'] = s.ip_address
         records.append(row)
 
     # Summarise the SAME filtered set, so the headline figures describe the
@@ -1099,6 +1107,7 @@ def _report_users(date_from, date_to, member_id=None):
         qs = qs.filter(created_at__date__lte=date_to)
     header = [
         'ID', 'Username', 'Full name', 'Phone', 'Email', 'Status', 'KYC',
+        'Signup IP', 'Last IP',
         'Real balance', 'Bonus balance', 'Registered', 'Last login',
     ]
 
@@ -1109,6 +1118,8 @@ def _report_users(date_from, date_to, member_id=None):
             yield [
                 u.id, u.username, u.full_name, u.phone, u.email,
                 u.account_status, prefs.kyc_status if prefs else '',
+                prefs.signup_ip if prefs else '',
+                prefs.last_ip if prefs else '',
                 float(wallet.main_balance) if wallet else 0,
                 float(wallet.bonus_balance) if wallet else 0,
                 _d(u.created_at), _d(u.last_login_at),
@@ -1129,7 +1140,7 @@ def _report_transactions(date_from, date_to, tx_type=None, member_id=None):
         qs = qs.filter(created_at__date__lte=date_to)
     header = [
         'ID', 'User ID', 'Username', 'Type', 'Amount', 'Currency', 'Status',
-        'Method', 'Reference', 'Notes', 'Created',
+        'Method', 'Reference', 'IP Address', 'Notes', 'Created',
     ]
 
     def rows():
@@ -1137,6 +1148,7 @@ def _report_transactions(date_from, date_to, tx_type=None, member_id=None):
             yield [
                 t.id, t.user_id, t.user.username, t.type, float(t.amount),
                 t.currency, t.status, t.payment_method, t.reference_number,
+                t.ip_address or '',
                 (t.notes or '').replace('\n', ' '), _d(t.created_at),
             ]
 
@@ -1155,7 +1167,8 @@ def _report_bet_history(date_from, date_to, member_id=None):
         qs = qs.filter(created_at__date__lte=date_to)
     header = [
         'Session', 'User ID', 'Username', 'Game', 'Category', 'Rounds',
-        'Pending', 'Staked', 'Won', 'P&L', 'Result', 'Started', 'Last played',
+        'Pending', 'Staked', 'Won', 'P&L', 'Result', 'IP Address',
+        'Started', 'Last played',
     ]
 
     def rows():
@@ -1165,7 +1178,8 @@ def _report_bet_history(date_from, date_to, member_id=None):
                 s.session_uid, s.user_id, s.user.username, s.game_name,
                 s.game.category if s.game else '', s.rounds_count,
                 s.pending_rounds, float(s.total_bet), float(s.total_win),
-                float(s.profit_loss), data['result'], _d(s.created_at),
+                float(s.profit_loss), data['result'], s.ip_address or '',
+                _d(s.created_at),
                 _d(s.last_played_at),
             ]
 
@@ -1173,7 +1187,7 @@ def _report_bet_history(date_from, date_to, member_id=None):
 
 
 def _report_rounds(date_from, date_to, member_id=None):
-    qs = GameRound.objects.select_related('user', 'game').order_by('-created_at')
+    qs = GameRound.objects.select_related('user', 'game', 'session').order_by('-created_at')
     if member_id:
         qs = qs.filter(user__username=member_id)
     if date_from:
@@ -1182,7 +1196,7 @@ def _report_rounds(date_from, date_to, member_id=None):
         qs = qs.filter(created_at__date__lte=date_to)
     header = [
         'ID', 'Serial', 'Round', 'User ID', 'Username', 'Game', 'Bet', 'Win',
-        'P&L', 'Balance after', 'Settlement', 'Created',
+        'P&L', 'Balance after', 'Settlement', 'IP Address', 'Created',
     ]
 
     def rows():
@@ -1193,7 +1207,9 @@ def _report_rounds(date_from, date_to, member_id=None):
                 float(r.bet_amount), float(r.win_amount),
                 float(r.win_amount - r.bet_amount),
                 float(r.balance_after) if r.balance_after is not None else '',
-                r.settle_status, _d(r.created_at),
+                r.settle_status,
+                (r.session.ip_address if r.session_id else '') or '',
+                _d(r.created_at),
             ]
 
     return header, rows()

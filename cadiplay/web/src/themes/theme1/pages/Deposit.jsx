@@ -14,8 +14,8 @@ import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { PaymentGateway } from '@/components/payments/PaymentGateway';
 
-const MIN_DEPOSIT = 1;
-const QUICK_AMOUNTS = [5, 10, 25, 50, 100];
+const MIN_DEPOSIT = 30;
+const QUICK_AMOUNTS = [30, 50, 100, 200, 500];
 const PAYMENT_METHODS = [
   { id: 'upi', label: 'UPI', desc: 'Google Pay, PhonePe, Paytm', icon: Smartphone, eta: 'Instant' },
   { id: 'card', label: 'Debit / Credit Card', desc: 'Visa, Mastercard, RuPay', icon: CreditCard, eta: 'Instant' },

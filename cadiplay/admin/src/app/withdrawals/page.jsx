@@ -193,6 +193,11 @@ export default function AdminWithdrawalsPage() {
         </div>
       ),
     },
+    {
+      key: 'ip',
+      label: 'IP Address',
+      render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span>,
+    },
     { key: 'amount', label: 'Amount', render: (r) => <span className="font-semibold text-rose-400">{inr(r.amount)}</span> },
     {
       key: 'payment_method',
@@ -287,7 +292,7 @@ export default function AdminWithdrawalsPage() {
         rows={items}
         loading={loading}
         searchable
-        searchKeys={['username', 'full_name', 'reference_number']}
+        searchKeys={['username', 'full_name', 'reference_number', 'ip']}
         searchPlaceholder="Search withdrawals…"
         noun="withdrawal"
         pageSize={15}

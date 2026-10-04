@@ -26,6 +26,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from core import bonus_services, game_logging
+from core.services import touch_last_ip
 from core.money import stored_amount, usdt_amount
 from core.game_schemas import CallbackPayload, LaunchRequest
 from core.models import (
@@ -70,7 +71,7 @@ def _new_session_uid() -> str:
 # Launch
 # --------------------------------------------------------------------------- #
 
-def launch_game(user_id: int, body: dict) -> dict:
+def launch_game(user_id: int, body: dict, ip: str | None = None) -> dict:
     """Validate, request a launch URL from the aggregator, and open a session.
 
     Raises :class:`GameError` with a code from the set
@@ -139,8 +140,13 @@ def launch_game(user_id: int, body: dict) -> dict:
                 session.game_name = game_name
                 session.member_account = member_account
                 session.launch_url = launch_url
-                session.currency = 'USDT'
+                session.currency = 'USD'
+                if ip:
+                    session.ip_address = ip[:45]
                 session.save(update_fields=[
+                    'game_name', 'member_account', 'launch_url', 'currency',
+                    'ip_address', 'updated_at',
+                ] if ip else [
                     'game_name', 'member_account', 'launch_url', 'currency',
                     'updated_at',
                 ])
@@ -153,8 +159,9 @@ def launch_game(user_id: int, body: dict) -> dict:
                     game_name=game_name,
                     member_account=member_account,
                     launch_url=launch_url,
-                    currency='USDT',
+                    currency='USD',
                     status=GameSession.Status.WAIT,
+                    ip_address=(ip or None)[:45] if ip else None,
                 )
             GameRepository.increment_play_count(game.id)
     except GameError as exc:
@@ -163,6 +170,7 @@ def launch_game(user_id: int, body: dict) -> dict:
         game_logging.launch_failed(user_id, req.game_uid, exc.code, str(exc), req.game_name)
         raise
 
+    touch_last_ip(user_id, ip)
     game_logging.launch_success(
         user_id, req.game_uid, session.session_uid, game_name, launch_url,
     )
@@ -478,9 +486,8 @@ def _settle(user_id: int, cb: CallbackPayload) -> SettlementResult:
                 win_amount=cb.win_amount,
                 balance_before=balance_before,
                 balance_after=balance_before + net,
-                # Wallet is USDT. The aggregator's currency_code is a label only
-                # and must not retag the round (they have sent INR).
-                currency='USDT',
+                # Wallet is USDT. Bets are launched and labelled as USD.
+                currency='USD',
                 provider_timestamp=cb.timestamp,
             )
         except IntegrityError as exc:
@@ -581,6 +588,8 @@ def serialize_session(s: GameSession) -> dict:
         'last_balance': usdt_amount(s.last_balance) if s.last_balance is not None else None,
         'last_played_at': s.last_played_at.isoformat() if s.last_played_at else None,
         'created_at': s.created_at.isoformat(),
+        'ip': s.ip_address,
+        'currency': s.currency or 'USD',
     }
 
 

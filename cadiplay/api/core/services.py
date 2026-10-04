@@ -23,6 +23,7 @@ from core.models import (
     Game,
     GameSession,
     PlatformSetting,
+    LoginHistory,
     Transaction,
     User,
     UserBonus,
@@ -286,7 +287,7 @@ def create_demo_session() -> dict:
     return {'demoId': demo_id, 'token': token, 'expiresAt': expires_at.isoformat()}
 
 
-def login_user(phone: str, password: str, ip: str | None = None) -> dict:
+def login_user(phone: str, password: str, ip: str | None = None, user_agent: str | None = None) -> dict:
     user = User.objects.filter(phone=phone, role=User.Role.USER).first()
     if not user or not user.password_hash:
         raise ValueError('Invalid credentials')
@@ -297,6 +298,12 @@ def login_user(phone: str, password: str, ip: str | None = None) -> dict:
     user.last_login_at = timezone.now()
     user.save(update_fields=['last_login_at'])
     touch_last_ip(user.id, ip)
+    if ip:
+        LoginHistory.objects.create(
+            user=user,
+            ip_address=ip[:45],
+            user_agent=(user_agent or '')[:2000] or None,
+        )
     payload = {'sub': user.id, 'role': User.Role.USER}
     prefs = get_user_settings(user)
     if prefs and prefs.is_demo:
@@ -649,7 +656,6 @@ def create_withdrawal(user_id: int, amount: float, payment_method: str, ip: str 
             payment_method=payment_method,
             ip_address=(ip or None)[:45] if ip else None,
         )
-    touch_last_ip(user_id, ip)
         # Place a HOLD only — the balance itself is untouched until an admin
         # approves. The hold is what stops the same money being staked or
         # withdrawn twice while the request sits in the queue.
@@ -664,6 +670,7 @@ def create_withdrawal(user_id: int, amount: float, payment_method: str, ip: str 
             'payment_processing',
         ):
             WithdrawalStage.objects.create(transaction=tx, stage=stage, status='pending')
+    touch_last_ip(user_id, ip)
 
     # The withdrawal now waits for the product admin to approve or reject it
     # (see approve_withdrawal / reject_withdrawal).
@@ -921,12 +928,51 @@ def list_users(
     kyc_status: str | None = None,
     limit: int = 50,
     offset: int = 0,
+    search: str | None = None,
+    user_id: str | None = None,
+    username: str | None = None,
+    full_name: str | None = None,
+    phone: str | None = None,
+    ip: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    affiliate_id: str | None = None,
 ):
     qs = _player_users().select_related('wallet', 'usersetting')
     if status:
         qs = qs.filter(account_status=status)
     if kyc_status:
         qs = qs.filter(usersetting__kyc_status=kyc_status)
+    if user_id:
+        qs = qs.filter(Q(id__iexact=user_id) | Q(username__icontains=user_id))
+    if username:
+        qs = qs.filter(username__icontains=username.strip())
+    if full_name:
+        qs = qs.filter(full_name__icontains=full_name.strip())
+    if phone:
+        qs = qs.filter(phone__icontains=phone.strip())
+    if affiliate_id:
+        qs = qs.filter(usersetting__affiliate_id=affiliate_id)
+    if ip:
+        needle = ip.strip()
+        qs = qs.filter(
+            Q(usersetting__signup_ip__icontains=needle)
+            | Q(usersetting__last_ip__icontains=needle)
+        )
+    if date_from:
+        qs = qs.filter(created_at__date__gte=date_from)
+    if date_to:
+        qs = qs.filter(created_at__date__lte=date_to)
+    if search:
+        term = search.strip()
+        qs = qs.filter(
+            Q(username__icontains=term)
+            | Q(full_name__icontains=term)
+            | Q(phone__icontains=term)
+            | Q(id__iexact=term)
+            | Q(usersetting__signup_ip__icontains=term)
+            | Q(usersetting__last_ip__icontains=term)
+        )
     qs = qs.order_by('-created_at')[offset : offset + limit]
     result = []
     for u in qs:
@@ -935,17 +981,25 @@ def list_users(
         except Wallet.DoesNotExist:
             w = None
         prefs = get_user_settings(u)
+        last_ip = prefs.last_ip if prefs else None
+        signup_ip = prefs.signup_ip if prefs else None
         result.append({
             'id': u.id,
             'username': u.username,
             'full_name': u.full_name,
             'phone': u.phone,
             'email': u.email,
+            'country_code': u.country_code,
             'kyc_status': prefs.kyc_status if prefs else UserSetting.KycStatus.NONE,
             'account_status': u.account_status,
             'created_at': u.created_at.isoformat(),
             'last_login_at': u.last_login_at.isoformat() if u.last_login_at else None,
             'main_balance': float(w.main_balance) if w else 0,
             'bonus_balance': float(w.bonus_balance) if w else 0,
+            'ip': last_ip or signup_ip,
+            'signup_ip': signup_ip,
+            'last_logged_ip': last_ip,
+            'affiliate_id': prefs.affiliate_id if prefs else None,
+            'created_by_type': 'affiliate' if prefs and prefs.affiliate_id else 'direct',
         })
     return result

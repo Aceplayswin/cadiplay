@@ -70,6 +70,11 @@ export default function AdminTransactionsPage() {
       ),
     },
     {
+      key: 'ip',
+      label: 'IP Address',
+      render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span>,
+    },
+    {
       key: 'type',
       label: 'Type',
       render: (r) => <span className="capitalize text-slate-300">{r.type.replace(/_/g, ' ')}</span>,
@@ -173,7 +178,7 @@ export default function AdminTransactionsPage() {
             </Select>
           </Field>
         }
-        searchKeys={['username', 'full_name', 'reference_number']}
+        searchKeys={['username', 'full_name', 'reference_number', 'ip']}
         searchPlaceholder="Search transactions…"
         noun="transaction"
         pageSize={20}
