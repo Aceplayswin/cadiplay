@@ -295,7 +295,7 @@ export default function AgentApplicationsPage() {
                   </Select>
                 </Field>
 
-                <Field label="Opening credit ($)">
+                <Field label="Opening credit (USDT)">
                   <Input
                     type="number"
                     min="0"

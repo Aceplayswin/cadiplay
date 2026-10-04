@@ -193,7 +193,7 @@ export default function Theme5Deposit() {
       ]}
     >
       <T5Card className="mt-4 p-6">
-        <label className="text-sm text-[#64748b]">Enter Amount (₹)</label>
+        <label className="text-sm text-[#64748b]">Enter Amount (USDT)</label>
         <input
           type="number"
           value={amount}
@@ -209,7 +209,7 @@ export default function Theme5Deposit() {
               onClick={() => setAmount(String(a))}
               className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#0f1b33] shadow-sm transition hover:border-[#1d4ed8] hover:text-[#1d4ed8]"
             >
-              ₹{a.toLocaleString('en-IN')}
+              USDT {a.toLocaleString('en-IN')}
             </button>
           ))}
         </div>

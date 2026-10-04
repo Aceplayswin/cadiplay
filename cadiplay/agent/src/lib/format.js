@@ -3,10 +3,10 @@
 
 /** Money in USDT. Stored amounts are 100x the figure shown (6000 → 60). */
 export function money(value) {
-  return (Number(value || 0) / 100).toLocaleString('en-US', {
+  return `USDT ${(Number(value || 0) / 100).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  });
+  })}`;
 }
 
 export function num(value) {

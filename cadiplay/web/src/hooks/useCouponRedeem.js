@@ -6,7 +6,7 @@
 //
 // Two endpoints back this:
 //   POST /bonuses/claim/preview — checks a code without consuming it, so the
-//     player sees "₹100, ready to redeem" (or why not) before committing.
+//     player sees "USDT 100, ready to redeem" (or why not) before committing.
 //   POST /bonuses/claim         — the redemption itself. One per player per
 //     campaign, enforced server-side inside a locked transaction.
 

@@ -82,7 +82,7 @@ export function Theme3TopNav() {
               <div className="hidden items-center gap-2 rounded-full border border-black/[0.06] bg-white py-1 pl-3 pr-1 shadow-sm sm:flex">
                 <Wallet className="h-4 w-4 text-[#c79a3b]" />
                 <span className="text-sm font-black text-[#1b1726]">
-                  ₹{Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  USDT {Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <Link
                   href="/deposit"

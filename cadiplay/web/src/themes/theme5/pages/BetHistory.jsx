@@ -17,7 +17,7 @@ import { useAuthStore } from '@/store/auth';
 import { formatDateTime } from '@/lib/datetime';
 import { T5Card } from '../components/ui';
 
-const inr = (n) => `₹${Number(n ?? 0).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 export default function Theme5BetHistory() {
   const router = useRouter();
@@ -174,10 +174,10 @@ export default function Theme5BetHistory() {
                           )}
                         </td>
                         <td className="px-5 py-3 text-right tabular-nums text-[var(--t5-ink)]">
-                          {inr(r.total_bet)}
+                          {usdt(r.total_bet)}
                         </td>
                         <td className="px-5 py-3 text-right tabular-nums text-[var(--t5-ink)]">
-                          {inr(r.total_win)}
+                          {usdt(r.total_win)}
                         </td>
                         <td className="px-5 py-3 text-right">
                           <ResultCell record={r} />
@@ -227,7 +227,7 @@ function ResultCell({ record }) {
       className={`font-black tabular-nums ${up ? 'text-[var(--t5-green)]' : 'text-[var(--t5-live)]'}`}
     >
       {up ? '+' : '−'}
-      {inr(Math.abs(Number(record.profit_loss)))}
+      {usdt(Math.abs(Number(record.profit_loss)))}
     </span>
   );
 }
@@ -281,10 +281,10 @@ function RoundDetails({ detail, onSelectRound }) {
               <td className="py-2 pr-4 text-[var(--t5-muted)]">
                 {rd.settled_at ? formatDateTime(rd.settled_at) : '—'}
               </td>
-              <td className="py-2 pr-4 text-right tabular-nums">{inr(rd.bet_amount)}</td>
-              <td className="py-2 pr-4 text-right tabular-nums">{inr(rd.win_amount)}</td>
+              <td className="py-2 pr-4 text-right tabular-nums">{usdt(rd.bet_amount)}</td>
+              <td className="py-2 pr-4 text-right tabular-nums">{usdt(rd.win_amount)}</td>
               <td className="py-2 pr-4 text-right tabular-nums text-[var(--t5-muted)]">
-                {rd.balance_after == null ? '—' : inr(rd.balance_after)}
+                {rd.balance_after == null ? '—' : usdt(rd.balance_after)}
               </td>
               <td className="py-2 text-right">
                 {rd.result === 'pending' ? (
@@ -296,7 +296,7 @@ function RoundDetails({ detail, onSelectRound }) {
                     }`}
                   >
                     {rd.profit_loss >= 0 ? '+' : '−'}
-                    {inr(Math.abs(rd.profit_loss))}
+                    {usdt(Math.abs(rd.profit_loss))}
                   </span>
                 )}
               </td>
@@ -332,10 +332,10 @@ function RoundDetailModal({ round, onClose }) {
     ['Category', (round.category || '—').replace(/_/g, ' ')],
     ['Placed', formatDateTime(round.created_at)],
     ['Settled', round.settled_at ? formatDateTime(round.settled_at) : '—'],
-    ['Stake', inr(round.bet_amount)],
-    ['Win', inr(round.win_amount)],
-    ['Balance before', round.balance_before == null ? '—' : inr(round.balance_before)],
-    ['Balance after', round.balance_after == null ? '—' : inr(round.balance_after)],
+    ['Stake', usdt(round.bet_amount)],
+    ['Win', usdt(round.win_amount)],
+    ['Balance before', round.balance_before == null ? '—' : usdt(round.balance_before)],
+    ['Balance after', round.balance_after == null ? '—' : usdt(round.balance_after)],
     ['Status', isPending ? 'Pending' : (round.settle_status || round.result || '—')],
   ];
 
@@ -398,7 +398,7 @@ function RoundDetailModal({ round, onClose }) {
                     }`}
                   >
                     {up ? '+' : '−'}
-                    {inr(Math.abs(Number(round.profit_loss)))}
+                    {usdt(Math.abs(Number(round.profit_loss)))}
                   </span>
                 )}
               </dd>
@@ -424,7 +424,7 @@ function Summary({ label, value, tone, hint }) {
       <p className="text-[0.6rem] font-black uppercase tracking-wide text-[var(--t5-muted)]">
         {label}
       </p>
-      <p className={`mt-1 font-display text-lg font-black tabular-nums ${color}`}>{inr(value)}</p>
+      <p className={`mt-1 font-display text-lg font-black tabular-nums ${color}`}>{usdt(value)}</p>
       {hint && <p className="mt-0.5 text-[0.65rem] text-[var(--t5-muted)]">{hint}</p>}
     </T5Card>
   );

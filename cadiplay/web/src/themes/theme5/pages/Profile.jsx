@@ -30,7 +30,7 @@ import { T5Card, T5FormPage, t5BtnOutline } from '../components/ui';
 // so each helper falls back to a dash rather than printing "null"/"Invalid Date".
 const DASH = '—';
 
-// "12 Mar 2024" — day-first, matching the ₹/en-IN formatting used elsewhere.
+// "12 Mar 2024" — day-first, matching the USDT / en-IN formatting used elsewhere.
 // "12 Mar 2024, 10:00:45 pm" — the full stamp, seconds included, from the
 // shared formatter. Both member-since and last-login are real moments, so
 // neither hides its time of day.

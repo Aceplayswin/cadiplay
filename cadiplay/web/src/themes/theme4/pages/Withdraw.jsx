@@ -39,7 +39,7 @@ export default function Theme4Withdraw() {
       title="Withdraw"
       subtitle={
         wallet
-          ? `Available: ₹${wallet.available.toLocaleString('en-IN')}`
+          ? `Available: USDT ${wallet.available.toLocaleString('en-IN')}`
           : undefined
       }
     >

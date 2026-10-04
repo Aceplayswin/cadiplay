@@ -462,7 +462,7 @@ function CommissionTab({ data, onSave, busy }) {
             />
           </Field>
 
-          <Field label="CPA amount ($)">
+          <Field label="CPA amount (USDT)">
             <Input
               type="number"
               min="0"
@@ -478,7 +478,7 @@ function CommissionTab({ data, onSave, busy }) {
             <Input type="number" min="0" max="100" step="0.5" value={terms.overrideRate} onChange={set('overrideRate')} />
           </Field>
 
-          <Field label="Payout threshold ($)">
+          <Field label="Payout threshold (USDT)">
             <Input type="number" min="0" value={terms.payoutThreshold} onChange={set('payoutThreshold')} />
           </Field>
 

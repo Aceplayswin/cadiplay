@@ -95,7 +95,7 @@ export default function Theme3Deposit() {
   return (
     <T3FormPage title="Deposit">
       <T3Card className="mt-6 p-6">
-        <label className="text-sm text-[#6b6579]">Enter Amount (₹)</label>
+        <label className="text-sm text-[#6b6579]">Enter Amount (USDT)</label>
         <input
           type="number"
           value={amount}
@@ -111,7 +111,7 @@ export default function Theme3Deposit() {
               onClick={() => setAmount(String(a))}
               className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-[#4a4458] shadow-sm transition hover:border-[#c79a3b]/50 hover:text-[#9a7a24]"
             >
-              ₹{a.toLocaleString('en-IN')}
+              USDT {a.toLocaleString('en-IN')}
             </button>
           ))}
         </div>

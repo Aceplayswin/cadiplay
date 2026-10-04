@@ -1736,21 +1736,21 @@ export function useAdminData(fetcher, deps = []) {
 }
 
 export const money = (n) =>
-  `USD ${(Number(n || 0) / 100).toLocaleString('en-US', {
+  `USDT ${(Number(n || 0) / 100).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 
 /** Already-converted bet amounts (API already divided stored units by 100). */
 export const usd = (n) =>
-  `USD ${Number(n || 0).toLocaleString('en-US', {
+  `USDT ${Number(n || 0).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;
 
-/** Stored ledger units shown as USD on bet screens. */
+/** Stored ledger units shown as USDT on bet screens. */
 export const usdStored = (n) =>
-  `USD ${(Number(n || 0) / 100).toLocaleString('en-US', {
+  `USDT ${(Number(n || 0) / 100).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

@@ -79,7 +79,7 @@ export function hasDestination(method) {
   );
 }
 
-const inr = (n) => `₹${Number(n).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n).toLocaleString('en-IN')}`;
 
 function limits(method) {
   const min = Number(method?.min_amount ?? 0) || 0;
@@ -95,10 +95,10 @@ export function amountWithinLimits(method, amount) {
   const { min, max } = limits(method);
   const n = Number(amount) || 0;
   if (min > 0 && n < min) {
-    return { ok: false, message: `Minimum deposit for ${method.name} is ${inr(min)}.` };
+    return { ok: false, message: `Minimum deposit for ${method.name} is ${usdt(min)}.` };
   }
   if (max && n > max) {
-    return { ok: false, message: `Maximum deposit for ${method.name} is ${inr(max)}.` };
+    return { ok: false, message: `Maximum deposit for ${method.name} is ${usdt(max)}.` };
   }
   return { ok: true, message: null };
 }
@@ -106,8 +106,8 @@ export function amountWithinLimits(method, amount) {
 export function limitsText(method) {
   const { min, max } = limits(method);
   const parts = [];
-  if (min > 0) parts.push(`Min ${inr(min)}`);
-  if (max) parts.push(`Max ${inr(max)}`);
+  if (min > 0) parts.push(`Min ${usdt(min)}`);
+  if (max) parts.push(`Max ${usdt(max)}`);
   return parts.join(' · ');
 }
 

@@ -13,7 +13,7 @@ const GROUPS = [
       { key: 'support_email', label: 'Support email', type: 'email' },
       { key: 'support_phone', label: 'Support phone' },
       { key: 'website_url', label: 'Website URL' },
-      { key: 'default_currency', label: 'Default currency', placeholder: 'USD' },
+      { key: 'default_currency', label: 'Default currency', placeholder: 'USDT' },
       { key: 'default_language', label: 'Default language', placeholder: 'en' },
       { key: 'timezone', label: 'Timezone', placeholder: 'Asia/Kolkata' },
     ],

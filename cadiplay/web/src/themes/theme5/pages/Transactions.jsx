@@ -25,7 +25,7 @@ import {
   summarise,
 } from '@/lib/transactions';
 
-const inr = (n) => `₹${Number(n ?? 0).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 export default function Theme5Transactions() {
   const router = useRouter();
@@ -204,7 +204,7 @@ function AmountCell({ tx }) {
   return (
     <span className={`font-black tabular-nums ${tone}`}>
       {credit ? '+' : '−'}
-      {inr(Math.abs(Number(tx.amount ?? 0)))}
+      {usdt(Math.abs(Number(tx.amount ?? 0)))}
     </span>
   );
 }
@@ -240,7 +240,7 @@ function Summary({ label, value, tone, hint }) {
       <p className="text-[0.6rem] font-black uppercase tracking-wide text-[var(--t5-muted)]">
         {label}
       </p>
-      <p className={`mt-1 font-display text-lg font-black tabular-nums ${color}`}>{inr(value)}</p>
+      <p className={`mt-1 font-display text-lg font-black tabular-nums ${color}`}>{usdt(value)}</p>
       {hint && <p className="mt-0.5 text-[0.65rem] text-[var(--t5-muted)]">{hint}</p>}
     </T5Card>
   );

@@ -80,7 +80,7 @@ export default function Theme5Withdraw() {
   return (
     <T5FormPage
       title="Withdraw"
-      subtitle={wallet ? `Withdrawable: ₹${withdrawable.toLocaleString('en-IN')}` : undefined}
+      subtitle={wallet ? `Withdrawable: USDT ${withdrawable.toLocaleString('en-IN')}` : undefined}
       tabs={[
         { label: 'Deposit', href: '/deposit' },
         { label: 'Withdrawals', href: '/withdraw', active: true },
@@ -95,7 +95,7 @@ export default function Theme5Withdraw() {
         ) : null}
         {wallet?.bonus > 0 ? (
           <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
-            Your ₹{Number(wallet.bonus).toLocaleString('en-IN')} bonus balance can be
+            Your USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus balance can be
             played with but not withdrawn. It becomes withdrawable once it meets its
             wagering requirement.
           </p>

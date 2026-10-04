@@ -295,7 +295,7 @@ export default function AgentListPage() {
             </div>
           </div>
 
-          <Field label="Amount ($)">
+          <Field label="Amount (USDT)">
             <Input
               type="number"
               step="0.01"

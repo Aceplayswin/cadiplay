@@ -98,14 +98,14 @@ export default function Theme2Deposit() {
       <h1 className="font-display text-2xl font-black text-white">Deposit</h1>
 
       <T2Card className="mt-6 p-6">
-        <label className="text-sm text-slate-400">Enter Amount (₹)</label>
+        <label className="text-sm text-slate-400">Enter Amount (USDT)</label>
         <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0"
           className={`${t2Input} mt-2 text-2xl`} />
         <div className="mt-4 flex flex-wrap gap-2">
           {QUICK_AMOUNTS.map((a) => (
             <button key={a} type="button" onClick={() => setAmount(String(a))}
               className="rounded-lg border border-white/5 bg-[#070d16] px-4 py-2 text-sm text-slate-200 hover:border-amber-400/40 hover:text-amber-400">
-              ₹{a.toLocaleString('en-IN')}
+              USDT {a.toLocaleString('en-IN')}
             </button>
           ))}
         </div>

@@ -83,7 +83,7 @@ const ROUND_COLUMNS = [
       </span>
     ),
   },
-  { key: 'bet_amount', label: 'Bet amount (USD)', align: 'right', render: (r) => usd(r.bet_amount) },
+  { key: 'bet_amount', label: 'Bet amount (USDT)', align: 'right', render: (r) => usd(r.bet_amount) },
   {
     key: 'balance_after',
     label: 'Balance after',
@@ -218,7 +218,7 @@ export default function AdminBetHistoryPage() {
       ),
     },
     { key: 'ip', label: 'IP Address', render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span> },
-    { key: 'total_bet', label: 'Bet Amount (USD)', render: (r) => usd(r.total_bet) },
+    { key: 'total_bet', label: 'Bet Amount (USDT)', render: (r) => usd(r.total_bet) },
     {
       key: 'last_balance',
       label: 'Balance After',

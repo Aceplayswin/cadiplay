@@ -620,7 +620,7 @@ export default function AdminBonusesPage() {
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="welcome100" required />
             </Field>
             <Field label="Display title (shown to players)">
-              <Input value={form.display_title} onChange={(e) => setForm({ ...form, display_title: e.target.value })} placeholder="Welcome Bonus $100" />
+              <Input value={form.display_title} onChange={(e) => setForm({ ...form, display_title: e.target.value })} placeholder="Welcome Bonus USDT 100" />
             </Field>
             <div className="sm:col-span-2">
               <Field label="Description">
@@ -649,21 +649,21 @@ export default function AdminBonusesPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Value type">
                 <Select value={form.value_type} onChange={(e) => setForm({ ...form, value_type: e.target.value })}>
-                  <option value="fixed">Fixed ($)</option>
+                  <option value="fixed">Fixed (USDT)</option>
                   <option value="percentage">Percentage (%)</option>
                 </Select>
               </Field>
-              <Field label={isPercent ? 'Percentage' : 'Amount ($)'}>
+              <Field label={isPercent ? 'Percentage' : 'Amount (USDT)'}>
                 <Input type="number" step="0.01" value={form.value_amount} onChange={(e) => setForm({ ...form, value_amount: e.target.value })} />
               </Field>
-              <Field label="Min deposit / qualifying amount ($)">
+              <Field label="Min deposit / qualifying amount (USDT)">
                 <Input type="number" step="0.01" value={form.min_deposit} onChange={(e) => setForm({ ...form, min_deposit: e.target.value })} />
               </Field>
-              <Field label="Max bonus cap ($, blank = no cap)">
+              <Field label="Max bonus cap (USDT, blank = no cap)">
                 <Input type="number" step="0.01" value={form.max_bonus_cap} onChange={(e) => setForm({ ...form, max_bonus_cap: e.target.value })} placeholder="No cap" />
               </Field>
               {form.bonus_type === 'referral' && (
-                <Field label="Referrer reward ($)">
+                <Field label="Referrer reward (USDT)">
                   <Input type="number" step="0.01" value={form.referrer_reward} onChange={(e) => setForm({ ...form, referrer_reward: e.target.value })} />
                 </Field>
               )}
@@ -690,7 +690,7 @@ export default function AdminBonusesPage() {
               <Field label="Max per user (blank = unlimited)">
                 <Input type="number" value={form.per_user_limit} onChange={(e) => setForm({ ...form, per_user_limit: e.target.value })} placeholder="Unlimited" />
               </Field>
-              <Field label="Total budget cap ($, blank = uncapped)">
+              <Field label="Total budget cap (USDT, blank = uncapped)">
                 <Input type="number" step="0.01" value={form.total_budget} onChange={(e) => setForm({ ...form, total_budget: e.target.value })} placeholder="Uncapped" />
               </Field>
               <Field label="Bonus validity (days)">
@@ -781,13 +781,13 @@ export default function AdminBonusesPage() {
               only count between the start and end dates below.
             </p>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Min real balance ($)">
+              <Field label="Min real balance (USDT)">
                 <Input type="number" step="0.01" min="0" value={form.claim_min_balance} onChange={(e) => setForm({ ...form, claim_min_balance: e.target.value })} placeholder="None" />
               </Field>
-              <Field label="Min wagered during offer ($)">
+              <Field label="Min wagered during offer (USDT)">
                 <Input type="number" step="0.01" min="0" value={form.claim_min_wagering} onChange={(e) => setForm({ ...form, claim_min_wagering: e.target.value })} placeholder="None" />
               </Field>
-              <Field label="Min deposited during offer ($)">
+              <Field label="Min deposited during offer (USDT)">
                 <Input type="number" step="0.01" min="0" value={form.claim_min_deposit_total} onChange={(e) => setForm({ ...form, claim_min_deposit_total: e.target.value })} placeholder="None" />
               </Field>
             </div>

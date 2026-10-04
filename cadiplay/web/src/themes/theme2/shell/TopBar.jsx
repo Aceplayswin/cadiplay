@@ -39,7 +39,7 @@ export function Theme2TopBar({ onMenu }) {
         <div className="flex items-center gap-2 rounded-full border border-white/5 bg-[#0a101a] py-1 pl-3 pr-1">
           <Wallet className="h-4 w-4 text-amber-400" />
           <span className="text-sm font-bold text-white">
-            ₹{Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            USDT {Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <Link
             href={token ? '/deposit' : '/login'}

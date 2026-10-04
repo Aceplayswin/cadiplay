@@ -44,7 +44,7 @@ export default function AdminBetsPage() {
       render: (r) => <TxReference reference={r.reference} />,
     },
     { key: 'ip', label: 'IP Address', render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span> },
-    { key: 'bet_amount', label: 'Bet Amount (USD)', render: (r) => usdStored(r.bet_amount) },
+    { key: 'bet_amount', label: 'Bet Amount (USDT)', render: (r) => usdStored(r.bet_amount) },
     {
       key: 'status',
       label: 'Result',

@@ -18,7 +18,7 @@ import { usd } from '../../../lib/format';
 
 // Programme numbers (payout threshold, cookie window) are quoted from the live
 // settings rather than hardcoded — the terms a partner accepts must match what
-// the platform actually enforces, and the programme is priced in USD.
+// the platform actually enforces, and the programme is priced in USDT.
 const termsFor = (brandName, minPayout, cookieDays) => [
   ['Partnership Terms', `By joining the ${brandName} Affiliate Program, you agree to promote ${brandName}'s iGaming platform in compliance with all applicable laws and regulations in your jurisdiction.`],
   ['Commission Structure', 'Commissions are calculated on net gaming revenue (NGR) after deduction of bonuses, chargebacks, and processing fees. Rates are as agreed in your partner contract.'],

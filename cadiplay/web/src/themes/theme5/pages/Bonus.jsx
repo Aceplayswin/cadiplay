@@ -15,7 +15,7 @@ import { formatDateTime as formatDate } from '@/lib/datetime';
 import { useCouponRedeem } from '@/hooks/useCouponRedeem';
 import { T5Card, t5BtnPrimary, t5Input } from '../components/ui';
 
-const inr = (n) => `₹${Number(n ?? 0).toLocaleString('en-IN')}`;
+const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 const SOURCE_LABEL = {
   joining: 'Welcome bonus',
@@ -123,7 +123,7 @@ export default function Theme5Bonus() {
             Bonus balance
           </p>
           <p className="mt-1 font-display text-3xl font-black tabular-nums text-[var(--t5-ink)]">
-            {inr(wallet?.bonus)}
+            {usdt(wallet?.bonus)}
           </p>
           <p className="mt-1 text-xs text-[var(--t5-muted)]">
             Playable now · becomes withdrawable once wagering is cleared
@@ -134,7 +134,7 @@ export default function Theme5Bonus() {
             Real balance
           </p>
           <p className="mt-1 font-display text-3xl font-black tabular-nums text-[var(--t5-ink)]">
-            {inr(wallet?.real ?? wallet?.main)}
+            {usdt(wallet?.real ?? wallet?.main)}
           </p>
           <p className="mt-1 text-xs text-[var(--t5-muted)]">Yours to withdraw any time</p>
         </T5Card>
@@ -233,11 +233,11 @@ function RedeemCoupon({ onRedeemed }) {
       {preview?.valid && !success && (
         <div className="mt-3 rounded-lg border border-[var(--t5-green)]/25 bg-[var(--t5-green)]/[0.07] p-3">
           <p className="text-sm font-black text-[var(--t5-ink)]">
-            {preview.title} · {inr(preview.amount)}
+            {preview.title} · {usdt(preview.amount)}
           </p>
           {preview.wagering_required > 0 && (
             <p className="mt-0.5 text-xs text-[var(--t5-muted)]">
-              Credited instantly and playable. Wager {inr(preview.wagering_required)} (
+              Credited instantly and playable. Wager {usdt(preview.wagering_required)} (
               {preview.wagering_multiplier}×) to unlock it for withdrawal.
             </p>
           )}
@@ -252,12 +252,12 @@ function RedeemCoupon({ onRedeemed }) {
           <Check className="mt-0.5 h-4 w-4 shrink-0 text-[var(--t5-green)]" />
           <div>
             <p className="text-sm font-black text-[var(--t5-ink)]">
-              {inr(success.amount)} added — {success.title}
+              {usdt(success.amount)} added — {success.title}
             </p>
             <p className="mt-0.5 text-xs text-[var(--t5-muted)]">
               {success.withdrawable
                 ? 'Credited to your withdrawable balance.'
-                : `Added to your bonus balance — play with it now. Complete ${inr(
+                : `Added to your bonus balance — play with it now. Complete ${usdt(
                     success.wagering_required,
                   )} of wagering to make it withdrawable.`}
             </p>
@@ -302,7 +302,7 @@ function BonusCard({ bonus }) {
         </div>
         <div className="text-right">
           <p className="font-display text-xl font-black tabular-nums text-[var(--t5-blue)]">
-            {inr(bonus.amount)}
+            {usdt(bonus.amount)}
           </p>
           <span
             className={`mt-1 inline-block rounded-full px-2.5 py-0.5 text-[0.6rem] font-black uppercase tracking-wide ${tone}`}
@@ -317,7 +317,7 @@ function BonusCard({ bonus }) {
           <div className="flex items-center justify-between text-xs font-semibold text-[var(--t5-muted)]">
             <span>Wagering progress</span>
             <span className="tabular-nums">
-              {inr(done)} / {inr(required)}
+              {usdt(done)} / {usdt(required)}
             </span>
           </div>
           <div
@@ -373,7 +373,7 @@ function AvailableOffers({ offers, onClaimed }) {
       setResult({
         id: offer.id,
         ok: true,
-        message: `${inr(res.amount)} added — ${res.title}`,
+        message: `${usdt(res.amount)} added — ${res.title}`,
       });
       onClaimed?.();
     } catch (err) {
@@ -403,8 +403,8 @@ function AvailableOffers({ offers, onClaimed }) {
               <p className="text-xs text-[var(--t5-muted)]">
                 {offer.value_type === 'percentage'
                   ? `${offer.value_amount}% bonus`
-                  : inr(offer.value_amount)}
-                {offer.min_deposit > 0 && ` · min deposit ${inr(offer.min_deposit)}`}
+                  : usdt(offer.value_amount)}
+                {offer.min_deposit > 0 && ` · min deposit ${usdt(offer.min_deposit)}`}
                 {offer.wagering_multiplier > 0 && ` · ${offer.wagering_multiplier}× wagering`}
               </p>
               {offer.promo_code && (
@@ -455,7 +455,7 @@ function AvailableOffers({ offers, onClaimed }) {
 }
 
 // The offer's claim conditions with this player's progress against each —
-// "Real balance ₹350 / ₹1,000" — so a disabled Claim button explains itself.
+// "Real balance USDT 350 / USDT 1,000" — so a disabled Claim button explains itself.
 // Rows come from the server (`requirements`), empty when the offer has none.
 function OfferRequirements({ offer }) {
   const reqs = Array.isArray(offer.requirements) ? offer.requirements : [];
@@ -474,7 +474,7 @@ function OfferRequirements({ offer }) {
                 {req.label}
               </span>
               <span className="tabular-nums text-[var(--t5-ink)]">
-                {inr(current)} / {inr(required)}
+                {usdt(current)} / {usdt(required)}
               </span>
             </div>
             <div

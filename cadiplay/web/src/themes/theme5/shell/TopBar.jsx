@@ -282,7 +282,7 @@ export function Theme5TopBar() {
                 <div className="flex items-center gap-2 rounded-full border border-black/10 bg-white py-1 pl-3 pr-1 shadow-sm">
                   <Wallet className="hidden h-4 w-4 shrink-0 text-[var(--t5-muted)] sm:block" />
                   <span className="whitespace-nowrap text-sm font-black tabular-nums text-[var(--t5-ink)]">
-                    ₹{Number(balance).toLocaleString('en-IN', {
+                    USDT {Number(balance).toLocaleString('en-IN', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
                     })}

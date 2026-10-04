@@ -114,7 +114,7 @@ export default function GlobalSettingsPage() {
               />
             </Field>
 
-            <Field label="CPA Amount ($)">
+            <Field label="CPA Amount (USDT)">
               <Input
                 type="number"
                 value={settings.default_cpa_amount}
@@ -166,7 +166,7 @@ export default function GlobalSettingsPage() {
 
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <Field
-                label="Min Payout Threshold ($)"
+                label="Min Payout Threshold (USDT)"
                 hint="Minimum approved balance before a withdrawal can be requested. Per-affiliate terms can override this."
               >
                 <Input
@@ -200,7 +200,7 @@ export default function GlobalSettingsPage() {
               </Field>
 
               <Field
-                label="Min First Deposit for CPA ($)"
+                label="Min First Deposit for CPA (USDT)"
                 hint="A first deposit below this does not trigger the acquisition bounty."
               >
                 <Input

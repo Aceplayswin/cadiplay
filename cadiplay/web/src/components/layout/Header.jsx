@@ -253,13 +253,13 @@ export function Header() {
                 !token
                   ? 'Sign in'
                   : heldForWithdrawal > 0
-                    ? `View wallet — ₹${Number(heldForWithdrawal).toLocaleString('en-IN')} on hold for a pending withdrawal`
+                    ? `View wallet — USDT ${Number(heldForWithdrawal).toLocaleString('en-IN')} on hold for a pending withdrawal`
                     : 'View wallet'
               }
             >
               <Wallet className="h-4 w-4 text-brand-400" />
               <span className="text-sm font-bold text-app-fg">
-                ₹{Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                USDT {Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </Link>
             <Link

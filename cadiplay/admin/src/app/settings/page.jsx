@@ -255,12 +255,12 @@ function SettingRow({ item, busy, onSave }) {
             <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={5} className="font-mono text-xs" />
           ) : type === 'currency' ? (
             <div className="relative max-w-[220px]">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-500">$</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-500">USDT</span>
               <Input
                 type="number"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
-                className="pl-7"
+                className="pl-14"
                 autoFocus
               />
             </div>

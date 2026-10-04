@@ -32,7 +32,7 @@ export default function Theme2Withdraw() {
       <h1 className="font-display text-2xl font-black text-white">Withdraw</h1>
       {wallet && (
         <p className="mt-2 text-slate-400">
-          Available: <span className="text-emerald-400">₹{wallet.available.toLocaleString('en-IN')}</span>
+          Available: <span className="text-emerald-400">USDT {wallet.available.toLocaleString('en-IN')}</span>
         </p>
       )}
 

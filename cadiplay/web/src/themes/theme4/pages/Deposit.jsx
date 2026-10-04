@@ -95,7 +95,7 @@ export default function Theme4Deposit() {
   return (
     <T4FormPage title="Deposit">
       <T4Card className="mt-6 p-6">
-        <label className="text-sm text-[#5d7378]">Enter Amount (₹)</label>
+        <label className="text-sm text-[#5d7378]">Enter Amount (USDT)</label>
         <input
           type="number"
           value={amount}
@@ -111,7 +111,7 @@ export default function Theme4Deposit() {
               onClick={() => setAmount(String(a))}
               className="rounded border border-[#0e7480]/25 bg-white px-4 py-2 text-sm text-[#13272b] shadow-sm transition hover:border-[#0e7480] hover:text-[#0e7480]"
             >
-              ₹{a.toLocaleString('en-IN')}
+              USDT {a.toLocaleString('en-IN')}
             </button>
           ))}
         </div>

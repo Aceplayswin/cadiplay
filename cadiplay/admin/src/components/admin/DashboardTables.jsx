@@ -66,14 +66,14 @@ export default function DashboardTables({ data }) {
     <div className="mt-6 grid gap-4 lg:grid-cols-2">
       <Panel
         title="Deposits Last 7 Days"
-        columns={['Date', 'Amount ($)', 'Deposit Count', 'Average']}
+        columns={['Date', 'Amount (USDT)', 'Deposit Count', 'Average']}
         rows={d.deposits ?? []}
         renderRow={(r) => [r.date, num(r.amount), r.count, num(r.average)]}
       />
 
       <Panel
         title="Withdrawals Last 7 Days"
-        columns={['Date', 'Amount ($)', 'Withdrawals Count', 'Average']}
+        columns={['Date', 'Amount (USDT)', 'Withdrawals Count', 'Average']}
         rows={d.withdrawals ?? []}
         renderRow={(r) => [r.date, num(r.amount), r.count, num(r.average)]}
       />
@@ -94,7 +94,7 @@ export default function DashboardTables({ data }) {
 
       <Panel
         title="Deposit Max Top 10 Today"
-        columns={['#', 'Player', 'Amount ($)', 'Time', 'Deposit Method']}
+        columns={['#', 'Player', 'Amount (USDT)', 'Time', 'Deposit Method']}
         rows={d.depositMaxTop ?? []}
         renderRow={(r, i) => [i + 1, r.player, num(r.amount), time(r.time), r.method]}
       />
