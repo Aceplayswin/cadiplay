@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { T2Card, t2Input, t2Select, t2BtnPrimary } from '../components/ui';
+import { formatAmountNumber, toStoredAmount } from '@/lib/money';
 
 const REQUIRED_FIELDS = {
   bank_transfer: ['accountName', 'accountNumber', 'ifsc', 'bankName'],
@@ -54,6 +55,7 @@ export default function Theme2Withdraw() {
   }, [token]);
 
   const numAmount = parseFloat(amount) || 0;
+  const storedAmount = toStoredAmount(numAmount);
   const withdrawable = wallet ? (wallet.withdrawable ?? wallet.available) : 0;
   const hasPending = Boolean(wallet?.hasPendingWithdrawal);
 
@@ -63,7 +65,7 @@ export default function Theme2Withdraw() {
       await api('/api/v1/wallet/withdraw', {
         method: 'POST',
         body: JSON.stringify({
-          amount: numAmount,
+          amount: storedAmount,
           paymentMethod: method,
           destination,
         }),
@@ -89,7 +91,7 @@ export default function Theme2Withdraw() {
       {wallet && (
         <p className="mt-2 text-slate-400">
           Withdrawable:{' '}
-          <span className="text-emerald-400">USDT {withdrawable.toLocaleString('en-IN')}</span>
+          <span className="text-emerald-400">USDT {formatAmountNumber(withdrawable)}</span>
         </p>
       )}
 
@@ -102,7 +104,7 @@ export default function Theme2Withdraw() {
         ) : null}
         {wallet?.bonus > 0 ? (
           <p className="mb-4 rounded-xl border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-300">
-            Your USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus balance can be played
+            Your USDT {formatAmountNumber(wallet.bonus)} bonus balance can be played
             with but not withdrawn. It becomes withdrawable once it meets its wagering requirement.
           </p>
         ) : null}
@@ -212,7 +214,7 @@ export default function Theme2Withdraw() {
       <button
         type="button"
         onClick={submit}
-        disabled={loading || hasPending || numAmount < 500 || !destinationComplete}
+        disabled={loading || hasPending || storedAmount < 500 || !destinationComplete}
         className={`${t2BtnPrimary} mt-6 w-full`}
       >
         {hasPending ? 'Withdrawal Pending Approval' : 'Request Withdrawal'}

@@ -15,7 +15,7 @@ export default function Theme1Support() {
   const [messages, setMessages] = useState([
     {
       role: 'bot',
-      text: `Hi! I'm your ${branding.product_name || 'MAHAKAL WORLD'} assistant. How can I help?`,
+      text: `Hi! I'm your ${branding.product_name || 'CADIPLAY'} assistant. How can I help?`,
     },
   ]);
   const [input, setInput] = useState('');

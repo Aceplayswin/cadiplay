@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { T3Card, t3Input, t3Select, t3BtnPrimary, T3FormPage } from '../components/ui';
+import { formatAmountNumber, toStoredAmount } from '@/lib/money';
 
 const REQUIRED_FIELDS = {
   bank_transfer: ['accountName', 'accountNumber', 'ifsc', 'bankName'],
@@ -56,6 +57,7 @@ export default function Theme3Withdraw() {
   }, [token]);
 
   const numAmount = parseFloat(amount) || 0;
+  const storedAmount = toStoredAmount(numAmount);
   const withdrawable = wallet ? (wallet.withdrawable ?? wallet.available) : 0;
   const hasPending = Boolean(wallet?.hasPendingWithdrawal);
 
@@ -65,7 +67,7 @@ export default function Theme3Withdraw() {
       await api('/api/v1/wallet/withdraw', {
         method: 'POST',
         body: JSON.stringify({
-          amount: numAmount,
+          amount: storedAmount,
           paymentMethod: method,
           destination,
         }),
@@ -85,7 +87,7 @@ export default function Theme3Withdraw() {
       title="Withdraw"
       subtitle={
         wallet
-          ? `Withdrawable: USDT ${withdrawable.toLocaleString('en-IN')}`
+          ? `Withdrawable: USDT ${formatAmountNumber(withdrawable)}`
           : undefined
       }
     >
@@ -104,7 +106,7 @@ export default function Theme3Withdraw() {
         ) : null}
         {wallet?.bonus > 0 ? (
           <p className="mb-4 rounded-xl border border-[#c79a3b]/20 bg-[#faf6ec] px-3 py-2 text-xs font-semibold text-[#6b6579]">
-            Your USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus balance can be played
+            Your USDT {formatAmountNumber(wallet.bonus)} bonus balance can be played
             with but not withdrawn. It becomes withdrawable once it meets its wagering requirement.
           </p>
         ) : null}
@@ -214,7 +216,7 @@ export default function Theme3Withdraw() {
       <button
         type="button"
         onClick={submit}
-        disabled={loading || hasPending || numAmount < 500 || !destinationComplete}
+        disabled={loading || hasPending || storedAmount < 500 || !destinationComplete}
         className={`${t3BtnPrimary} mt-6 w-full`}
       >
         {hasPending ? 'Withdrawal Pending Approval' : 'Request Withdrawal'}

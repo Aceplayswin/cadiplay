@@ -1,3 +1,4 @@
+import { formatAmount as usdt } from '@/lib/money';
 // Deposit destination vocabulary shared by every theme's Deposit page.
 //
 // A payment method's TYPE decides what the player is told to pay into: UPI
@@ -79,7 +80,6 @@ export function hasDestination(method) {
   );
 }
 
-const usdt = (n) => `USDT ${Number(n).toLocaleString('en-IN')}`;
 
 function limits(method) {
   const min = Number(method?.min_amount ?? 0) || 0;

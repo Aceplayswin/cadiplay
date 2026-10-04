@@ -27,6 +27,7 @@ import { NAV_GAME_LINKS } from '@/lib/gameRoutes';
 import { useAuthModal } from './authModalContext';
 import { isAccountRoute, HIDE_ON_MOBILE } from './accountRoutes';
 import { Theme5SearchBar, Theme5SearchButton } from './GameSearch';
+import { formatAmountNumber } from '@/lib/money';
 
 const NAV = [
   { label: 'Home', icon: '🏠', href: '/' },
@@ -39,8 +40,8 @@ const NAV = [
 
 export function Theme5BrandMark({ name, compact = false }) {
   const branding = useBranding();
-  const label = name || branding.product_name || 'MAHAKAL WORLD';
-  // First letter of each of the first two words: "Mahakal World" -> "MW".
+  const label = name || branding.product_name || 'CADIPLAY';
+  // First letter of each of the first two words: "Cadiplay" -> "C".
   const initials = label
     .split(/\s+/)
     .filter(Boolean)
@@ -282,10 +283,7 @@ export function Theme5TopBar() {
                 <div className="flex items-center gap-2 rounded-full border border-black/10 bg-white py-1 pl-3 pr-1 shadow-sm">
                   <Wallet className="hidden h-4 w-4 shrink-0 text-[var(--t5-muted)] sm:block" />
                   <span className="whitespace-nowrap text-sm font-black tabular-nums text-[var(--t5-ink)]">
-                    USDT {Number(balance).toLocaleString('en-IN', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
+                    USDT {formatAmountNumber(balance, { minimumFractionDigits: 2 })}
                   </span>
                   <Link
                     href="/deposit"

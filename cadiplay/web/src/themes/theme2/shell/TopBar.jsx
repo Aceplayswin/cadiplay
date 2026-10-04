@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/auth';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { UserAuthActions } from '@/components/UserAuthActions';
 import { GameSearch } from '@/components/GameSearch';
+import { formatAmountNumber } from '@/lib/money';
 
 const stub = (label, text) =>
   Swal.fire({ title: label, text, icon: 'info', timer: 1100, showConfirmButton: false, confirmButtonColor: '#F5C542' });
@@ -40,7 +41,7 @@ export function Theme2TopBar({ onMenu }) {
         <div className="flex items-center gap-2 rounded-full border border-white/5 bg-[#0a101a] py-1 pl-3 pr-1">
           <Wallet className="h-4 w-4 text-amber-400" />
           <span className="text-sm font-bold text-white">
-            USDT {Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            USDT {formatAmountNumber(balance, { minimumFractionDigits: 2 })}
           </span>
           <Link
             href={token ? '/deposit' : '/login'}

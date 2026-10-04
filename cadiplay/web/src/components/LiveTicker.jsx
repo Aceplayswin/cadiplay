@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useBigWins } from '@/components/BigWins';
+import { formatAmountNumber } from '@/lib/money';
 
 export function LiveTicker() {
   // Real settled wins from the API (names masked server-side), topped up by any
@@ -75,7 +76,7 @@ function TickerSection({ title, items, highlight }) {
             }`}
           >
             <span className="text-app-fg/80">{item.username}</span>
-            <span className="ml-1 text-green-400">USDT {item.amount.toLocaleString('en-IN')}</span>
+            <span className="ml-1 text-green-400">USDT {formatAmountNumber(item.amount)}</span>
             <span className="block text-muted/80">{item.timestamp}</span>
           </li>
         ))}

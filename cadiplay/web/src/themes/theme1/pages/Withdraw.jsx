@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { Landmark, Smartphone, Bitcoin, Clock } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
+import { formatAmountNumber, toDisplayAmount, toStoredAmount } from '@/lib/money';
 
 const MIN_WITHDRAWAL = 500;
 
@@ -40,7 +41,8 @@ export default function Theme1Withdraw() {
   const walletBalance = wallet?.main ?? wallet?.real ?? 0;
   const heldForWithdrawal = wallet?.pendingWithdrawal ?? wallet?.locked ?? 0;
   const numAmount = parseFloat(amount) || 0;
-  const amountValid = numAmount >= MIN_WITHDRAWAL && numAmount <= available;
+  const storedAmount = toStoredAmount(numAmount);
+  const amountValid = storedAmount >= MIN_WITHDRAWAL && storedAmount <= available;
 
   useEffect(() => {
     hydrate();
@@ -69,7 +71,7 @@ export default function Theme1Withdraw() {
     return '';
   };
 
-  const setPct = (p) => setAmount(String(Math.floor(available * p)));
+  const setPct = (p) => setAmount(String(toDisplayAmount(Math.floor(available * p))));
 
   // Submit → API locks the funds and creates a PENDING withdrawal that waits for
   // admin approval. We refresh the wallet (funds now show as locked) and show the
@@ -81,7 +83,7 @@ export default function Theme1Withdraw() {
       const res = await api('/api/v1/wallet/withdraw', {
         method: 'POST',
         body: JSON.stringify({
-          amount: numAmount,
+          amount: storedAmount,
           paymentMethod: method,
           // Map this form's field names onto the API contract
           // (services.WITHDRAWAL_DESTINATION_FIELDS) so the payout details
@@ -138,7 +140,7 @@ export default function Theme1Withdraw() {
           <section className="card-glass p-6">
             <div className="flex items-center justify-between text-sm">
               <span className="text-slate-400">Available to withdraw</span>
-              <span className="font-semibold text-green-400">USDT {available.toLocaleString('en-IN')}</span>
+              <span className="font-semibold text-green-400">USDT {formatAmountNumber(available)}</span>
             </div>
             <div className="mt-4 flex items-center rounded-lg border border-white/10 bg-surface-700 px-4">
               <span className="text-2xl text-slate-500">USDT </span>
@@ -164,8 +166,8 @@ export default function Theme1Withdraw() {
               ))}
             </div>
             <p className="mt-3 text-xs text-slate-500">
-              Minimum withdrawal USDT {MIN_WITHDRAWAL}.
-              {numAmount > available && <span className="text-red-400"> Amount exceeds balance.</span>}
+              Minimum withdrawal USDT {formatAmountNumber(MIN_WITHDRAWAL)}.
+              {storedAmount > available && <span className="text-red-400"> Amount exceeds balance.</span>}
             </p>
           </section>
 
@@ -249,12 +251,12 @@ export default function Theme1Withdraw() {
           <section className="card-glass p-6">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Review withdrawal</h2>
             <div className="mt-4 space-y-2 text-sm">
-              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-IN')}`} />
+              <Row label="Amount" value={`USDT ${formatAmountNumber(storedAmount)}`} />
               <Row label="Processing fee" value="USDT 0" />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Est. time" value="2–24 hours" />
-              <Row label="You'll receive" value={`USDT ${numAmount.toLocaleString('en-IN')}`} strong last />
+              <Row label="You'll receive" value={`USDT ${formatAmountNumber(storedAmount)}`} strong last />
             </div>
             <p className="mt-4 flex items-center gap-2 text-xs text-slate-500">
               <Clock className="h-3.5 w-3.5" /> Funds are locked from your balance while we process this request.
@@ -293,15 +295,15 @@ export default function Theme1Withdraw() {
               paid out once our team approves it — or returned if it&apos;s rejected.
             </p>
             <div className="mt-6 space-y-2 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left text-sm">
-              <Row label="Amount" value={`USDT ${numAmount.toLocaleString('en-IN')}`} />
+              <Row label="Amount" value={`USDT ${formatAmountNumber(storedAmount)}`} />
               <Row label="Method" value={METHODS.find((m) => m.id === method)?.label} />
               <Row label="Destination" value={destSummary()} />
               <Row label="Request ID" value={`#${transactionId}`} />
               {/* Spell out balance vs. hold. Showing "available" alone here read as
                   though the payout had already been taken out of the account. */}
-              <Row label="Wallet balance" value={`USDT ${walletBalance.toLocaleString('en-IN')}`} />
-              <Row label="On hold for this request" value={`USDT ${heldForWithdrawal.toLocaleString('en-IN')}`} />
-              <Row label="Available to play" value={`USDT ${available.toLocaleString('en-IN')}`} last />
+              <Row label="Wallet balance" value={`USDT ${formatAmountNumber(walletBalance)}`} />
+              <Row label="On hold for this request" value={`USDT ${formatAmountNumber(heldForWithdrawal)}`} />
+              <Row label="Available to play" value={`USDT ${formatAmountNumber(available)}`} last />
             </div>
           </section>
           <div className="flex gap-3">

@@ -8,13 +8,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { T3Card, t3BtnPrimary, t3BtnOutline, T3FormPage } from '../components/ui';
+import { formatAmountNumber } from '@/lib/money';
 
 function Stat({ label, value }) {
   return (
     <div className="rounded-xl border border-black/[0.06] bg-[#faf6ec] px-3 py-2.5">
       <p className="text-[0.65rem] uppercase tracking-wide text-[#9a94a8]">{label}</p>
       <p className="mt-0.5 text-sm font-black text-[#1b1726]">
-        USDT {Number(value ?? 0).toLocaleString('en-IN')}
+        USDT {formatAmountNumber(value ?? 0)}
       </p>
     </div>
   );
@@ -36,11 +37,11 @@ export default function Theme3Wallet() {
       <T3Card className="mt-6 p-6">
         <p className="text-sm text-[#6b6579]">Withdrawable balance</p>
         <p className="mt-1 bg-gradient-to-br from-[#c79a3b] to-[#b8862f] bg-clip-text text-4xl font-black text-transparent">
-          USDT {(wallet?.withdrawable ?? wallet?.available ?? 0).toLocaleString('en-IN')}
+          USDT {formatAmountNumber(wallet?.withdrawable ?? wallet?.available ?? 0)}
         </p>
         {wallet?.bonus > 0 ? (
           <p className="mt-1 text-xs font-semibold text-[#9a94a8]">
-            + USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus you can play with
+            + USDT {formatAmountNumber(wallet.bonus)} bonus you can play with
           </p>
         ) : null}
         <div className="mt-5 grid grid-cols-3 gap-3">

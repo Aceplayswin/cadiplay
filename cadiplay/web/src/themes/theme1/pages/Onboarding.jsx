@@ -12,7 +12,7 @@ const GAME_TYPES = [
   'Fantasy Games',
 ];
 
-const BET_RANGES = ['USDT 100-500', 'USDT 500-2000', 'USDT 2000-10000', 'USDT 10000+'];
+const BET_RANGES = ['USDT 1-5', 'USDT 5-20', 'USDT 20-100', 'USDT 100+'];
 
 export default function Theme1Onboarding() {
   const router = useRouter();
@@ -83,7 +83,7 @@ export default function Theme1Onboarding() {
           <h2 className="text-xl font-bold">Welcome!</h2>
           <div className="mt-6">
             <div className="rounded-lg bg-brand-500/20 p-4">
-              <p className="text-brand-300">USDT 100 FREE added to your wallet!</p>
+              <p className="text-brand-300">USDT 1 FREE added to your wallet!</p>
               <p className="mt-2 text-sm text-slate-400">Explore AI Games & Sports</p>
             </div>
           </div>

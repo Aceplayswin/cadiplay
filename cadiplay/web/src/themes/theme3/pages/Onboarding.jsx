@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { T3Card, t3Select, t3BtnPrimary, t3BtnOutline } from '../components/ui';
 
 const GAME_TYPES = ['Sports Betting', 'Live Casino', 'Slots', 'Lottery', 'AI Games', 'Fantasy Games'];
-const BET_RANGES = ['USDT 100-500', 'USDT 500-2000', 'USDT 2000-10000', 'USDT 10000+'];
+const BET_RANGES = ['USDT 1-5', 'USDT 5-20', 'USDT 20-100', 'USDT 100+'];
 
 export default function Theme3Onboarding() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function Theme3Onboarding() {
         <h2 className="text-xl font-black text-[#1b1726]">Welcome!</h2>
         <div className="mt-6">
           <div className="rounded-xl border border-[#c79a3b]/25 bg-[#faf6ec] p-4">
-            <p className="font-black text-[#9a7a24]">USDT 100 FREE added to your wallet!</p>
+            <p className="font-black text-[#9a7a24]">USDT 1 FREE added to your wallet!</p>
             <p className="mt-2 text-sm text-[#6b6579]">Explore AI Games &amp; Sports</p>
           </div>
         </div>

@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { formatAmountNumber, toDisplayAmount, toStoredAmount } from '@/lib/money';
 import {
   Banknote,
   Bitcoin,
@@ -94,9 +95,10 @@ export default function Theme1Deposit() {
   } = useDepositMethods(isHydrated && Boolean(token));
 
   const numAmount = parseFloat(amount) || 0;
-  const valid = numAmount >= MIN_DEPOSIT;
+  const storedAmount = toStoredAmount(numAmount);
+  const valid = storedAmount >= MIN_DEPOSIT;
   const selected = methods.find((m) => m.code === methodCode) ?? null;
-  const limit = amountWithinLimits(selected, numAmount);
+  const limit = amountWithinLimits(selected, storedAmount);
 
   useEffect(() => {
     hydrate();
@@ -183,7 +185,7 @@ export default function Theme1Deposit() {
       const res = await api('/api/v1/wallet/deposit', {
         method: 'POST',
         body: JSON.stringify({
-          amount: numAmount,
+          amount: storedAmount,
           paymentMethod: selected.code,
           referenceNumber: reference.trim() || null,
           paymentProofUrl: proofUrl || null,
@@ -191,7 +193,7 @@ export default function Theme1Deposit() {
         }),
       });
       setTransactionId(res.transactionId);
-      setReceipt({ amount: numAmount, reference: reference.trim() || '—', method: selected.name });
+      setReceipt({ amount: storedAmount, reference: reference.trim() || '—', method: selected.name });
       setStep('done');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Could not submit the deposit';
@@ -249,16 +251,16 @@ export default function Theme1Deposit() {
                 <button
                   key={a}
                   type="button"
-                  onClick={() => setAmount(String(a))}
+                  onClick={() => setAmount(String(toDisplayAmount(a)))}
                   className={`rounded-lg px-4 py-2 text-sm transition ${
-                    numAmount === a ? 'bg-brand-500 text-surface-900' : 'bg-surface-700 hover:bg-brand-500/20'
+                    storedAmount === a ? 'bg-brand-500 text-surface-900' : 'bg-surface-700 hover:bg-brand-500/20'
                   }`}
                 >
-                  USDT {a.toLocaleString('en-IN')}
+                  USDT {formatAmountNumber(a)}
                 </button>
               ))}
             </div>
-            <p className="mt-3 text-xs text-slate-500">Minimum deposit USDT {MIN_DEPOSIT}.</p>
+            <p className="mt-3 text-xs text-slate-500">Minimum deposit USDT {formatAmountNumber(MIN_DEPOSIT)}.</p>
           </section>
 
           <button
@@ -279,7 +281,7 @@ export default function Theme1Deposit() {
             <div className="flex items-center justify-between">
               <span className="text-sm text-slate-400">Depositing</span>
               <span className="text-lg font-bold text-gradient-gold">
-                USDT {numAmount.toLocaleString('en-IN')}
+                USDT {formatAmountNumber(storedAmount)}
               </span>
             </div>
             <h2 className="mt-5 text-sm font-semibold uppercase tracking-wide text-slate-400">
@@ -345,7 +347,7 @@ export default function Theme1Deposit() {
               disabled={!selected || !limit.ok}
               className="flex-[2] rounded-xl bg-brand-500 py-4 font-semibold text-surface-900 transition hover:bg-brand-400 disabled:opacity-50"
             >
-              Continue to pay USDT {numAmount.toLocaleString('en-IN')}
+              Continue to pay USDT {formatAmountNumber(storedAmount)}
             </button>
           </div>
         </div>
@@ -357,10 +359,10 @@ export default function Theme1Deposit() {
           <section className="card-glass flex items-center justify-between p-5">
             <div>
               <p className="text-sm font-semibold">Pay with {selected.name}</p>
-              <p className="text-xs text-slate-500">Amount USDT {numAmount.toLocaleString('en-IN')}</p>
+              <p className="text-xs text-slate-500">Amount USDT {formatAmountNumber(storedAmount)}</p>
             </div>
             <span className="text-lg font-bold text-gradient-gold">
-              USDT {numAmount.toLocaleString('en-IN')}
+              USDT {formatAmountNumber(storedAmount)}
             </span>
           </section>
 
@@ -472,11 +474,11 @@ export default function Theme1Deposit() {
             <Clock className="mx-auto h-14 w-14 text-brand-400" />
             <h2 className="mt-4 text-xl font-bold">Deposit submitted</h2>
             <p className="mt-1 text-sm text-slate-400">
-              USDT {Number(receipt.amount).toLocaleString('en-IN')} is awaiting confirmation. Your wallet
+              USDT {formatAmountNumber(receipt.amount)} is awaiting confirmation. Your wallet
               will be credited once our team approves the payment.
             </p>
             <div className="mt-6 space-y-2 rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left text-sm">
-              <Row label="Amount" value={`USDT ${Number(receipt.amount).toLocaleString('en-IN')}`} />
+              <Row label="Amount" value={`USDT ${formatAmountNumber(receipt.amount)}`} />
               <Row label="Method" value={receipt.method} />
               <Row label="Reference" value={receipt.reference} />
               <Row label="Transaction ID" value={`#${transactionId}`} />

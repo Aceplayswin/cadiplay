@@ -58,7 +58,7 @@ const PAYMENTS = ['UPI', 'GPay', 'PhonePe', 'Net Banking', 'Paytm'];
 
 export function Theme5Footer() {
   const branding = useBranding();
-  const name = branding.product_name || 'MAHAKAL WORLD';
+  const name = branding.product_name || 'CADIPLAY';
 
   return (
     <footer className="overflow-hidden rounded-xl bg-white px-6 py-5 shadow-sm">

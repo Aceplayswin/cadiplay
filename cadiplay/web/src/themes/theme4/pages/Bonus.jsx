@@ -11,8 +11,8 @@ import { useAuthStore } from '@/store/auth';
 import { formatDateTime as formatDate } from '@/lib/datetime';
 import { useCouponRedeem } from '@/hooks/useCouponRedeem';
 import { T4Card, t4BtnPrimary, t4Input, T4FormPage } from '../components/ui';
+import { formatAmount as usdt } from '@/lib/money';
 
-const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 const SOURCE_LABEL = {
   joining: 'Welcome bonus',

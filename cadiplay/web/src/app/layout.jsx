@@ -12,9 +12,9 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
 export const metadata = {
-  title: 'Mahakal World',
+  title: 'Cadiplay',
   description: 'Play casino, sports, slots, lottery and AI games',
-  applicationName: 'Mahakal World',
+  applicationName: 'Cadiplay',
   // Installable PWA. The manifest itself is branded per product at /manifest.webmanifest
   // (src/app/manifest.js); these are the build-time defaults, re-pointed to the
   // brand's logo/name at runtime by useBranding.
@@ -23,10 +23,11 @@ export const metadata = {
     capable: true,
     // Opaque dark status bar so standalone content never hides under the notch.
     statusBarStyle: 'black',
-    title: 'Mahakal World',
+    title: 'Cadiplay',
   },
   icons: {
     icon: [
+      { url: '/favicon.ico', sizes: '48x48', type: 'image/x-icon' },
       { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
       { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
     ],

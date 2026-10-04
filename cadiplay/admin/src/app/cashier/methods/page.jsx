@@ -112,9 +112,9 @@ const FORM = [
   // UPI: the QR is what most players scan; the ID is the fallback they type.
   { key: 'upi:id', name: 'upi_id', label: 'UPI ID', required: true, placeholder: 'name@bank', showWhen: isType('upi') },
   { key: 'upi:qr', name: 'qr_image_url', label: 'UPI QR code', type: 'image', placeholder: 'https://…/qr.png', showWhen: isType('upi') },
-  { key: 'upi:payee', name: 'account_name', label: 'Payee name', placeholder: 'Mahakal World Pvt Ltd', showWhen: isType('upi') },
+  { key: 'upi:payee', name: 'account_name', label: 'Payee name', placeholder: 'Cadiplay Pvt Ltd', showWhen: isType('upi') },
   // Bank: the receiving account, as the player must enter it in their app.
-  { key: 'bank:holder', name: 'account_name', label: 'Account holder name', required: true, placeholder: 'Mahakal World Pvt Ltd', showWhen: isType('bank') },
+  { key: 'bank:holder', name: 'account_name', label: 'Account holder name', required: true, placeholder: 'Cadiplay Pvt Ltd', showWhen: isType('bank') },
   { key: 'bank:number', name: 'account_number', label: 'Account number', required: true, showWhen: isType('bank') },
   { key: 'bank:ifsc', name: 'ifsc_code', label: 'IFSC code', required: true, placeholder: 'UTIB0001234', showWhen: isType('bank') },
   { key: 'bank:name', name: 'bank_name', label: 'Bank name', placeholder: 'Axis Bank', showWhen: isType('bank') },

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
+import { formatAmountNumber } from '@/lib/money';
 
 export default function Theme1Profile() {
   const router = useRouter();
@@ -41,11 +42,11 @@ export default function Theme1Profile() {
             <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-brand-500/10 blur-2xl" />
             <p className="text-sm text-slate-400">Available balance</p>
             <p className="mt-1 text-4xl font-extrabold text-gradient-gold">
-              USDT {(wallet?.available ?? 0).toLocaleString('en-IN')}
+              USDT {formatAmountNumber(wallet?.available ?? 0)}
             </p>
             {wallet?.bonus != null && (
               <p className="mt-1 text-xs text-slate-500">
-                Bonus: USDT {Number(wallet.bonus).toLocaleString('en-IN')}
+                Bonus: USDT {formatAmountNumber(wallet.bonus)}
               </p>
             )}
             <div className="mt-5 grid grid-cols-2 gap-3">
@@ -90,7 +91,7 @@ export default function Theme1Profile() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span className={isCredit(t.type) ? 'text-green-400' : 'text-white'}>
-                      {isCredit(t.type) ? '+' : '−'}USDT {parseFloat(t.amount).toLocaleString('en-IN')}
+                      {isCredit(t.type) ? '+' : '−'}USDT {formatAmountNumber(t.amount)}
                     </span>
                     <StatusPill status={t.status} />
                   </div>

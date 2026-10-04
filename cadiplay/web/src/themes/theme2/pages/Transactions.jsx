@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/auth';
 import { formatDateTime as formatDate } from '@/lib/datetime';
 import { T2Card } from '../components/ui';
 import {
+import { formatAmount as usdt } from '@/lib/money';
   CREDIT_TYPES,
   TX_FILTERS,
   TX_LABELS,
@@ -19,7 +20,6 @@ import {
   summarise,
 } from '@/lib/transactions';
 
-const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 export default function Theme2Transactions() {
   const router = useRouter();

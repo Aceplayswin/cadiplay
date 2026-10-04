@@ -13,6 +13,7 @@ import { useBranding } from '@/hooks/useBranding';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { GameSearch } from '@/components/GameSearch';
 import { useAuthModal } from './authModalContext';
+import { formatAmountNumber } from '@/lib/money';
 
 const TICKER = 'Unmatched Betting Excitement and Access 500+ Casino and Online Games';
 
@@ -103,7 +104,7 @@ export function Theme4TopBar() {
               <div className="hidden items-center gap-2 rounded border border-white/25 bg-[#0a5560]/60 py-1 pl-3 pr-1 sm:flex">
                 <Wallet className="h-4 w-4 text-white/80" />
                 <span className="text-sm font-black text-white">
-                  USDT {Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  USDT {formatAmountNumber(balance, { minimumFractionDigits: 2 })}
                 </span>
                 <Link
                   href="/deposit"

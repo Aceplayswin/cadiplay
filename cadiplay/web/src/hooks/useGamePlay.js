@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import { loadGameCatalog } from '@/hooks/useGameCatalog';
 import { useAuthStore } from '@/store/auth';
+import { toDisplayAmount, toStoredAmount } from '@/lib/money';
 
 export function useGamePlay(slug) {
   const router = useRouter();
@@ -14,7 +15,7 @@ export function useGamePlay(slug) {
   const [launching, setLaunching] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [error, setError] = useState('');
-  const [betAmount, setBetAmount] = useState('100');
+  const [betAmount, setBetAmount] = useState('1');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export function useGamePlay(slug) {
     const apply = (g) => {
       if (!active) return;
       setGame(g);
-      if (g.min_bet) setBetAmount(String(g.min_bet));
+      if (g.min_bet) setBetAmount(String(toDisplayAmount(g.min_bet)));
     };
 
     // Resolve the game server-side. Scanning the downloaded catalog instead
@@ -104,7 +105,7 @@ export function useGamePlay(slug) {
     try {
       const res = await api('/api/v1/games/bet', {
         method: 'POST',
-        body: JSON.stringify({ gameId: game.id, amount: parseFloat(betAmount) }),
+        body: JSON.stringify({ gameId: game.id, amount: toStoredAmount(betAmount) }),
       });
       await refreshSession();
       setMessage(`Bet placed · ${res.betId} · ${res.status}`);

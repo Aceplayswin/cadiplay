@@ -17,6 +17,7 @@ import { useDepositMethods } from '@/hooks/useDepositMethods';
 import { ReceivingDetails } from '@/components/payments/ReceivingDetails';
 import { amountWithinLimits, hasDestination, methodDescription } from '@/lib/paymentDestination';
 import { T5Card, t5Input, t5BtnPrimary, T5FormPage } from '../components/ui';
+import { formatAmountNumber, toDisplayAmount, toStoredAmount } from '@/lib/money';
 
 const QUICK_AMOUNTS = [500, 1000, 2500, 5000, 10000];
 
@@ -68,11 +69,12 @@ export default function Theme5Deposit() {
   } = useDepositMethods(isHydrated && Boolean(token));
 
   const numAmount = parseFloat(amount) || 0;
+  const storedAmount = toStoredAmount(numAmount);
   const selectedMethod = methods.find((pm) => pm.code === method) ?? null;
   // Every admin-configured method is paid manually, so proof is always asked
   // for once a method is chosen.
   const needsProof = Boolean(selectedMethod);
-  const limit = amountWithinLimits(selectedMethod, numAmount);
+  const limit = amountWithinLimits(selectedMethod, storedAmount);
 
   useEffect(() => {
     hydrate();
@@ -151,7 +153,7 @@ export default function Theme5Deposit() {
       const res = await api('/api/v1/wallet/deposit', {
         method: 'POST',
         body: JSON.stringify({
-          amount: numAmount,
+          amount: storedAmount,
           paymentMethod: selectedMethod.code,
           referenceNumber: reference.trim() || null,
           paymentProofUrl: proofUrl || null,
@@ -179,7 +181,7 @@ export default function Theme5Deposit() {
   const canSubmit =
     !loading &&
     !uploading &&
-    numAmount > 0 &&
+    storedAmount > 0 &&
     Boolean(selectedMethod) &&
     limit.ok &&
     (!needsProof || Boolean(proofUrl));
@@ -206,10 +208,10 @@ export default function Theme5Deposit() {
             <button
               key={a}
               type="button"
-              onClick={() => setAmount(String(a))}
+              onClick={() => setAmount(String(toDisplayAmount(a)))}
               className="rounded-lg border border-black/10 bg-white px-4 py-2 text-sm font-bold text-[#0f1b33] shadow-sm transition hover:border-[#1d4ed8] hover:text-[#1d4ed8]"
             >
-              USDT {a.toLocaleString('en-IN')}
+              USDT {formatAmountNumber(a)}
             </button>
           ))}
         </div>

@@ -15,9 +15,9 @@ import { useAuthStore } from '@/store/auth';
 import { useBigWins } from '@/components/BigWins';
 import { T5PanelHead } from '../components/ui';
 import { useAuthModal } from './authModalContext';
+import { formatAmount, formatAmountNumber } from '@/lib/money';
+const usdt = (n) => formatAmount(n, { minimumFractionDigits: 2 });
 
-const usdt = (n) =>
-  `USDT ${Number(n ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function BalanceTile({ label, value, strong = false }) {
   return (
@@ -134,7 +134,7 @@ function WinRow({ win }) {
         <span className="block truncate text-[0.65rem] text-[#94a3b8]">{win.game_name}</span>
       </span>
       <span className="shrink-0 text-xs font-black text-[#0f1b33]">
-        USDT {Number(win.win_amount ?? 0).toLocaleString('en-IN')}
+        USDT {formatAmountNumber(win.win_amount ?? 0)}
       </span>
     </li>
   );

@@ -25,7 +25,7 @@ function LoginModal() {
   const { close, open } = useAuthModal();
   const { identifier, setIdentifier, password, setPassword, loading, submit } = useUnifiedLogin();
   const branding = useBranding();
-  const brandName = branding.product_name || 'MAHAKAL WORLD';
+  const brandName = branding.product_name || 'CADIPLAY';
 
   const handleSubmit = async (e) => {
     await submit(e); // shows its own SweetAlert + redirects on success
@@ -86,7 +86,7 @@ function RegisterModal() {
   const { close, open } = useAuthModal();
   const setAuth = useAuthStore((s) => s.setAuth);
   const branding = useBranding();
-  const brandName = branding.product_name || 'MAHAKAL WORLD';
+  const brandName = branding.product_name || 'CADIPLAY';
 
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');

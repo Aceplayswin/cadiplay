@@ -15,6 +15,7 @@ import { useDepositMethods } from '@/hooks/useDepositMethods';
 import { ReceivingDetails } from '@/components/payments/ReceivingDetails';
 import { amountWithinLimits, hasDestination, methodDescription } from '@/lib/paymentDestination';
 import { T2Card, t2Input, t2BtnPrimary } from '../components/ui';
+import { formatAmountNumber, toDisplayAmount, toStoredAmount } from '@/lib/money';
 
 const QUICK_AMOUNTS = [500, 1000, 2500, 5000, 10000];
 const MAX_PROOF_BYTES = 5 * 1024 * 1024;
@@ -59,13 +60,14 @@ export default function Theme2Deposit() {
   } = useDepositMethods(isHydrated && Boolean(token));
 
   const numAmount = parseFloat(amount) || 0;
+  const storedAmount = toStoredAmount(numAmount);
   const selected = methods.find((m) => m.code === method) ?? null;
   const needsProof = Boolean(selected);
-  const limit = amountWithinLimits(selected, numAmount);
+  const limit = amountWithinLimits(selected, storedAmount);
   const canSubmit =
     !loading &&
     !uploading &&
-    numAmount > 0 &&
+    storedAmount > 0 &&
     Boolean(selected) &&
     limit.ok &&
     (!needsProof || Boolean(proofUrl));
@@ -140,7 +142,7 @@ export default function Theme2Deposit() {
       const res = await api('/api/v1/wallet/deposit', {
         method: 'POST',
         body: JSON.stringify({
-          amount: numAmount,
+          amount: storedAmount,
           paymentMethod: selected.code,
           referenceNumber: reference.trim() || null,
           paymentProofUrl: proofUrl || null,
@@ -186,10 +188,10 @@ export default function Theme2Deposit() {
             <button
               key={a}
               type="button"
-              onClick={() => setAmount(String(a))}
+              onClick={() => setAmount(String(toDisplayAmount(a)))}
               className="rounded-lg border border-white/5 bg-[#070d16] px-4 py-2 text-sm text-slate-200 hover:border-amber-400/40 hover:text-amber-400"
             >
-              USDT {a.toLocaleString('en-IN')}
+              USDT {formatAmountNumber(a)}
             </button>
           ))}
         </div>

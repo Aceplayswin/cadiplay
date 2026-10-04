@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useGamePlay } from '@/hooks/useGamePlay';
+import { formatAmount } from '@/lib/money';
 
 const STYLES = {
   theme1: {
@@ -184,7 +185,7 @@ export function GamePlayView({ slug, variant = 'theme1' }) {
               className={s.input}
             />
             <p className={s.limits}>
-              Min USDT {game.min_bet} · Max USDT {game.max_bet}
+              Min {formatAmount(game.min_bet)} · Max {formatAmount(game.max_bet)}
             </p>
             {token ? (
               <button type="button" onClick={placeBet} className={s.btn}>

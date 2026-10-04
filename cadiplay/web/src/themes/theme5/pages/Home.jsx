@@ -40,12 +40,12 @@ import { T5SectionBar, T5Card } from '../components/ui';
 const SLIDES = [
   {
     title: 'WELCOME BONUS 5%',
-    sub: 'On your first deposit — up to USDT 5,000',
+    sub: 'On your first deposit — up to USDT 50',
     cta: 'Claim Now',
     bg: 'linear-gradient(120deg, #101c33 0%, #1b2a4d 45%, #3b2a12 100%)',
   },
   {
-    title: 'DEPOSIT BONUS USDT 100',
+    title: 'DEPOSIT BONUS USDT 1',
     sub: 'Deposit now and get extra — no wagering',
     cta: 'Deposit',
     bg: 'linear-gradient(120deg, #16213f 0%, #24345c 45%, #4a2c1a 100%)',
@@ -132,7 +132,7 @@ const BONUSES = [
     icon: '💰',
     label: 'First Deposit',
     headline: '100% UP TO',
-    sub: 'USDT 20,000 bonus on first deposit',
+    sub: 'USDT 200 bonus on first deposit',
     href: '/deposit',
   },
   {
@@ -456,7 +456,7 @@ export default function Theme5Home() {
   const { promotions } = usePromotions();
   const token = useAuthStore((s) => s.token);
 
-  const name = branding.product_name || 'MAHAKAL WORLD';
+  const name = branding.product_name || 'CADIPLAY';
 
   const sports = sportsGames;
   const casino = casinoGames;

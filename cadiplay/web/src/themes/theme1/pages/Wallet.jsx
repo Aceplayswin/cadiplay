@@ -10,8 +10,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { api } from '@/services/api';
+import { formatAmount as usdt, formatAmountNumber } from '@/lib/money';
 
-const usdt = (v) => `USDT ${Number(v ?? 0).toLocaleString('en-IN')}`;
 
 export default function Theme1Wallet() {
   const router = useRouter();
@@ -215,7 +215,7 @@ function Stat({ label, value }) {
     <div className="card-glass p-5">
       <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-1 text-xl font-bold text-white">
-        USDT {Number(value ?? 0).toLocaleString('en-IN')}
+        USDT {formatAmountNumber(value ?? 0)}
       </p>
     </div>
   );

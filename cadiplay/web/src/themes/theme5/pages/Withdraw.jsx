@@ -5,6 +5,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '@/services/api';
 import { T5Card, t5Input, t5Select, t5BtnPrimary, T5FormPage } from '../components/ui';
+import { formatAmountNumber, toStoredAmount } from '@/lib/money';
 
 // Kept in step with services.WITHDRAWAL_DESTINATION_FIELDS on the API side.
 const REQUIRED_FIELDS = {
@@ -48,6 +49,7 @@ export default function Theme5Withdraw() {
   }, []);
 
   const numAmount = parseFloat(amount) || 0;
+  const storedAmount = toStoredAmount(numAmount);
   // Only real money is withdrawable — `available` excludes the bonus balance,
   // which has to clear its wagering requirement first.
   const withdrawable = wallet ? (wallet.withdrawable ?? wallet.available) : 0;
@@ -61,7 +63,7 @@ export default function Theme5Withdraw() {
       await api('/api/v1/wallet/withdraw', {
         method: 'POST',
         body: JSON.stringify({
-          amount: numAmount,
+          amount: storedAmount,
           paymentMethod: method,
           destination,
         }),
@@ -80,7 +82,7 @@ export default function Theme5Withdraw() {
   return (
     <T5FormPage
       title="Withdraw"
-      subtitle={wallet ? `Withdrawable: USDT ${withdrawable.toLocaleString('en-IN')}` : undefined}
+      subtitle={wallet ? `Withdrawable: USDT ${formatAmountNumber(withdrawable)}` : undefined}
       tabs={[
         { label: 'Deposit', href: '/deposit' },
         { label: 'Withdrawals', href: '/withdraw', active: true },
@@ -95,7 +97,7 @@ export default function Theme5Withdraw() {
         ) : null}
         {wallet?.bonus > 0 ? (
           <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-700">
-            Your USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus balance can be
+            Your USDT {formatAmountNumber(wallet.bonus)} bonus balance can be
             played with but not withdrawn. It becomes withdrawable once it meets its
             wagering requirement.
           </p>
@@ -207,7 +209,7 @@ export default function Theme5Withdraw() {
       <button
         type="button"
         onClick={submit}
-        disabled={loading || hasPending || numAmount < 500 || !destinationComplete}
+        disabled={loading || hasPending || storedAmount < 500 || !destinationComplete}
         className={`${t5BtnPrimary} mt-4 w-full`}
       >
         {hasPending ? 'Withdrawal Pending Approval' : 'Request Withdrawal'}

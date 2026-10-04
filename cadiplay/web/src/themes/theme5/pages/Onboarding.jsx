@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { T5Card, t5Select, t5BtnPrimary, t5BtnOutline } from '../components/ui';
 
 const GAME_TYPES = ['Sports Betting', 'Live Casino', 'Slots', 'Lottery', 'AI Games', 'Fantasy Games'];
-const BET_RANGES = ['USDT 100-500', 'USDT 500-2000', 'USDT 2000-10000', 'USDT 10000+'];
+const BET_RANGES = ['USDT 1-5', 'USDT 5-20', 'USDT 20-100', 'USDT 100+'];
 
 export default function Theme5Onboarding() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function Theme5Onboarding() {
         <h2 className="font-display text-xl font-black text-[#0f1b33]">Welcome!</h2>
         <div className="mt-6">
           <div className="rounded-lg border border-[#1d4ed8]/25 bg-[#eff4ff] p-4">
-            <p className="font-black text-[#1d4ed8]">USDT 100 FREE added to your wallet!</p>
+            <p className="font-black text-[#1d4ed8]">USDT 1 FREE added to your wallet!</p>
             <p className="mt-2 text-sm text-[#64748b]">Explore AI Games &amp; Sports</p>
           </div>
         </div>

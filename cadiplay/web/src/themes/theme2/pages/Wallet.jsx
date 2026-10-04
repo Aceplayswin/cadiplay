@@ -8,13 +8,14 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth';
 import { T2Card, t2BtnPrimary, t2BtnGhost } from '../components/ui';
+import { formatAmountNumber } from '@/lib/money';
 
 function Stat({ label, value }) {
   return (
     <div className="rounded-xl border border-white/5 bg-[#070d16] px-3 py-2.5">
       <p className="text-[0.65rem] uppercase tracking-wide text-slate-500">{label}</p>
       <p className="mt-0.5 text-sm font-bold text-white">
-        USDT {Number(value ?? 0).toLocaleString('en-IN')}
+        USDT {formatAmountNumber(value ?? 0)}
       </p>
     </div>
   );
@@ -38,11 +39,11 @@ export default function Theme2Wallet() {
       <T2Card className="mt-6 p-6">
         <p className="text-sm text-slate-400">Withdrawable balance</p>
         <p className="mt-1 bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-4xl font-black text-transparent">
-          USDT {(wallet?.withdrawable ?? wallet?.available ?? 0).toLocaleString('en-IN')}
+          USDT {formatAmountNumber(wallet?.withdrawable ?? wallet?.available ?? 0)}
         </p>
         {wallet?.bonus > 0 ? (
           <p className="mt-1 text-xs font-semibold text-slate-500">
-            + USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus you can play with
+            + USDT {formatAmountNumber(wallet.bonus)} bonus you can play with
           </p>
         ) : null}
         <div className="mt-5 grid grid-cols-3 gap-3">

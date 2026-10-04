@@ -16,8 +16,8 @@ import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { formatDateTime } from '@/lib/datetime';
 import { T5Card } from '../components/ui';
+import { formatAmount as usdt } from '@/lib/money';
 
-const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 export default function Theme5BetHistory() {
   const router = useRouter();

@@ -1312,13 +1312,6 @@ def admin_staff_update(request, staff_id):
 
 
 # --- Admin: report export ---
-class _CsvEcho:
-    """File-like sink so csv.writer can stream rows straight to the response."""
-
-    def write(self, value):
-        return value
-
-
 @require_auth(['admin'])
 @require_http_methods(['GET'])
 def admin_reports(request):
@@ -1329,7 +1322,7 @@ def admin_reports(request):
 @require_auth(['admin'])
 @require_http_methods(['GET'])
 def admin_report_export(request, kind):
-    """Stream one report as a CSV download."""
+    """Build one report as a real .xlsx workbook."""
     date_from = _parse_date(request.GET.get('from'))
     date_to = _parse_date(request.GET.get('to'))
     member_id = (request.GET.get('memberId') or '').strip() or None
@@ -1340,16 +1333,13 @@ def admin_report_export(request, kind):
     except ValueError as e:
         return _error_response(e, 404)
 
-    writer = csv.writer(_CsvEcho())
-
-    def stream():
-        yield writer.writerow(header)
-        for row in rows:
-            yield writer.writerow(row)
-
-    stamp = datetime.now().strftime('%Y%m%d-%H%M')
-    response = StreamingHttpResponse(stream(), content_type='text/csv')
-    response['Content-Disposition'] = f'attachment; filename="{kind}-{stamp}.csv"'
+    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+    filename = f'{kind}-{stamp}.xlsx'
+    response = HttpResponse(
+        xlsx_bytes(header, rows, sheet_name=kind),
+        content_type=XLSX_CONTENT_TYPE,
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 

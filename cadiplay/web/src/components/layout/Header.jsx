@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
+import { formatAmountNumber } from '@/lib/money';
   Home,
   Trophy,
   Dices,
@@ -251,13 +252,13 @@ export function Header() {
                 !token
                   ? 'Sign in'
                   : heldForWithdrawal > 0
-                    ? `View wallet — USDT ${Number(heldForWithdrawal).toLocaleString('en-IN')} on hold for a pending withdrawal`
+                    ? `View wallet — USDT ${formatAmountNumber(heldForWithdrawal)} on hold for a pending withdrawal`
                     : 'View wallet'
               }
             >
               <Wallet className="h-4 w-4 text-brand-400" />
               <span className="text-sm font-bold text-app-fg">
-                USDT {Number(balance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                USDT {formatAmountNumber(balance, { minimumFractionDigits: 2 })}
               </span>
             </Link>
             <Link

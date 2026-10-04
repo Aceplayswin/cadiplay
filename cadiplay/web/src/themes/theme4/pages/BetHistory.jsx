@@ -10,8 +10,8 @@ import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { formatDateTime } from '@/lib/datetime';
 import { T4Card, T4FormPage } from '../components/ui';
+import { formatAmount as usdt } from '@/lib/money';
 
-const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 export default function Theme4BetHistory() {
   const router = useRouter();

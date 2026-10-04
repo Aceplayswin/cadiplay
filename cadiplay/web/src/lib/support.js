@@ -5,7 +5,7 @@ export const SOCIAL_LINKS_DEFAULTS = {
   facebook: '',
   instagram: '',
   twitter: '',
-  whatsapp: 'https://wa.link/mahakalworld',
+  whatsapp: '',
 };
 
 /** @deprecated Prefer useSocialLinks().whatsappUrl — kept for any static fallbacks. */

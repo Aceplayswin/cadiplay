@@ -6,8 +6,8 @@
 import { useEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { api } from '@/services/api';
+import { formatAmount as usdt } from '@/lib/money';
 
-const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
 
 export function useBigWins(limit = 12, refreshMs = 45000) {
   const [wins, setWins] = useState([]);

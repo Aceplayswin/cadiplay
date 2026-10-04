@@ -37,7 +37,7 @@ export default function Theme1AppDownload() {
     };
   }, []);
 
-  const name = branding.product_name || 'Mahakal World';
+  const name = branding.product_name || 'Cadiplay';
   const apkAvailable = config?.available;
   const downloadUrl = `${API_URL}/api/v1/app/apk`;
 
