@@ -36,10 +36,15 @@ export default function Theme2Wallet() {
       <h1 className="font-display text-2xl font-black text-white">Wallet</h1>
 
       <T2Card className="mt-6 p-6">
-        <p className="text-sm text-slate-400">Available balance</p>
+        <p className="text-sm text-slate-400">Withdrawable balance</p>
         <p className="mt-1 bg-gradient-to-r from-amber-300 to-amber-500 bg-clip-text text-4xl font-black text-transparent">
-          USDT {(wallet?.available ?? 0).toLocaleString('en-IN')}
+          USDT {(wallet?.withdrawable ?? wallet?.available ?? 0).toLocaleString('en-IN')}
         </p>
+        {wallet?.bonus > 0 ? (
+          <p className="mt-1 text-xs font-semibold text-slate-500">
+            + USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus you can play with
+          </p>
+        ) : null}
         <div className="mt-5 grid grid-cols-3 gap-3">
           <Stat label="Bonus" value={wallet?.bonus} />
           <Stat label="Locked" value={wallet?.locked} />

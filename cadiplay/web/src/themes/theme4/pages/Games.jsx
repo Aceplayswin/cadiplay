@@ -4,24 +4,16 @@
 // a teal section bar header and dense square tiles like the home Top Games rail.
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Play } from 'lucide-react';
 import { api } from '@/services/api';
+import { categoryFromSlug, playPath } from '@/lib/gameRoutes';
 import { T4SectionBar } from '../components/ui';
-
-const CATEGORY_MAP = {
-  lottery: 'lottery',
-  'live-casino': 'live_casino',
-  sports: 'sports',
-  slots: 'slots',
-  fantasy: 'fantasy',
-  ai: 'ai_games',
-};
 
 function GameTile({ game }) {
   return (
-    <Link href={`/play/${game.slug}`} className="group flex flex-col text-left">
+    <Link href={playPath(game)} className="group flex flex-col text-left">
       <span className="relative grid aspect-square place-items-center overflow-hidden rounded bg-gradient-to-br from-[#0a5560] to-[#101c1e] shadow-sm">
         {game.thumbnail_url ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -42,14 +34,26 @@ function GameTile({ game }) {
 
 export default function Theme4Games() {
   const params = useParams();
-  const category = CATEGORY_MAP[params.category] ?? params.category;
+  const searchParams = useSearchParams();
+  const category = categoryFromSlug(params.category);
+  const q = (searchParams.get('q') ?? '').trim();
   const [games, setGames] = useState([]);
 
   useEffect(() => {
-    api(`/api/v1/games?category=${category}`).then(setGames).catch(() => setGames([]));
-  }, [category]);
+    let active = true;
+    const url = `/api/v1/games?limit=200${
+      category && category !== 'all' ? `&category=${category}` : ''
+    }${q ? `&search=${encodeURIComponent(q)}` : ''}`;
+    api(url)
+      .then((data) => active && setGames(Array.isArray(data) ? data : []))
+      .catch(() => active && setGames([]));
+    return () => {
+      active = false;
+    };
+  }, [category, q]);
 
-  const title = params.category?.replace(/-/g, ' ') ?? 'Games';
+  const title =
+    q || (params.category === 'all' ? 'All Games' : params.category?.replace(/-/g, ' ')) || 'Games';
 
   return (
     <div className="mx-auto max-w-[1200px] px-2 py-4 sm:px-3">
@@ -59,7 +63,9 @@ export default function Theme4Games() {
           {games.map((game) => <GameTile key={game.id} game={game} />)}
         </div>
         {games.length === 0 && (
-          <p className="py-8 text-center text-sm text-[#8aa0a4]">No games found. Start API and seed DB.</p>
+          <p className="py-8 text-center text-sm text-[#8aa0a4]">
+            {q ? `No ${q} tables available right now.` : 'No games found. Start API and seed DB.'}
+          </p>
         )}
       </div>
     </div>

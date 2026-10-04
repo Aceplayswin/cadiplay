@@ -13,7 +13,7 @@ export default function Theme2Onboarding() {
   const [betRange, setBetRange] = useState('');
   const [step, setStep] = useState(0);
 
-  if (step === 2) {
+  if (step === 1) {
     return (
       <div className="mx-auto max-w-lg px-4 py-12">
         <T2Card className="p-8">
@@ -39,23 +39,18 @@ export default function Theme2Onboarding() {
     );
   }
 
-  const titles = ['Change Password & Enable 2FA', 'Welcome!', 'Quick Preferences'];
-  const contents = [
-    <p key="1" className="text-slate-400">Secure your account with a strong password and two-factor authentication.</p>,
-    <div key="2" className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
-      <p className="text-amber-300">USDT 100 FREE added to your wallet!</p>
-      <p className="mt-2 text-sm text-slate-400">Explore AI Games &amp; Sports</p>
-    </div>,
-    null,
-  ];
-
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
       <T2Card className="p-8 text-center">
-        <h2 className="text-xl font-bold text-white">{titles[step]}</h2>
-        <div className="mt-6">{contents[step]}</div>
-        <button type="button" onClick={() => (step < 2 ? setStep(step + 1) : router.push('/'))} className={`${t2BtnPrimary} mt-8 w-full`}>
-          {step < 2 ? 'Next' : 'Get Started'}
+        <h2 className="text-xl font-bold text-white">Welcome!</h2>
+        <div className="mt-6">
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/10 p-4">
+            <p className="text-amber-300">USDT 100 FREE added to your wallet!</p>
+            <p className="mt-2 text-sm text-slate-400">Explore AI Games &amp; Sports</p>
+          </div>
+        </div>
+        <button type="button" onClick={() => setStep(1)} className={`${t2BtnPrimary} mt-8 w-full`}>
+          Next
         </button>
         <button type="button" onClick={() => router.push('/')} className="mt-3 w-full text-sm text-slate-500 hover:text-white">Skip</button>
       </T2Card>

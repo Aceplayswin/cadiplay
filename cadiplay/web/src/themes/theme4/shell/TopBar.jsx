@@ -11,6 +11,7 @@ import { Megaphone, User, Wallet } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { useBranding } from '@/hooks/useBranding';
 import { ProfileMenu } from '@/components/ProfileMenu';
+import { GameSearch } from '@/components/GameSearch';
 import { useAuthModal } from './authModalContext';
 
 const TICKER = 'Unmatched Betting Excitement and Access 500+ Casino and Online Games';
@@ -88,6 +89,14 @@ export function Theme4TopBar() {
       <div className="theme4-header">
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-3 py-2.5">
           <Theme4BrandMark name={branding.product_name} />
+
+          <GameSearch
+            className="mx-3 hidden min-w-[180px] max-w-[320px] flex-1 md:block"
+            inputClassName="h-9 w-full rounded border border-white/25 bg-[#0a5560]/60 py-2 pl-10 pr-8 text-sm font-semibold text-white placeholder-white/60 outline-none focus:border-white/60"
+            panelClassName="absolute left-0 top-full z-50 mt-2 max-h-[min(70vh,480px)] w-full min-w-[320px] overflow-y-auto rounded border border-black/10 bg-white shadow-xl text-[#13272b]"
+            rowActiveClassName="hover:bg-[#eef6f7]"
+            accentClassName="text-[#0e7480]"
+          />
 
           {isHydrated && token ? (
             <div className="flex items-center gap-2">

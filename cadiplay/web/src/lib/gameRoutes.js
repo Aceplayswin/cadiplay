@@ -38,7 +38,9 @@ export function categoryFromSlug(slug) {
 }
 
 export function playPath(game) {
-  return `/play/${game.slug}`;
+  if (game?.slug) return `/play/${game.slug}`;
+  if (game?.game_uid) return `/play/${encodeURIComponent(game.game_uid)}`;
+  return '/';
 }
 
 export function filterByCategory(games, categories) {

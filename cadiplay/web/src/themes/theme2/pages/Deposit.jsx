@@ -1,13 +1,14 @@
 'use client';
 
 // Deposit — amount, then one of the admin-configured methods, then the
-// destination for that method's TYPE (UPI: QR + ID, bank: account, crypto:
-// wallet address) and an optional UTR reference. The deposit stays pending
-// until the product admin confirms it.
+// destination for that method's TYPE and a payment screenshot. The deposit
+// stays pending until the product admin confirms it.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api } from '@/services/api';
+import { Upload, X, Check, Loader2 } from 'lucide-react';
+import { api, upload } from '@/services/api';
 import { affiliateAttribution } from '@/lib/referral';
 import { useAuthStore } from '@/store/auth';
 import { useDepositMethods } from '@/hooks/useDepositMethods';
@@ -16,9 +17,9 @@ import { amountWithinLimits, hasDestination, methodDescription } from '@/lib/pay
 import { T2Card, t2Input, t2BtnPrimary } from '../components/ui';
 
 const QUICK_AMOUNTS = [500, 1000, 2500, 5000, 10000];
+const MAX_PROOF_BYTES = 5 * 1024 * 1024;
+const PROOF_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
-// Theme2 (dark / amber) palette for the shared "send payment to" block; the
-// card itself is a T2Card wrapped around it.
 const RECEIVING_STYLES = {
   card: '',
   title: 'font-bold text-white',
@@ -44,6 +45,13 @@ export default function Theme2Deposit() {
   const [reference, setReference] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [submitError, setSubmitError] = useState('');
+  const [proofFile, setProofFile] = useState(null);
+  const [proofPreview, setProofPreview] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
+  const [proofError, setProofError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const {
     methods,
     loading: methodsLoading,
@@ -52,8 +60,15 @@ export default function Theme2Deposit() {
 
   const numAmount = parseFloat(amount) || 0;
   const selected = methods.find((m) => m.code === method) ?? null;
+  const needsProof = Boolean(selected);
   const limit = amountWithinLimits(selected, numAmount);
-  const canSubmit = !loading && numAmount > 0 && Boolean(selected) && limit.ok;
+  const canSubmit =
+    !loading &&
+    !uploading &&
+    numAmount > 0 &&
+    Boolean(selected) &&
+    limit.ok &&
+    (!needsProof || Boolean(proofUrl));
 
   useEffect(() => {
     hydrate();
@@ -63,14 +78,64 @@ export default function Theme2Deposit() {
     if (isHydrated && !token) router.replace('/login');
   }, [isHydrated, token, router]);
 
-  // A method the admin has since disabled must not stay selected.
   useEffect(() => {
     if (method && !methods.some((m) => m.code === method)) setMethod('');
   }, [methods, method]);
 
+  useEffect(() => {
+    setReference('');
+    setSubmitError('');
+    setProofFile(null);
+    setProofPreview('');
+    setProofUrl('');
+    setProofError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [method]);
+
+  useEffect(() => {
+    if (!proofPreview) return undefined;
+    return () => URL.revokeObjectURL(proofPreview);
+  }, [proofPreview]);
+
+  const pickProof = async (file) => {
+    if (!file) return;
+    setProofError('');
+    setProofUrl('');
+    if (!PROOF_TYPES.includes(file.type)) {
+      setProofError('Upload a PNG, JPG or WEBP image.');
+      return;
+    }
+    if (file.size > MAX_PROOF_BYTES) {
+      setProofError('Screenshot too large (max 5MB).');
+      return;
+    }
+    setProofFile(file);
+    setProofPreview(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const res = await upload('/api/v1/wallet/deposit/proof', file);
+      setProofUrl(res.url);
+    } catch (e) {
+      setProofError(e instanceof Error ? e.message : 'Upload failed');
+      setProofFile(null);
+      setProofPreview('');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const clearProof = () => {
+    setProofFile(null);
+    setProofPreview('');
+    setProofUrl('');
+    setProofError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const submit = async () => {
     if (!selected) return;
     setLoading(true);
+    setSubmitError('');
     try {
       const res = await api('/api/v1/wallet/deposit', {
         method: 'POST',
@@ -78,33 +143,52 @@ export default function Theme2Deposit() {
           amount: numAmount,
           paymentMethod: selected.code,
           referenceNumber: reference.trim() || null,
+          paymentProofUrl: proofUrl || null,
           ...affiliateAttribution(),
         }),
       });
       setResult(res);
+      setAmount('');
       setReference('');
+      clearProof();
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Deposit failed';
       if (/log in again|unauthorized/i.test(msg)) {
         router.replace('/login');
         return;
       }
-      alert(msg);
-    } finally { setLoading(false); }
+      setSubmitError(msg);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <h1 className="font-display text-2xl font-black text-white">Deposit</h1>
+      <div className="flex items-end justify-between gap-3">
+        <h1 className="font-display text-2xl font-black text-white">Deposit</h1>
+        <Link href="/withdraw" className="text-sm font-bold text-amber-400 hover:underline">
+          Withdrawals
+        </Link>
+      </div>
 
       <T2Card className="mt-6 p-6">
         <label className="text-sm text-slate-400">Enter Amount (USDT)</label>
-        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0"
-          className={`${t2Input} mt-2 text-2xl`} />
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="0"
+          className={`${t2Input} mt-2 text-2xl`}
+        />
         <div className="mt-4 flex flex-wrap gap-2">
           {QUICK_AMOUNTS.map((a) => (
-            <button key={a} type="button" onClick={() => setAmount(String(a))}
-              className="rounded-lg border border-white/5 bg-[#070d16] px-4 py-2 text-sm text-slate-200 hover:border-amber-400/40 hover:text-amber-400">
+            <button
+              key={a}
+              type="button"
+              onClick={() => setAmount(String(a))}
+              className="rounded-lg border border-white/5 bg-[#070d16] px-4 py-2 text-sm text-slate-200 hover:border-amber-400/40 hover:text-amber-400"
+            >
               USDT {a.toLocaleString('en-IN')}
             </button>
           ))}
@@ -124,11 +208,20 @@ export default function Theme2Deposit() {
         ) : (
           <div className="mt-4 space-y-2">
             {methods.map((pm) => (
-              <label key={pm.code}
+              <label
+                key={pm.code}
                 className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${
                   method === pm.code ? 'border-amber-400/60 bg-amber-500/10' : 'border-white/5 bg-[#070d16]'
-                }`}>
-                <input type="radio" name="method" value={pm.code} checked={method === pm.code} onChange={() => setMethod(pm.code)} className="accent-amber-500" />
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="method"
+                  value={pm.code}
+                  checked={method === pm.code}
+                  onChange={() => setMethod(pm.code)}
+                  className="accent-amber-500"
+                />
                 <div className="min-w-0">
                   <p className="font-medium text-white">{pm.name}</p>
                   <p className="text-xs text-slate-500">{methodDescription(pm)}</p>
@@ -142,34 +235,110 @@ export default function Theme2Deposit() {
         )}
       </T2Card>
 
-      {/* What the player pays into — the block for the selected method's type. */}
       {selected && hasDestination(selected) && (
         <T2Card className="mt-6 p-6">
-          <ReceivingDetails method={selected} styles={RECEIVING_STYLES} />
+          <ReceivingDetails
+            method={selected}
+            styles={RECEIVING_STYLES}
+            note="Transfer the amount to this account, then upload your payment proof below."
+          />
         </T2Card>
       )}
 
-      {selected && (
+      {needsProof && (
         <T2Card className="mt-6 p-6">
-          <label className="text-sm text-slate-400">
-            UTR / reference number <span className="text-slate-600">(optional)</span>
-          </label>
-          <input type="text" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="e.g. 412345678901"
-            className={`${t2Input} mt-2`} />
-          <p className="mt-2 text-xs text-slate-500">
-            Pay using {selected.name}, then paste the reference from your payment app so our team can match it.
+          <h2 className="font-bold text-white">Payment proof</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            Pay using {selected.name}, then upload a screenshot of the completed payment.
+            Our team verifies it and credits your wallet.
           </p>
+
+          <label className="mt-4 block text-sm text-slate-400">
+            UTR / Reference number <span className="text-slate-600">(optional)</span>
+          </label>
+          <input
+            type="text"
+            value={reference}
+            onChange={(e) => {
+              setReference(e.target.value);
+              if (submitError) setSubmitError('');
+            }}
+            placeholder="e.g. 412345678901"
+            className={`${t2Input} mt-2`}
+          />
+          {submitError ? <p className="mt-2 text-sm text-red-400">{submitError}</p> : null}
+
+          <label className="mt-4 block text-sm text-slate-400">Screenshot</label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={(e) => pickProof(e.target.files?.[0])}
+            className="hidden"
+          />
+
+          {!proofPreview ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-2 flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-white/15 bg-[#070d16] px-4 py-8 text-center transition hover:border-amber-400/50"
+            >
+              <Upload className="h-6 w-6 text-amber-400" />
+              <span className="text-sm font-bold text-white">Tap to upload your payment screenshot</span>
+              <span className="text-xs text-slate-500">PNG, JPG or WEBP · up to 5MB</span>
+            </button>
+          ) : (
+            <div className="mt-2 rounded-xl border border-white/5 bg-[#070d16] p-3">
+              <div className="flex items-start gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={proofPreview}
+                  alt="Payment screenshot preview"
+                  className="h-24 w-24 shrink-0 rounded-md border border-white/10 object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-white">{proofFile?.name}</p>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {((proofFile?.size ?? 0) / 1024).toFixed(0)} KB
+                  </p>
+                  {uploading && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-amber-400">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading…
+                    </p>
+                  )}
+                  {proofUrl && !uploading && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+                      <Check className="h-3.5 w-3.5" /> Uploaded
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={clearProof}
+                  aria-label="Remove screenshot"
+                  className="rounded-md p-1 text-slate-500 transition hover:bg-white/5 hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          {proofError && <p className="mt-2 text-xs font-bold text-red-400">{proofError}</p>}
         </T2Card>
       )}
 
       <button type="button" onClick={submit} disabled={!canSubmit} className={`${t2BtnPrimary} mt-6 w-full`}>
-        {loading ? 'Processing...' : 'Submit deposit request'}
+        {loading ? 'Processing...' : uploading ? 'Uploading screenshot…' : 'Submit deposit request'}
       </button>
+      {needsProof && !proofUrl && !uploading && (
+        <p className="mt-2 text-center text-xs text-slate-500">Upload your payment screenshot to submit.</p>
+      )}
       {result && (
         <div className="mt-4 rounded-xl border border-amber-400/30 bg-amber-500/10 p-4 text-center">
           <p className="text-sm font-semibold text-amber-300">Deposit submitted — pending approval</p>
           <p className="mt-1 text-xs text-slate-400">
-            Request ID: {result.transactionId}. Your wallet will be credited once our team confirms the payment.
+            Request ID: {result.transactionId}. Our team is reviewing your payment proof —
+            your wallet is credited once it is approved.
           </p>
         </div>
       )}

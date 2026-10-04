@@ -18,6 +18,12 @@ import Onboarding from './pages/Onboarding';
 import Support from './pages/Support';
 import Games from './pages/Games';
 import Play from './pages/Play';
+import Providers from './pages/Providers';
+import Transactions from './pages/Transactions';
+import BetHistory from './pages/BetHistory';
+import Bonus from './pages/Bonus';
+import Promotions from './pages/Promotions';
+import AppDownload from './pages/AppDownload';
 
 export default {
   key: 'theme3',
@@ -33,6 +39,12 @@ export default {
     support: Support,
     games: Games,
     play: Play,
+    providers: Providers,
+    transactions: Transactions,
+    betHistory: BetHistory,
+    bonus: Bonus,
+    promotions: Promotions,
+    appDownload: AppDownload,
   },
   Shell,
 };

@@ -10,6 +10,8 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useWalletSync } from '@/hooks/useWalletSync';
+import { isAccountRoute, HIDE_ON_MOBILE } from '@/lib/accountRoutes';
 import { Theme3TopNav } from './TopNav';
 import { Theme3CategoryBar } from './CategoryBar';
 import { Theme3Footer } from './Footer';
@@ -23,6 +25,7 @@ export default function Theme3Shell({ children }) {
   const open = useCallback((mode) => setAuthMode(mode), []);
   const close = useCallback(() => setAuthMode(null), []);
   const modalValue = useMemo(() => ({ mode: authMode, open, close }), [authMode, open, close]);
+  useWalletSync();
 
   // The admin console renders its own shell and must not inherit player chrome.
   if (pathname?.startsWith('/admin')) {
@@ -35,9 +38,17 @@ export default function Theme3Shell({ children }) {
     <Theme3AuthModalContext.Provider value={modalValue}>
       <div className="theme3-root min-h-screen">
         <Theme3TopNav />
-        {!isPlayRoute && <Theme3CategoryBar />}
+        {!isPlayRoute && (
+          <div className={isAccountRoute(pathname) ? HIDE_ON_MOBILE : undefined}>
+            <Theme3CategoryBar />
+          </div>
+        )}
         <main className="min-h-[60vh]">{children}</main>
-        {!isPlayRoute && <Theme3Footer />}
+        {!isPlayRoute && (
+          <div className={isAccountRoute(pathname) ? HIDE_ON_MOBILE : undefined}>
+            <Theme3Footer />
+          </div>
+        )}
         <Theme3AuthModals />
       </div>
     </Theme3AuthModalContext.Provider>

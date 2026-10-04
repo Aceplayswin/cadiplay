@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Gift, Lock, Phone, User, X } from 'lucide-react';
+import { Lock, Phone, User, X } from 'lucide-react';
 import { api } from '@/services/api';
 import { registerAttribution } from '@/lib/referral';
 import { useAuthStore } from '@/store/auth';
@@ -127,7 +127,6 @@ function RegisterModal({ onClose, switchTo }) {
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
-  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -141,7 +140,7 @@ function RegisterModal({ onClose, switchTo }) {
     try {
       const result = await api('/api/v1/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ phone, fullName, password, ...registerAttribution(referralCode) }),
+        body: JSON.stringify({ phone, fullName, password, ...registerAttribution() }),
       });
       setAuth({ token: result.token, userId: result.userId, username: result.username });
       onClose();
@@ -194,17 +193,6 @@ function RegisterModal({ onClose, switchTo }) {
             className={passwordClass}
             minLength={6}
             required
-          />
-        </div>
-        <div className="relative">
-          <Gift className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-          <input
-            type="text"
-            placeholder="Referral code (optional)"
-            value={referralCode}
-            onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-            className={`${inputClass} uppercase tracking-widest`}
-            maxLength={20}
           />
         </div>
         <button

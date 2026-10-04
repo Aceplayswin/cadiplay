@@ -5,12 +5,14 @@
 // body content inside this frame (they no longer render Header/Footer).
 
 import { usePathname } from 'next/navigation';
+import { useWalletSync } from '@/hooks/useWalletSync';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Theme1AuthModals } from './AuthModals';
 
 export default function Theme1Shell({ children }) {
   const pathname = usePathname();
+  useWalletSync();
 
   // The admin console renders its own shell and must not inherit player chrome.
   if (pathname?.startsWith('/admin')) {

@@ -20,10 +20,9 @@ export default function Theme1Onboarding() {
   const [betRange, setBetRange] = useState('');
   const [step, setStep] = useState(0);
 
-  if (step === 2) {
+  if (step === 1) {
     return (
       <>
-
         <main className="mx-auto max-w-lg flex-1 px-4 py-12">
           <div className="card-glass p-8">
             <h2 className="text-xl font-bold">Quick Preferences</h2>
@@ -77,31 +76,23 @@ export default function Theme1Onboarding() {
     );
   }
 
-  const titles = ['Change Password & Enable 2FA', 'Welcome!', 'Quick Preferences'];
-  const contents = [
-    <p key="1" className="text-slate-400">
-      Secure your account with a strong password and two-factor authentication.
-    </p>,
-    <div key="2" className="rounded-lg bg-brand-500/20 p-4">
-      <p className="text-brand-300">USDT 100 FREE added to your wallet!</p>
-      <p className="mt-2 text-sm text-slate-400">Explore AI Games & Sports</p>
-    </div>,
-    null,
-  ];
-
   return (
     <>
-
       <main className="mx-auto max-w-lg flex-1 px-4 py-12">
         <div className="card-glass p-8 text-center">
-          <h2 className="text-xl font-bold">{titles[step]}</h2>
-          <div className="mt-6">{contents[step]}</div>
+          <h2 className="text-xl font-bold">Welcome!</h2>
+          <div className="mt-6">
+            <div className="rounded-lg bg-brand-500/20 p-4">
+              <p className="text-brand-300">USDT 100 FREE added to your wallet!</p>
+              <p className="mt-2 text-sm text-slate-400">Explore AI Games & Sports</p>
+            </div>
+          </div>
           <button
             type="button"
-            onClick={() => (step < 2 ? setStep(step + 1) : router.push('/'))}
+            onClick={() => setStep(1)}
             className="mt-8 w-full rounded-lg bg-brand-500 py-3 font-semibold text-surface-900"
           >
-            {step < 2 ? 'Next' : 'Get Started'}
+            Next
           </button>
           <button
             type="button"

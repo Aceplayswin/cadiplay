@@ -15,7 +15,7 @@ export default function Theme5Onboarding() {
   const [betRange, setBetRange] = useState('');
   const [step, setStep] = useState(0);
 
-  if (step === 2) {
+  if (step === 1) {
     return (
       <div className="mx-auto max-w-lg px-4 py-10">
         <T5Card className="p-8">
@@ -41,27 +41,18 @@ export default function Theme5Onboarding() {
     );
   }
 
-  const titles = ['Change Password & Enable 2FA', 'Welcome!', 'Quick Preferences'];
-  const contents = [
-    <p key="1" className="text-[#64748b]">Secure your account with a strong password and two-factor authentication.</p>,
-    <div key="2" className="rounded-lg border border-[#1d4ed8]/25 bg-[#eff4ff] p-4">
-      <p className="font-black text-[#1d4ed8]">USDT 100 FREE added to your wallet!</p>
-      <p className="mt-2 text-sm text-[#64748b]">Explore AI Games &amp; Sports</p>
-    </div>,
-    null,
-  ];
-
   return (
     <div className="mx-auto max-w-lg px-4 py-10">
       <T5Card className="p-8 text-center">
-        <h2 className="font-display text-xl font-black text-[#0f1b33]">{titles[step]}</h2>
-        <div className="mt-6">{contents[step]}</div>
-        <button
-          type="button"
-          onClick={() => (step < 2 ? setStep(step + 1) : router.push('/'))}
-          className={`${t5BtnPrimary} mt-8 w-full`}
-        >
-          {step < 2 ? 'Next' : 'Get Started'}
+        <h2 className="font-display text-xl font-black text-[#0f1b33]">Welcome!</h2>
+        <div className="mt-6">
+          <div className="rounded-lg border border-[#1d4ed8]/25 bg-[#eff4ff] p-4">
+            <p className="font-black text-[#1d4ed8]">USDT 100 FREE added to your wallet!</p>
+            <p className="mt-2 text-sm text-[#64748b]">Explore AI Games &amp; Sports</p>
+          </div>
+        </div>
+        <button type="button" onClick={() => setStep(1)} className={`${t5BtnPrimary} mt-8 w-full`}>
+          Next
         </button>
         <button type="button" onClick={() => router.push('/')} className="mt-3 w-full text-sm text-[#94a3b8] hover:text-[#0f1b33]">
           Skip

@@ -6,7 +6,7 @@
 //   - Register → full name + phone + password. Direct sign-up, no verification step.
 
 import { useState } from 'react';
-import { Lock, Phone, User as UserIcon, Gift } from 'lucide-react';
+import { Lock, Phone, User as UserIcon } from 'lucide-react';
 import { api } from '@/services/api';
 import { registerAttribution } from '@/lib/referral';
 import { useAuthStore } from '@/store/auth';
@@ -104,7 +104,6 @@ function RegisterModal() {
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
-  const [referralCode, setReferralCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -114,7 +113,7 @@ function RegisterModal() {
     try {
       const result = await api('/api/v1/auth/register', {
         method: 'POST',
-        body: JSON.stringify({ phone, fullName, password, ...registerAttribution(referralCode) }),
+        body: JSON.stringify({ phone, fullName, password, ...registerAttribution() }),
       });
       setAuth({ token: result.token, userId: result.userId, username: result.username });
       close();
@@ -191,13 +190,6 @@ function RegisterModal() {
               minLength={6}
               required
             />
-          </div>
-        </div>
-        <div>
-          <label className="mb-1.5 block text-xs font-bold uppercase tracking-[0.14em] text-[#6b6579]">Referral code (optional)</label>
-          <div className="relative">
-            <Gift className={iconLeft} />
-            <input type="text" placeholder="Enter code" value={referralCode} onChange={(e) => setReferralCode(e.target.value.toUpperCase())} className={`${t3Input} pl-11 uppercase tracking-widest`} maxLength={20} />
           </div>
         </div>
         <button

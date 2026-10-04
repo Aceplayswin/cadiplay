@@ -15,7 +15,7 @@ export default function Theme4Onboarding() {
   const [betRange, setBetRange] = useState('');
   const [step, setStep] = useState(0);
 
-  if (step === 2) {
+  if (step === 1) {
     return (
       <div className="mx-auto max-w-lg px-4 py-12">
         <T4Card className="p-8">
@@ -41,23 +41,18 @@ export default function Theme4Onboarding() {
     );
   }
 
-  const titles = ['Change Password & Enable 2FA', 'Welcome!', 'Quick Preferences'];
-  const contents = [
-    <p key="1" className="text-[#5d7378]">Secure your account with a strong password and two-factor authentication.</p>,
-    <div key="2" className="rounded border border-[#0e7480]/25 bg-[#eef6f7] p-4">
-      <p className="font-black text-[#0e7480]">USDT 100 FREE added to your wallet!</p>
-      <p className="mt-2 text-sm text-[#5d7378]">Explore AI Games &amp; Sports</p>
-    </div>,
-    null,
-  ];
-
   return (
     <div className="mx-auto max-w-lg px-4 py-12">
       <T4Card className="p-8 text-center">
-        <h2 className="text-xl font-black text-[#13272b]">{titles[step]}</h2>
-        <div className="mt-6">{contents[step]}</div>
-        <button type="button" onClick={() => (step < 2 ? setStep(step + 1) : router.push('/'))} className={`${t4BtnPrimary} mt-8 w-full`}>
-          {step < 2 ? 'Next' : 'Get Started'}
+        <h2 className="text-xl font-black text-[#13272b]">Welcome!</h2>
+        <div className="mt-6">
+          <div className="rounded border border-[#0e7480]/25 bg-[#eef6f7] p-4">
+            <p className="font-black text-[#0e7480]">USDT 100 FREE added to your wallet!</p>
+            <p className="mt-2 text-sm text-[#5d7378]">Explore AI Games &amp; Sports</p>
+          </div>
+        </div>
+        <button type="button" onClick={() => setStep(1)} className={`${t4BtnPrimary} mt-8 w-full`}>
+          Next
         </button>
         <button type="button" onClick={() => router.push('/')} className="mt-3 w-full text-sm text-[#8aa0a4] hover:text-[#13272b]">Skip</button>
       </T4Card>

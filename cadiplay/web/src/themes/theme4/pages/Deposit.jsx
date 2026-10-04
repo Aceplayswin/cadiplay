@@ -4,9 +4,11 @@
 // style. Methods come from the admin console; the block under the chosen one
 // is decided by its TYPE (UPI: QR + ID, bank: account, crypto: wallet address).
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { api } from '@/services/api';
+import { Upload, X, Check, Loader2 } from 'lucide-react';
+import { api, upload } from '@/services/api';
 import { affiliateAttribution } from '@/lib/referral';
 import { useAuthStore } from '@/store/auth';
 import { useDepositMethods } from '@/hooks/useDepositMethods';
@@ -15,6 +17,8 @@ import { amountWithinLimits, hasDestination, methodDescription } from '@/lib/pay
 import { T4Card, t4Input, t4BtnPrimary, T4FormPage } from '../components/ui';
 
 const QUICK_AMOUNTS = [500, 1000, 2500, 5000, 10000];
+const MAX_PROOF_BYTES = 5 * 1024 * 1024;
+const PROOF_TYPES = ['image/png', 'image/jpeg', 'image/webp'];
 
 // Theme4 (teal) palette for the shared "send payment to" block.
 const RECEIVING_STYLES = {
@@ -41,6 +45,13 @@ export default function Theme4Deposit() {
   const [reference, setReference] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [submitError, setSubmitError] = useState('');
+  const [proofFile, setProofFile] = useState(null);
+  const [proofPreview, setProofPreview] = useState('');
+  const [proofUrl, setProofUrl] = useState('');
+  const [proofError, setProofError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const {
     methods,
     loading: methodsLoading,
@@ -49,8 +60,15 @@ export default function Theme4Deposit() {
 
   const numAmount = parseFloat(amount) || 0;
   const selected = methods.find((m) => m.code === method) ?? null;
+  const needsProof = Boolean(selected);
   const limit = amountWithinLimits(selected, numAmount);
-  const canSubmit = !loading && numAmount > 0 && Boolean(selected) && limit.ok;
+  const canSubmit =
+    !loading &&
+    !uploading &&
+    numAmount > 0 &&
+    Boolean(selected) &&
+    limit.ok &&
+    (!needsProof || Boolean(proofUrl));
 
   useEffect(() => {
     hydrate();
@@ -65,9 +83,60 @@ export default function Theme4Deposit() {
     if (method && !methods.some((m) => m.code === method)) setMethod('');
   }, [methods, method]);
 
+  useEffect(() => {
+    setReference('');
+    setSubmitError('');
+    setProofFile(null);
+    setProofPreview('');
+    setProofUrl('');
+    setProofError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [method]);
+
+  useEffect(() => {
+    if (!proofPreview) return undefined;
+    return () => URL.revokeObjectURL(proofPreview);
+  }, [proofPreview]);
+
+  const pickProof = async (file) => {
+    if (!file) return;
+    setProofError('');
+    setProofUrl('');
+    if (!PROOF_TYPES.includes(file.type)) {
+      setProofError('Upload a PNG, JPG or WEBP image.');
+      return;
+    }
+    if (file.size > MAX_PROOF_BYTES) {
+      setProofError('Screenshot too large (max 5MB).');
+      return;
+    }
+    setProofFile(file);
+    setProofPreview(URL.createObjectURL(file));
+    setUploading(true);
+    try {
+      const res = await upload('/api/v1/wallet/deposit/proof', file);
+      setProofUrl(res.url);
+    } catch (e) {
+      setProofError(e instanceof Error ? e.message : 'Upload failed');
+      setProofFile(null);
+      setProofPreview('');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const clearProof = () => {
+    setProofFile(null);
+    setProofPreview('');
+    setProofUrl('');
+    setProofError('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   const submit = async () => {
     if (!selected) return;
     setLoading(true);
+    setSubmitError('');
     try {
       const res = await api('/api/v1/wallet/deposit', {
         method: 'POST',
@@ -75,18 +144,21 @@ export default function Theme4Deposit() {
           amount: numAmount,
           paymentMethod: selected.code,
           referenceNumber: reference.trim() || null,
+          paymentProofUrl: proofUrl || null,
           ...affiliateAttribution(),
         }),
       });
       setResult(res);
+      setAmount('');
       setReference('');
+      clearProof();
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Deposit failed';
       if (/log in again|unauthorized/i.test(msg)) {
         router.replace('/login');
         return;
       }
-      alert(msg);
+      setSubmitError(msg);
     } finally {
       setLoading(false);
     }
@@ -94,6 +166,12 @@ export default function Theme4Deposit() {
 
   return (
     <T4FormPage title="Deposit">
+      <div className="mt-2 flex justify-end">
+        <Link href="/withdraw" className="text-sm font-bold text-[#0e7480] hover:underline">
+          Withdrawals
+        </Link>
+      </div>
+
       <T4Card className="mt-6 p-6">
         <label className="text-sm text-[#5d7378]">Enter Amount (USDT)</label>
         <input
@@ -157,39 +235,110 @@ export default function Theme4Deposit() {
         )}
       </T4Card>
 
-      {/* What the player pays into — the block for the selected method's type. */}
       {selected && hasDestination(selected) && (
         <T4Card className="mt-6 p-6">
-          <ReceivingDetails method={selected} styles={RECEIVING_STYLES} />
+          <ReceivingDetails
+            method={selected}
+            styles={RECEIVING_STYLES}
+            note="Transfer the amount to this account, then upload your payment proof below."
+          />
         </T4Card>
       )}
 
-      {selected && (
+      {needsProof && (
         <T4Card className="mt-6 p-6">
-          <label className="text-sm text-[#5d7378]">
-            UTR / reference number <span className="text-[#8aa0a4]">(optional)</span>
+          <h2 className="font-black text-[#13272b]">Payment proof</h2>
+          <p className="mt-1 text-xs text-[#8aa0a4]">
+            Pay using {selected.name}, then upload a screenshot of the completed payment.
+            Our team verifies it and credits your wallet.
+          </p>
+
+          <label className="mt-4 block text-sm text-[#5d7378]">
+            UTR / Reference number <span className="text-[#8aa0a4]">(optional)</span>
           </label>
           <input
             type="text"
             value={reference}
-            onChange={(e) => setReference(e.target.value)}
+            onChange={(e) => {
+              setReference(e.target.value);
+              if (submitError) setSubmitError('');
+            }}
             placeholder="e.g. 412345678901"
             className={`${t4Input} mt-2`}
           />
-          <p className="mt-2 text-xs text-[#8aa0a4]">
-            Pay using {selected.name}, then paste the reference from your payment app so our team can match it.
-          </p>
+          {submitError ? <p className="mt-2 text-sm text-red-500">{submitError}</p> : null}
+
+          <label className="mt-4 block text-sm text-[#5d7378]">Screenshot</label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            onChange={(e) => pickProof(e.target.files?.[0])}
+            className="hidden"
+          />
+
+          {!proofPreview ? (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="mt-2 flex w-full flex-col items-center gap-2 rounded border-2 border-dashed border-[#0e7480]/25 bg-white px-4 py-8 text-center transition hover:border-[#0e7480]"
+            >
+              <Upload className="h-6 w-6 text-[#0e7480]" />
+              <span className="text-sm font-bold text-[#13272b]">Tap to upload your payment screenshot</span>
+              <span className="text-xs text-[#8aa0a4]">PNG, JPG or WEBP · up to 5MB</span>
+            </button>
+          ) : (
+            <div className="mt-2 rounded border border-black/10 bg-white p-3">
+              <div className="flex items-start gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={proofPreview}
+                  alt="Payment screenshot preview"
+                  className="h-24 w-24 shrink-0 rounded border border-black/10 object-cover"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-[#13272b]">{proofFile?.name}</p>
+                  <p className="mt-0.5 text-xs text-[#8aa0a4]">
+                    {((proofFile?.size ?? 0) / 1024).toFixed(0)} KB
+                  </p>
+                  {uploading && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#0e7480]">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" /> Uploading…
+                    </p>
+                  )}
+                  {proofUrl && !uploading && (
+                    <p className="mt-1 flex items-center gap-1.5 text-xs font-bold text-[#1c8a52]">
+                      <Check className="h-3.5 w-3.5" /> Uploaded
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={clearProof}
+                  aria-label="Remove screenshot"
+                  className="rounded p-1 text-[#8aa0a4] transition hover:bg-black/5 hover:text-[#13272b]"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          )}
+          {proofError && <p className="mt-2 text-xs font-bold text-red-500">{proofError}</p>}
         </T4Card>
       )}
 
       <button type="button" onClick={submit} disabled={!canSubmit} className={`${t4BtnPrimary} mt-6 w-full`}>
-        {loading ? 'Processing...' : 'Submit deposit request'}
+        {loading ? 'Processing...' : uploading ? 'Uploading screenshot…' : 'Submit deposit request'}
       </button>
+      {needsProof && !proofUrl && !uploading && (
+        <p className="mt-2 text-center text-xs text-[#8aa0a4]">Upload your payment screenshot to submit.</p>
+      )}
       {result && (
         <div className="mt-4 rounded border border-[#0e7480]/30 bg-[#eefafa] p-4 text-center">
           <p className="text-sm font-black text-[#0e7480]">Deposit submitted — pending approval</p>
           <p className="mt-1 text-xs text-slate-500">
-            Request ID: {result.transactionId}. Your wallet will be credited once our team confirms the payment.
+            Request ID: {result.transactionId}. Our team is reviewing your payment proof —
+            your wallet is credited once it is approved.
           </p>
         </div>
       )}

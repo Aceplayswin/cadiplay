@@ -205,7 +205,7 @@ export default function Theme2Home() {
   }, [games, tab]);
 
   const handlePlay = (game) => {
-    if (game?.slug) router.push(playPath(game));
+    if (game?.slug || game?.game_uid) router.push(playPath(game));
   };
 
   return (

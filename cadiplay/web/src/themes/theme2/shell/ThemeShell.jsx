@@ -7,6 +7,8 @@
 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useWalletSync } from '@/hooks/useWalletSync';
+import { isAccountRoute, HIDE_ON_MOBILE } from '@/lib/accountRoutes';
 import { Theme2Sidebar } from './Sidebar';
 import { Theme2TopBar } from './TopBar';
 import { Theme2Footer } from './Footer';
@@ -15,6 +17,7 @@ import { Theme2AuthModals } from './AuthModals';
 export default function Theme2Shell({ children }) {
   const pathname = usePathname();
   const [navOpen, setNavOpen] = useState(false);
+  useWalletSync();
 
   // The admin console renders its own shell and must not inherit player chrome.
   if (pathname?.startsWith('/admin')) {
@@ -31,8 +34,12 @@ export default function Theme2Shell({ children }) {
       {/* Content column offset by the collapsed sidebar on desktop. */}
       <div className="lg:pl-[88px]">
         <Theme2TopBar onMenu={() => setNavOpen(true)} />
-        <main className={isPlayRoute ? 'min-h-[calc(100vh-4rem)]' : 'min-h-[calc(100vh-4rem)]'}>{children}</main>
-        {!isPlayRoute && <Theme2Footer />}
+        <main className="min-h-[calc(100vh-4rem)]">{children}</main>
+        {!isPlayRoute && (
+          <div className={isAccountRoute(pathname) ? HIDE_ON_MOBILE : undefined}>
+            <Theme2Footer />
+          </div>
+        )}
       </div>
       <Theme2AuthModals />
     </div>

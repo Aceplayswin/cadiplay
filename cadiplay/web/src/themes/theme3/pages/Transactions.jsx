@@ -1,0 +1,220 @@
+'use client';
+
+// Theme3 Transactions — cashier ledger, cream / gold.
+
+import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { api } from '@/services/api';
+import { useAuthStore } from '@/store/auth';
+import { formatDateTime as formatDate } from '@/lib/datetime';
+import { T3Card } from '../components/ui';
+import {
+  CREDIT_TYPES,
+  TX_FILTERS,
+  TX_LABELS,
+  cashierOnly,
+  isSettled,
+  statusTone,
+  summarise,
+} from '@/lib/transactions';
+
+const usdt = (n) => `USDT ${Number(n ?? 0).toLocaleString('en-IN')}`;
+
+export default function Theme3Transactions() {
+  const router = useRouter();
+  const token = useAuthStore((s) => s.token);
+  const [txs, setTxs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [filter, setFilter] = useState('all');
+
+  useEffect(() => {
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+    let active = true;
+    api('/api/v1/wallet/transactions')
+      .then((data) => {
+        if (!active) return;
+        setTxs(cashierOnly(Array.isArray(data) ? data : []));
+      })
+      .catch((e) => active && setError(e.message))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [token, router]);
+
+  const totals = useMemo(() => summarise(txs), [txs]);
+  const visible = useMemo(
+    () => (filter === 'all' ? txs : txs.filter((t) => t.type === filter)),
+    [txs, filter],
+  );
+
+  if (!token) return null;
+
+  return (
+    <div className="mx-auto max-w-[1100px] px-4 py-8">
+      <h1 className="font-display text-2xl font-black text-[#1b1726]">Transactions</h1>
+      <p className="mt-1 text-sm text-[#6b6579]">
+        Money in and out of your wallet — deposits, withdrawals and bonuses. For
+        your stakes and winnings, see{' '}
+        <Link href="/bet-history" className="font-bold text-[#c79a3b] hover:underline">
+          bet history
+        </Link>
+        .
+      </p>
+
+      <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Summary label="Total credited" value={totals.credited} tone="up" />
+        <Summary label="Total debited" value={totals.debited} tone="down" />
+        <Summary
+          label="Pending"
+          value={totals.pending}
+          tone="pending"
+          hint={
+            totals.pendingCount
+              ? `${totals.pendingCount} awaiting approval`
+              : 'Nothing awaiting approval'
+          }
+        />
+        <Summary label="Net movement" value={totals.net} tone={totals.net >= 0 ? 'up' : 'down'} />
+      </section>
+
+      <div className="mb-3 mt-8 flex flex-wrap items-center gap-2">
+        {TX_FILTERS.map((f) => (
+          <button
+            key={f.value}
+            type="button"
+            onClick={() => setFilter(f.value)}
+            className={`rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-wide transition ${
+              filter === f.value
+                ? 'bg-gradient-to-br from-[#e9c56b] to-[#b8862f] text-[#241b0e]'
+                : 'border border-black/10 bg-white text-[#6b6579] hover:border-[#c79a3b] hover:text-[#c79a3b]'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+        {!loading && (
+          <span className="ml-auto text-xs font-semibold text-[#9a94a8]">
+            {visible.length} transaction{visible.length === 1 ? '' : 's'}
+          </span>
+        )}
+      </div>
+
+      {loading ? (
+        <T3Card className="space-y-2 p-4">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-10 animate-pulse rounded-lg bg-black/[0.04]" />
+          ))}
+        </T3Card>
+      ) : error ? (
+        <T3Card className="px-4 py-12 text-center text-sm font-semibold text-[#c0392b]">{error}</T3Card>
+      ) : visible.length === 0 ? (
+        <T3Card className="px-4 py-12 text-center text-sm text-[#9a94a8]">
+          {txs.length === 0 ? (
+            <>
+              No transactions yet.{' '}
+              <Link href="/deposit" className="font-bold text-[#c79a3b] hover:underline">
+                Make a deposit
+              </Link>
+            </>
+          ) : (
+            'No transactions of this type.'
+          )}
+        </T3Card>
+      ) : (
+        <T3Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-sm">
+              <thead>
+                <tr className="border-b border-black/[0.06] bg-[#faf6ec] text-left text-[0.65rem] uppercase tracking-wide text-[#9a94a8]">
+                  <th className="px-5 py-3 font-black">Type</th>
+                  <th className="px-5 py-3 font-black">Date</th>
+                  <th className="px-5 py-3 font-black">Method</th>
+                  <th className="px-5 py-3 font-black">Reference</th>
+                  <th className="px-5 py-3 font-black">Status</th>
+                  <th className="px-5 py-3 text-right font-black">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((t) => (
+                  <tr
+                    key={t.id}
+                    className="border-b border-black/[0.05] transition last:border-0 hover:bg-[#faf6ec]"
+                  >
+                    <td className="px-5 py-3 font-bold text-[#1b1726]">
+                      {TX_LABELS[t.type] ?? t.type}
+                    </td>
+                    <td className="px-5 py-3 text-[#6b6579]">{formatDate(t.created_at)}</td>
+                    <td className="px-5 py-3 text-[#6b6579]">{t.payment_method || '—'}</td>
+                    <td className="px-5 py-3 font-mono text-[0.7rem] text-[#9a94a8]">
+                      {t.reference_number || '—'}
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusPill status={t.status} />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <AmountCell tx={t} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </T3Card>
+      )}
+    </div>
+  );
+}
+
+function AmountCell({ tx }) {
+  const credit = CREDIT_TYPES.has(tx.type);
+  const tone = !isSettled(tx.status)
+    ? 'text-[#9a94a8]'
+    : credit
+      ? 'text-[#2a9d5c]'
+      : 'text-[#c0392b]';
+  return (
+    <span className={`font-black tabular-nums ${tone}`}>
+      {credit ? '+' : '−'}
+      {usdt(Math.abs(Number(tx.amount ?? 0)))}
+    </span>
+  );
+}
+
+function StatusPill({ status }) {
+  const tone = statusTone(status);
+  const cls =
+    tone === 'good'
+      ? 'bg-[#2a9d5c]/12 text-[#2a9d5c]'
+      : tone === 'bad'
+        ? 'bg-[#c0392b]/12 text-[#c0392b]'
+        : 'bg-[#b8862f]/12 text-[#b8862f]';
+  return (
+    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-black capitalize ${cls}`}>
+      {status}
+    </span>
+  );
+}
+
+function Summary({ label, value, tone, hint }) {
+  const color =
+    tone === 'up'
+      ? 'text-[#2a9d5c]'
+      : tone === 'down'
+        ? 'text-[#c0392b]'
+        : tone === 'pending'
+          ? 'text-[#b8862f]'
+          : 'text-[#1b1726]';
+  return (
+    <T3Card className="p-4">
+      <p className="text-[0.6rem] font-black uppercase tracking-wide text-[#9a94a8]">{label}</p>
+      <p className={`mt-1 font-display text-lg font-black tabular-nums ${color}`}>{usdt(value)}</p>
+      {hint && <p className="mt-0.5 text-[0.65rem] text-[#9a94a8]">{hint}</p>}
+    </T3Card>
+  );
+}

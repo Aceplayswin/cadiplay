@@ -12,6 +12,8 @@
 
 import { useCallback, useMemo, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import { useWalletSync } from '@/hooks/useWalletSync';
+import { isAccountRoute, HIDE_ON_MOBILE } from '@/lib/accountRoutes';
 import { Theme4TopBar } from './TopBar';
 import { Theme4NavBar } from './NavBar';
 import { Theme4Footer } from './Footer';
@@ -25,6 +27,7 @@ export default function Theme4Shell({ children }) {
   const open = useCallback((mode) => setAuthMode(mode), []);
   const close = useCallback(() => setAuthMode(null), []);
   const modalValue = useMemo(() => ({ mode: authMode, open, close }), [authMode, open, close]);
+  useWalletSync();
 
   // The admin console renders its own shell and must not inherit player chrome.
   if (pathname?.startsWith('/admin')) {
@@ -37,9 +40,17 @@ export default function Theme4Shell({ children }) {
     <Theme4AuthModalContext.Provider value={modalValue}>
       <div className="theme4-root min-h-screen">
         <Theme4TopBar />
-        {!isPlayRoute && <Theme4NavBar />}
+        {!isPlayRoute && (
+          <div className={isAccountRoute(pathname) ? HIDE_ON_MOBILE : undefined}>
+            <Theme4NavBar />
+          </div>
+        )}
         <main className="min-h-[60vh]">{children}</main>
-        {!isPlayRoute && <Theme4Footer />}
+        {!isPlayRoute && (
+          <div className={isAccountRoute(pathname) ? HIDE_ON_MOBILE : undefined}>
+            <Theme4Footer />
+          </div>
+        )}
         <Theme4AuthModals />
       </div>
     </Theme4AuthModalContext.Provider>

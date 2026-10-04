@@ -10,6 +10,9 @@ export default function Theme1Profile() {
   const router = useRouter();
   const { token, user, wallet, logout, refreshSession } = useAuthStore();
   const [txs, setTxs] = useState([]);
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
+  const [referral, setReferral] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -20,6 +23,9 @@ export default function Theme1Profile() {
     api('/api/v1/wallet/transactions')
       .then(setTxs)
       .catch(() => setTxs([]));
+    api('/api/v1/referral')
+      .then(setReferral)
+      .catch(() => setReferral(null));
   }, [token, router, refreshSession]);
 
   if (!token) return null;
@@ -62,7 +68,9 @@ export default function Theme1Profile() {
           <section className="card-glass p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Recent transactions</h2>
-              {txs.length > 10 && <span className="text-xs text-slate-500">Showing 10</span>}
+              <Link href="/transactions" className="text-xs font-semibold text-brand-300 hover:underline">
+                View all
+              </Link>
             </div>
             <ul className="space-y-2">
               {txs.slice(0, 10).map((t) => (
@@ -117,9 +125,38 @@ export default function Theme1Profile() {
               <ActionTile href="/deposit" label="Deposit" icon="↑" />
               <ActionTile href="/withdraw" label="Withdraw" icon="↓" />
               <ActionTile href="/bet-history" label="Bet History" icon="🎲" />
+              <ActionTile href="/transactions" label="Transactions" icon="📋" />
               <ActionTile href="/promotions" label="Promos" icon="🎁" />
+              <ActionTile href="/bonus" label="Bonuses" icon="★" />
             </div>
           </section>
+
+          {referral?.referral_code && (
+            <section className="card-glass p-6">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-400">Referrals</h2>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="font-mono tracking-[0.2em] text-white">{referral.referral_code}</span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(referral.referral_code);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 1500);
+                    } catch {
+                      // Clipboard unavailable.
+                    }
+                  }}
+                  className="rounded-lg border border-white/15 px-2.5 py-1 text-xs font-semibold text-brand-300"
+                >
+                  {copied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <p className="mt-2 text-xs text-slate-500">
+                Players referred: {referral.referred_count ?? 0}
+              </p>
+            </section>
+          )}
 
           <Link
             href="/change-password"
@@ -128,13 +165,36 @@ export default function Theme1Profile() {
             Change Password
           </Link>
 
-          <button
-            type="button"
-            onClick={logout}
-            className="w-full rounded-xl border border-red-500/30 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
-          >
-            Logout
-          </button>
+          {confirmingLogout ? (
+            <section className="card-glass border-red-500/30 p-5">
+              <p className="text-sm font-semibold text-white">Log out of your account?</p>
+              <p className="mt-1 text-xs text-slate-400">You&apos;ll need to sign in again to place bets or withdraw.</p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white"
+                >
+                  Yes, log out
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingLogout(false)}
+                  className="rounded-xl border border-white/15 px-4 py-2 text-sm text-white"
+                >
+                  Cancel
+                </button>
+              </div>
+            </section>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingLogout(true)}
+              className="w-full rounded-xl border border-red-500/30 py-3 text-sm font-semibold text-red-400 transition hover:bg-red-500/10"
+            >
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </main>

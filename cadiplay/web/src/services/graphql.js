@@ -31,7 +31,6 @@ export async function fetchMe() {
         gender
         referral_code
         phone_verified
-        two_factor_enabled
         vip_level
         is_demo
         created_at

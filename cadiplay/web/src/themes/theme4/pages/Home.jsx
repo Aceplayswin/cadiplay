@@ -397,7 +397,7 @@ export default function Theme4Home() {
   const featured = useMemo(() => filterFeatured(games, 14), [games]);
 
   const onPlay = (game) => {
-    if (game?.slug) router.push(playPath(game));
+    if (game?.slug || game?.game_uid) router.push(playPath(game));
   };
 
   // BET NOW: logged-in players go to sports; guests get the login modal.

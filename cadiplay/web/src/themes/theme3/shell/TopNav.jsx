@@ -11,6 +11,7 @@ import { Menu, X, Wallet } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { useBranding } from '@/hooks/useBranding';
 import { ProfileMenu } from '@/components/ProfileMenu';
+import { GameSearch } from '@/components/GameSearch';
 import { NAV_GAME_LINKS } from '@/lib/gameRoutes';
 import { useAuthModal } from './authModalContext';
 
@@ -20,7 +21,7 @@ const NAV = [
   { label: 'CASINO', href: NAV_GAME_LINKS.casino },
   { label: 'SLOTS', href: NAV_GAME_LINKS.slots },
   { label: 'FANTASY', href: NAV_GAME_LINKS.fantasy },
-  { label: 'PROMOTIONS', href: '/register' },
+  { label: 'PROMOTIONS', href: '/promotions' },
   { label: 'SUPPORT', href: '/support/chat' },
 ];
 
@@ -74,6 +75,14 @@ export function Theme3TopNav() {
             </li>
           ))}
         </ul>
+
+        <GameSearch
+          className="hidden min-w-[200px] max-w-[280px] flex-1 md:block"
+          inputClassName="h-9 w-full rounded-full border border-black/10 bg-white py-2 pl-10 pr-8 text-sm font-semibold text-[#1b1726] placeholder-[#9a94a8] outline-none focus:border-[#c79a3b]/70"
+          panelClassName="absolute left-0 top-full z-50 mt-2 max-h-[min(70vh,480px)] w-full min-w-[320px] overflow-y-auto rounded-xl border border-black/10 bg-white shadow-xl"
+          rowActiveClassName="hover:bg-[#faf6ec]"
+          accentClassName="text-[#9a7a24]"
+        />
 
         {/* Right actions */}
         <div className="ml-auto flex items-center gap-2 lg:ml-0">

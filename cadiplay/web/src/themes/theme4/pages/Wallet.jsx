@@ -34,10 +34,15 @@ export default function Theme4Wallet() {
   return (
     <T4FormPage title="Wallet">
       <T4Card className="mt-6 p-6">
-        <p className="text-sm text-[#5d7378]">Available balance</p>
+        <p className="text-sm text-[#5d7378]">Withdrawable balance</p>
         <p className="mt-1 text-4xl font-black text-[#0e7480]">
-          USDT {(wallet?.available ?? 0).toLocaleString('en-IN')}
+          USDT {(wallet?.withdrawable ?? wallet?.available ?? 0).toLocaleString('en-IN')}
         </p>
+        {wallet?.bonus > 0 ? (
+          <p className="mt-1 text-xs font-semibold text-[#8aa0a4]">
+            + USDT {Number(wallet.bonus).toLocaleString('en-IN')} bonus you can play with
+          </p>
+        ) : null}
         <div className="mt-5 grid grid-cols-3 gap-3">
           <Stat label="Bonus" value={wallet?.bonus} />
           <Stat label="Locked" value={wallet?.locked} />

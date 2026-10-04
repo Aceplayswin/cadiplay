@@ -226,7 +226,7 @@ export default function Theme1Home() {
   );
 
   const handlePlayGame = (game) => {
-    if (game?.slug) router.push(playPath(game));
+    if (game?.slug || game?.game_uid) router.push(playPath(game));
   };
 
   const isSearching = searchQuery !== '';

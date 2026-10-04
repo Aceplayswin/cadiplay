@@ -111,10 +111,8 @@ export function Header() {
     if (!searchTouched.current) return undefined;
     const timer = setTimeout(() => {
       const term = search.trim();
-      const onHome = window.location.pathname === '/';
-      const target = term ? `/?q=${encodeURIComponent(term)}` : '/';
-      if (onHome) router.replace(target);
-      else if (term) router.push(target);
+      const target = term ? `/games/all?q=${encodeURIComponent(term)}` : '/games/all';
+      router.push(target);
     }, 300);
     return () => clearTimeout(timer);
   }, [search, router]);

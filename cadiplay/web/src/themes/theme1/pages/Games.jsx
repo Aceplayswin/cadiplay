@@ -30,6 +30,7 @@ export default function Theme1Games() {
     if (slug === 'all') url = '/api/v1/games?limit=200';
     else if (slug === 'featured') url = '/api/v1/games?featured=true&limit=200';
     else url = `/api/v1/games?category=${CATEGORY_MAP[slug] ?? slug}&limit=200`;
+    if (q) url += `&search=${encodeURIComponent(q)}`;
 
     api(url)
       .then((data) => {
@@ -45,7 +46,7 @@ export default function Theme1Games() {
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, q]);
 
   // Optional ?q= narrows the category to games matching a name/provider — used
   // by the specific sidebar items (Roulette, Blackjack, …).

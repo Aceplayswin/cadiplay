@@ -145,7 +145,7 @@ export default function Theme3Home() {
   );
 
   const onPlay = (game) => {
-    if (game?.slug) router.push(playPath(game));
+    if (game?.slug || game?.game_uid) router.push(playPath(game));
   };
 
   const brandName = branding.product_name || 'VELPLAY';

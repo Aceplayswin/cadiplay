@@ -21,6 +21,9 @@ import AppDownload from './pages/AppDownload';
 import Onboarding from './pages/Onboarding';
 import Games from './pages/Games';
 import Play from './pages/Play';
+import Support from './pages/Support';
+import Providers from './pages/Providers';
+import Transactions from './pages/Transactions';
 
 // `pages` is keyed by ROUTE KEY — the key each src/app/<route>/page.jsx passes to
 // <ThemePage routeKey="…">. Keys this theme omits fall back (registry.resolvePage).
@@ -41,6 +44,9 @@ export default {
     onboarding: Onboarding,
     games: Games,
     play: Play,
+    support: Support,
+    providers: Providers,
+    transactions: Transactions,
   },
   Shell,
 };
