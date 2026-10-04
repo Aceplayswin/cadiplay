@@ -481,33 +481,33 @@ def get_wallet_breakdown(user_id: int) -> dict:
     }
 
 
-# --- INR ⇄ USDT conversion (crypto cashier) --------------------------------
+# --- USD ⇄ USDT conversion (crypto cashier) --------------------------------
 # Wallets are denominated in USDT, so nothing on the cashier screens needs this
-# to render a balance. It stays as a quoting endpoint: a player funding from an
-# INR rail can price the transfer at the live market rate before committing.
+# to render a balance. It stays as a quoting endpoint: a player funding from a
+# USD rail can price the transfer at the live market rate before committing.
 
-# USDT is quoted to 6 decimals (its on-chain precision on TRC-20/ERC-20), INR to
-# paise. Rounding half-up so a displayed quote never under-states what the player
+# USDT is quoted to 6 decimals (its on-chain precision on TRC-20/ERC-20), USD to
+# cents. Rounding half-up so a displayed quote never under-states what the player
 # owes on a deposit.
 _USDT_DP = Decimal('0.000001')
-_INR_DP = Decimal('0.01')
+_USD_DP = Decimal('0.01')
 
 
-def get_usdt_inr_quote() -> dict:
-    """The current USDT⇄INR exchange rate, straight from CoinGecko.
+def get_usdt_usd_quote() -> dict:
+    """The current USDT⇄USD exchange rate, straight from CoinGecko.
 
     Raises ``ValueError`` when no rate is available at all, so the cashier
     refuses to quote rather than pricing a transfer off an invented number.
     """
-    quote = exchange_rate.get_usdt_inr_rate()
+    quote = exchange_rate.get_usdt_usd_rate()
     if quote is None:
         raise ValueError('Exchange rate unavailable, please try again shortly')
     rate = quote['rate']
     return {
         'base': 'USDT',
-        'quote': 'INR',
-        # One USDT costs this many rupees, and one rupee buys this much USDT.
-        'rate': float(rate.quantize(_INR_DP, rounding=ROUND_HALF_UP)),
+        'quote': 'USD',
+        # One USDT costs this many dollars, and one dollar buys this much USDT.
+        'rate': float(rate.quantize(_USD_DP, rounding=ROUND_HALF_UP)),
         'inverseRate': float((Decimal(1) / rate).quantize(_USDT_DP, rounding=ROUND_HALF_UP)),
         'source': 'coingecko',
         # True when CoinGecko was unreachable and this is the last good rate —
@@ -518,15 +518,15 @@ def get_usdt_inr_quote() -> dict:
 
 
 def convert_currency(amount: float, from_currency: str, to_currency: str) -> dict:
-    """Convert between INR and USDT at the live rate.
+    """Convert between USD and USDT at the live rate.
 
     Returns the converted amount alongside the rate it was priced at, so the
-    client can display "≈ X USDT at Y INR/USDT" without a second call.
+    client can display "≈ X USDT at Y USD/USDT" without a second call.
     """
     frm = (from_currency or '').strip().upper()
     to = (to_currency or '').strip().upper()
-    if {frm, to} != {'INR', 'USDT'}:
-        raise ValueError('Only INR ⇄ USDT conversion is supported')
+    if {frm, to} != {'USD', 'USDT'}:
+        raise ValueError('Only USD ⇄ USDT conversion is supported')
 
     try:
         value = Decimal(str(amount))
@@ -535,12 +535,12 @@ def convert_currency(amount: float, from_currency: str, to_currency: str) -> dic
     if value < 0:
         raise ValueError('Amount must not be negative')
 
-    quote = get_usdt_inr_quote()
+    quote = get_usdt_usd_quote()
     rate = Decimal(str(quote['rate']))
-    if frm == 'INR':
+    if frm == 'USD':
         converted = (value / rate).quantize(_USDT_DP, rounding=ROUND_HALF_UP)
     else:
-        converted = (value * rate).quantize(_INR_DP, rounding=ROUND_HALF_UP)
+        converted = (value * rate).quantize(_USD_DP, rounding=ROUND_HALF_UP)
 
     return {
         'amount': float(value),

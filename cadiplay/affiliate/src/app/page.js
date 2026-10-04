@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchProgram } from '../services/affiliateApi';
-import { inr } from '../lib/format';
+import { usd } from '../lib/format';
 import { useBranding } from '../hooks/useBranding';
 import {
   TrendingUp,
@@ -334,7 +334,7 @@ export default function LandingPage() {
                 </button>
                 <button onClick={() => setDealType('cpa')}
                   className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${dealType === 'cpa' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>
-                  {inr(cpaAmount)} CPA
+                  {usd(cpaAmount)} CPA
                 </button>
               </div>
             </div>
@@ -364,7 +364,7 @@ export default function LandingPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1.5">
                     <span className="text-slate-600">Avg. deposit</span>
-                    <span className="font-bold text-brand-600 font-display">{inr(avgDeposit)}</span>
+                    <span className="font-bold text-brand-600 font-display">{usd(avgDeposit)}</span>
                   </div>
                   <input type="range" min="50"
                     max="1000" step="25"
@@ -381,7 +381,7 @@ export default function LandingPage() {
                 <div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Monthly Earnings</div>
                   <div className="text-3xl font-extrabold text-brand-600 font-display mt-1">
-                    {inr(estimatedEarnings)}
+                    {usd(estimatedEarnings)}
                   </div>
                 </div>
                 <Link href="/apply" className="px-5 py-2.5 text-xs font-bold text-black bg-gradient-to-r from-brand-400 to-brand-500 rounded-lg shadow-md hover:scale-105 transition-all shrink-0">
@@ -417,7 +417,7 @@ export default function LandingPage() {
 
 
 
-                icon: Zap, title: 'CPA Bounty', highlight: `Flat ${inr(cpaAmount)} / FTD`, featured: true,
+                icon: Zap, title: 'CPA Bounty', highlight: `Flat ${usd(cpaAmount)} / FTD`, featured: true,
                 points: ['Per-FTD payouts', 'High conversion rates', 'Custom thresholds']
               },
               {

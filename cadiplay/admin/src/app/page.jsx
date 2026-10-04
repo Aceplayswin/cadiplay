@@ -14,7 +14,7 @@ import {
   Card,
   StatCard,
   useAdminData,
-  inr,
+  money,
 } from '@/components/admin/AdminShell';
 import TrendsChart from '@/components/admin/TrendsChart';
 import DashboardTables from '@/components/admin/DashboardTables';
@@ -30,9 +30,9 @@ export default function AdminDashboardPage() {
         { label: 'Last Hour Active Players', value: stats.activePlayersLastHour ?? 0, icon: Clock, accent: 'rose' },
         { label: 'Today: New Players', value: stats.signupsToday ?? 0, icon: UserPlus, accent: 'emerald', hint: `Yesterday: ${stats.signupsYesterday ?? 0}` },
         { label: 'Player Count', value: stats.totalUsers ?? 0, icon: Users, accent: 'sky', hint: `Total Player Deposits: ${stats.depositingPlayers ?? 0}` },
-        { label: 'Total Balance', value: inr(stats.totalLiability), icon: Wallet, accent: 'indigo' },
-        { label: 'Today: Sum of Deposits', value: inr(stats.depositsToday.amount), icon: ArrowDownToLine, accent: 'emerald', hint: `Player Deposits: ${stats.depositsToday.players ?? 0} · Deposit Count: ${stats.depositsToday.count ?? 0}` },
-        { label: 'Today: Sum of Withdrawals', value: inr(stats.withdrawalsToday.amount), icon: ArrowUpFromLine, accent: 'rose', hint: `Player Withdrawals: ${stats.withdrawalsToday.players ?? 0} · Withdrawals Count: ${stats.withdrawalsToday.count ?? 0}` },
+        { label: 'Total Balance', value: money(stats.totalLiability), icon: Wallet, accent: 'indigo' },
+        { label: 'Today: Sum of Deposits', value: money(stats.depositsToday.amount), icon: ArrowDownToLine, accent: 'emerald', hint: `Player Deposits: ${stats.depositsToday.players ?? 0} · Deposit Count: ${stats.depositsToday.count ?? 0}` },
+        { label: 'Today: Sum of Withdrawals', value: money(stats.withdrawalsToday.amount), icon: ArrowUpFromLine, accent: 'rose', hint: `Player Withdrawals: ${stats.withdrawalsToday.players ?? 0} · Withdrawals Count: ${stats.withdrawalsToday.count ?? 0}` },
       ]
     : [];
 

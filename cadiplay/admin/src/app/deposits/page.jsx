@@ -31,7 +31,7 @@ import {
   confirmDialog,
   toast,
   useAdminData,
-  inr,
+  money,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -109,7 +109,7 @@ export default function AdminDepositsPage() {
   const confirm = async (row) => {
     const ok = await confirmDialog({
       title: 'Approve deposit?',
-      text: `Credit ${inr(row.amount)} to ${row.full_name || row.username}'s wallet.`,
+      text: `Credit ${money(row.amount)} to ${row.full_name || row.username}'s wallet.`,
       confirmText: 'Approve & credit',
       icon: 'question',
     });
@@ -181,15 +181,15 @@ export default function AdminDepositsPage() {
     {
       key: 'amount',
       label: 'Amount',
-      render: (r) => <span className="font-semibold text-emerald-400">{inr(r.amount)}</span>,
+      render: (r) => <span className="font-semibold text-emerald-400">{money(r.amount)}</span>,
       // Sum of the rows on screen; when the list spans several pages the
       // grand total of every matching row is shown underneath.
       footer: (pageRows, allRows) => (
         <div>
-          <span className="font-bold text-emerald-400">{inr(sumAmount(pageRows))}</span>
+          <span className="font-bold text-emerald-400">{money(sumAmount(pageRows))}</span>
           {allRows.length > pageRows.length && (
             <p className="text-xs font-normal text-slate-500">
-              {inr(sumAmount(allRows))} across all pages
+              {money(sumAmount(allRows))} across all pages
             </p>
           )}
         </div>
@@ -275,28 +275,28 @@ export default function AdminDepositsPage() {
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Total sum"
-          value={inr(sums?.total ?? 0)}
+          value={money(sums?.total ?? 0)}
           icon={Wallet}
           accent="brand"
           hint={`${(counts?.pending ?? 0) + (counts?.approved ?? 0) + (counts?.rejected ?? 0)} deposits`}
         />
         <StatCard
           label="Pending sum"
-          value={inr(sums?.pending ?? 0)}
+          value={money(sums?.pending ?? 0)}
           icon={Clock}
           accent="amber"
           hint={`${counts?.pending ?? 0} awaiting`}
         />
         <StatCard
           label="Approved sum"
-          value={inr(sums?.approved ?? 0)}
+          value={money(sums?.approved ?? 0)}
           icon={CheckCircle2}
           accent="emerald"
           hint={`${counts?.approved ?? 0} credited`}
         />
         <StatCard
           label="Rejected sum"
-          value={inr(sums?.rejected ?? 0)}
+          value={money(sums?.rejected ?? 0)}
           icon={XCircle}
           accent="rose"
           hint={`${counts?.rejected ?? 0} rejected`}
@@ -410,7 +410,7 @@ export default function AdminDepositsPage() {
               </div>
               <div>
                 <p className="text-xs text-slate-500">Amount</p>
-                <p className="font-semibold text-emerald-400">{inr(proofRow.amount)}</p>
+                <p className="font-semibold text-emerald-400">{money(proofRow.amount)}</p>
               </div>
               <div>
                 <p className="text-xs text-slate-500">Method</p>
@@ -470,7 +470,7 @@ export default function AdminDepositsPage() {
       >
         <form id="reject-deposit-form" onSubmit={reject} className="space-y-4">
           <p className="text-sm text-slate-400">
-            Rejecting marks this {inr(rejectRow?.amount)} deposit as rejected. No funds are credited.
+            Rejecting marks this {money(rejectRow?.amount)} deposit as rejected. No funds are credited.
           </p>
           <Field label="Reason (optional)">
             <Textarea

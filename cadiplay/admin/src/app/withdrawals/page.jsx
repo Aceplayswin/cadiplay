@@ -29,7 +29,7 @@ import {
   confirmDialog,
   toast,
   useAdminData,
-  inr,
+  money,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -133,7 +133,7 @@ export default function AdminWithdrawalsPage() {
       // Show the destination here too: this dialog is the last step before the
       // money actually leaves, so the admin should confirm where it is going.
       text:
-        `Approve payout of ${inr(row.amount)} to ${row.full_name || row.username}` +
+        `Approve payout of ${money(row.amount)} to ${row.full_name || row.username}` +
         ` via ${METHOD_LABELS[row.payment_method] ?? row.payment_method ?? 'unknown method'}.` +
         (row.reference_number ? `\n\n${row.reference_number}` : ''),
       confirmText: 'Approve',
@@ -198,7 +198,7 @@ export default function AdminWithdrawalsPage() {
       label: 'IP Address',
       render: (r) => <span className="font-mono text-xs text-slate-400">{r.ip || '—'}</span>,
     },
-    { key: 'amount', label: 'Amount', render: (r) => <span className="font-semibold text-rose-400">{inr(r.amount)}</span> },
+    { key: 'amount', label: 'Amount', render: (r) => <span className="font-semibold text-rose-400">{money(r.amount)}</span> },
     {
       key: 'payment_method',
       label: 'Method',
@@ -259,28 +259,28 @@ export default function AdminWithdrawalsPage() {
       <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Total sum"
-          value={inr(sums?.total ?? 0)}
+          value={money(sums?.total ?? 0)}
           icon={Wallet}
           accent="brand"
           hint={`${(counts?.pending ?? 0) + (counts?.approved ?? 0) + (counts?.rejected ?? 0)} withdrawals`}
         />
         <StatCard
           label="Pending sum"
-          value={inr(sums?.pending ?? 0)}
+          value={money(sums?.pending ?? 0)}
           icon={Clock}
           accent="amber"
           hint={`${counts?.pending ?? 0} awaiting`}
         />
         <StatCard
           label="Approved sum"
-          value={inr(sums?.approved ?? 0)}
+          value={money(sums?.approved ?? 0)}
           icon={CheckCircle2}
           accent="emerald"
           hint={`${counts?.approved ?? 0} paid out`}
         />
         <StatCard
           label="Rejected sum"
-          value={inr(sums?.rejected ?? 0)}
+          value={money(sums?.rejected ?? 0)}
           icon={XCircle}
           accent="rose"
           hint={`${counts?.rejected ?? 0} rejected`}
@@ -354,7 +354,7 @@ export default function AdminWithdrawalsPage() {
       >
         <form id="reject-form" onSubmit={reject} className="space-y-4">
           <p className="text-sm text-slate-400">
-            Rejecting returns {inr(rejectRow?.amount)} to the player&apos;s main balance.
+            Rejecting returns {money(rejectRow?.amount)} to the player&apos;s main balance.
           </p>
           <Field label="Reason (optional)">
             <Textarea

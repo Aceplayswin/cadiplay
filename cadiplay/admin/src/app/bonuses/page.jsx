@@ -31,7 +31,7 @@ import {
   Select,
   toast,
   useAdminData,
-  inr,
+  money,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -239,7 +239,7 @@ export default function AdminBonusesPage() {
           notes: grant.notes,
         }),
       });
-      toast.success(`Granted ${inr(res.amount)} to user #${grant.userId}`);
+      toast.success(`Granted ${money(res.amount)} to user #${grant.userId}`);
       setGranting(null);
       setGrant({ userId: '', amount: '', notes: '' });
       refreshAll();
@@ -353,10 +353,10 @@ export default function AdminBonusesPage() {
       render: (r) => (
         <div>
           <span className="font-medium text-white">
-            {r.value_type === 'percentage' ? `${r.value_amount}%` : inr(r.value_amount)}
+            {r.value_type === 'percentage' ? `${r.value_amount}%` : money(r.value_amount)}
           </span>
           {r.bonus_type === 'referral' && r.referrer_reward > 0 && (
-            <span className="block text-xs text-slate-500">referrer {inr(r.referrer_reward)}</span>
+            <span className="block text-xs text-slate-500">referrer {money(r.referrer_reward)}</span>
           )}
         </div>
       ),
@@ -398,7 +398,7 @@ export default function AdminBonusesPage() {
       label: 'Awarded',
       render: (r) => (
         <div>
-          <span className="text-slate-300">{inr(r.total_awarded)}</span>
+          <span className="text-slate-300">{money(r.total_awarded)}</span>
           <span className="block text-xs text-slate-500">{r.total_claims} claims</span>
         </div>
       ),
@@ -440,14 +440,14 @@ export default function AdminBonusesPage() {
     ) },
     { key: 'bonus', label: 'Bonus', render: (r) => <span className="text-slate-300">{r.bonus}</span> },
     { key: 'source', label: 'Source', render: (r) => <span className="capitalize text-slate-400">{r.source}</span>, filter: 'select' },
-    { key: 'amount', label: 'Amount', render: (r) => <span className="font-medium text-white">{inr(r.amount)}</span> },
+    { key: 'amount', label: 'Amount', render: (r) => <span className="font-medium text-white">{money(r.amount)}</span> },
     {
       key: 'wagering',
       label: 'Wagering',
       render: (r) =>
         r.wagering_required > 0 ? (
           <span className="text-xs text-slate-400">
-            {inr(r.wagering_completed)} / {inr(r.wagering_required)}
+            {money(r.wagering_completed)} / {money(r.wagering_required)}
           </span>
         ) : (
           <span className="text-xs text-slate-500">—</span>
@@ -497,7 +497,7 @@ export default function AdminBonusesPage() {
     {
       key: 'amount',
       label: 'Amount',
-      render: (r) => <span className="font-medium text-white">{inr(r.amount)}</span>,
+      render: (r) => <span className="font-medium text-white">{money(r.amount)}</span>,
     },
     {
       key: 'wagering',
@@ -505,7 +505,7 @@ export default function AdminBonusesPage() {
       render: (r) =>
         r.wagering_required > 0 ? (
           <span className="text-xs text-slate-400">
-            {inr(r.wagering_completed)} / {inr(r.wagering_required)}
+            {money(r.wagering_completed)} / {money(r.wagering_required)}
           </span>
         ) : (
           <span className="text-xs text-slate-500">—</span>
@@ -532,7 +532,7 @@ export default function AdminBonusesPage() {
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard label="Campaigns" value={stats?.total ?? '—'} icon={Gift} accent="brand" />
         <StatCard label="Active now" value={stats?.active ?? '—'} icon={Play} accent="emerald" />
-        <StatCard label="Total awarded" value={stats ? inr(stats.total_awarded) : '—'} icon={Wallet} accent="sky" />
+        <StatCard label="Total awarded" value={stats ? money(stats.total_awarded) : '—'} icon={Wallet} accent="sky" />
         <StatCard label="Total claims" value={stats?.total_claims ?? '—'} icon={Users} accent="rose" />
         <StatCard
           label="Coupon redemptions"
@@ -620,7 +620,7 @@ export default function AdminBonusesPage() {
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="welcome100" required />
             </Field>
             <Field label="Display title (shown to players)">
-              <Input value={form.display_title} onChange={(e) => setForm({ ...form, display_title: e.target.value })} placeholder="Welcome Bonus ₹100" />
+              <Input value={form.display_title} onChange={(e) => setForm({ ...form, display_title: e.target.value })} placeholder="Welcome Bonus $100" />
             </Field>
             <div className="sm:col-span-2">
               <Field label="Description">
@@ -649,21 +649,21 @@ export default function AdminBonusesPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Value type">
                 <Select value={form.value_type} onChange={(e) => setForm({ ...form, value_type: e.target.value })}>
-                  <option value="fixed">Fixed (₹)</option>
+                  <option value="fixed">Fixed ($)</option>
                   <option value="percentage">Percentage (%)</option>
                 </Select>
               </Field>
-              <Field label={isPercent ? 'Percentage' : 'Amount (₹)'}>
+              <Field label={isPercent ? 'Percentage' : 'Amount ($)'}>
                 <Input type="number" step="0.01" value={form.value_amount} onChange={(e) => setForm({ ...form, value_amount: e.target.value })} />
               </Field>
-              <Field label="Min deposit / qualifying amount (₹)">
+              <Field label="Min deposit / qualifying amount ($)">
                 <Input type="number" step="0.01" value={form.min_deposit} onChange={(e) => setForm({ ...form, min_deposit: e.target.value })} />
               </Field>
-              <Field label="Max bonus cap (₹, blank = no cap)">
+              <Field label="Max bonus cap ($, blank = no cap)">
                 <Input type="number" step="0.01" value={form.max_bonus_cap} onChange={(e) => setForm({ ...form, max_bonus_cap: e.target.value })} placeholder="No cap" />
               </Field>
               {form.bonus_type === 'referral' && (
-                <Field label="Referrer reward (₹)">
+                <Field label="Referrer reward ($)">
                   <Input type="number" step="0.01" value={form.referrer_reward} onChange={(e) => setForm({ ...form, referrer_reward: e.target.value })} />
                 </Field>
               )}
@@ -690,7 +690,7 @@ export default function AdminBonusesPage() {
               <Field label="Max per user (blank = unlimited)">
                 <Input type="number" value={form.per_user_limit} onChange={(e) => setForm({ ...form, per_user_limit: e.target.value })} placeholder="Unlimited" />
               </Field>
-              <Field label="Total budget cap (₹, blank = uncapped)">
+              <Field label="Total budget cap ($, blank = uncapped)">
                 <Input type="number" step="0.01" value={form.total_budget} onChange={(e) => setForm({ ...form, total_budget: e.target.value })} placeholder="Uncapped" />
               </Field>
               <Field label="Bonus validity (days)">
@@ -781,13 +781,13 @@ export default function AdminBonusesPage() {
               only count between the start and end dates below.
             </p>
             <div className="grid gap-4 sm:grid-cols-3">
-              <Field label="Min real balance (₹)">
+              <Field label="Min real balance ($)">
                 <Input type="number" step="0.01" min="0" value={form.claim_min_balance} onChange={(e) => setForm({ ...form, claim_min_balance: e.target.value })} placeholder="None" />
               </Field>
-              <Field label="Min wagered during offer (₹)">
+              <Field label="Min wagered during offer ($)">
                 <Input type="number" step="0.01" min="0" value={form.claim_min_wagering} onChange={(e) => setForm({ ...form, claim_min_wagering: e.target.value })} placeholder="None" />
               </Field>
-              <Field label="Min deposited during offer (₹)">
+              <Field label="Min deposited during offer ($)">
                 <Input type="number" step="0.01" min="0" value={form.claim_min_deposit_total} onChange={(e) => setForm({ ...form, claim_min_deposit_total: e.target.value })} placeholder="None" />
               </Field>
             </div>

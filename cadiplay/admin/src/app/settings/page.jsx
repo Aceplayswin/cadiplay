@@ -24,7 +24,7 @@ import {
   EmptyState,
   toast,
   useAdminData,
-  inr,
+  money,
 } from '@/components/admin/AdminShell';
 
 /* Friendly metadata for known settings. Unknown keys fall back to "Other". */
@@ -150,7 +150,7 @@ function TagEditor({ value, onChange }) {
 /* ------------------------------- Value display ----------------------------- */
 
 function ValueDisplay({ type, value }) {
-  if (type === 'currency') return <span className="font-semibold text-white">{inr(value)}</span>;
+  if (type === 'currency') return <span className="font-semibold text-white">{money(value)}</span>;
   if (type === 'number') return <span className="font-semibold text-white">{Number(value).toLocaleString('en-IN')}</span>;
   if (type === 'tags')
     return (
@@ -255,7 +255,7 @@ function SettingRow({ item, busy, onSave }) {
             <Textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={5} className="font-mono text-xs" />
           ) : type === 'currency' ? (
             <div className="relative max-w-[220px]">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-500">₹</span>
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-500">$</span>
               <Input
                 type="number"
                 value={draft}

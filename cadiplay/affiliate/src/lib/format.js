@@ -1,7 +1,7 @@
-// Shared formatting. Amounts are stored at 100x the USDT figure shown.
+// Shared formatting. Amounts are stored at 100x the USD figure shown.
 
-export function inr(value) {
-  return `USDT ${(Number(value || 0) / 100).toLocaleString('en-US', {
+export function usd(value) {
+  return `USD ${(Number(value || 0) / 100).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

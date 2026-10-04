@@ -3,7 +3,7 @@
 import { X, DollarSign, TrendingUp, Banknote, Wallet, UserPlus, ArrowDown, Gamepad2, Loader2 } from 'lucide-react';
 import { useAffiliateData } from '../../../../hooks/useAffiliateData';
 import { DataState } from '../../../../components/ui/DataState';
-import { fmtDateShort, inr, relativeTime } from '../../../../lib/format';
+import { fmtDateShort, usd, relativeTime } from '../../../../lib/format';
 
 const STATUS_DOT = {
   active:  'bg-emerald-500',
@@ -41,10 +41,10 @@ export default function ReferralDetailPanel({ referralId, onClose }) {
 
   const statCards = player
     ? [
-        { label: 'Lifetime Deposits', value: inr(player.lifetime_deposits), icon: DollarSign, accent: 'text-brand-600 dark:text-brand-400' },
-        { label: 'Commission Earned', value: inr(player.lifetime_commission), icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
-        { label: 'First Deposit', value: player.ftd_amount > 0 ? inr(player.ftd_amount) : '—', icon: Banknote, accent: 'text-sky-600 dark:text-sky-400' },
-        { label: 'Current Balance', value: inr(player.current_balance), icon: Wallet, accent: 'text-violet-600 dark:text-violet-400' },
+        { label: 'Lifetime Deposits', value: usd(player.lifetime_deposits), icon: DollarSign, accent: 'text-brand-600 dark:text-brand-400' },
+        { label: 'Commission Earned', value: usd(player.lifetime_commission), icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
+        { label: 'First Deposit', value: player.ftd_amount > 0 ? usd(player.ftd_amount) : '—', icon: Banknote, accent: 'text-sky-600 dark:text-sky-400' },
+        { label: 'Current Balance', value: usd(player.current_balance), icon: Wallet, accent: 'text-violet-600 dark:text-violet-400' },
       ]
     : [];
 
@@ -129,7 +129,7 @@ export default function ReferralDetailPanel({ referralId, onClose }) {
               {monthly.values.map((val, i) => (
                 <div key={monthly.labels[i] ?? i} className="flex-1 flex flex-col items-center gap-1">
                   <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">
-                    {val > 0 ? inr(val) : ''}
+                    {val > 0 ? usd(val) : ''}
                   </span>
                   <div
                     className="w-full rounded-t-lg bg-gradient-to-t from-brand-500 to-brand-400 transition-all duration-500"

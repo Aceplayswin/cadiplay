@@ -1771,9 +1771,8 @@ DROP PROCEDURE IF EXISTS _cadiplay_add_index;
 -- columns the migration block above guarantees exist.
 -- ---------------------------------------------------------------------------
 
--- Instant Games (Aviator / Spribe crash) are an INR line. The aggregator
--- locks the player to INR on first create; a later USD launch is error 10011.
-UPDATE game_providers SET currency_code = 'INR' WHERE slug = 'instant';
+-- Instant Games launch in the platform currency (USD).
+UPDATE game_providers SET currency_code = 'USD' WHERE slug = 'instant';
 
 -- Stakes on these verticals are resolved by a separate result callback that
 -- lands later, so their rounds must stay Pending in bet history rather than

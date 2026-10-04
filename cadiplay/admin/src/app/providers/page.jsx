@@ -321,14 +321,12 @@ export default function AdminProvidersPage() {
                     <Input
                       value={form.currency_code}
                       onChange={(e) => setForm({ ...form, currency_code: e.target.value })}
-                      placeholder="INR"
+                      placeholder="USD"
                     />
                   </Field>
                 </div>
                 <p className="text-xs text-slate-500">
-                  Any field left blank falls back to the platform-wide configuration.
-                  Instant Games must stay INR — the aggregator locks the player
-                  currency on first launch and rejects a later change (error 10011).
+                  Any field left blank falls back to the platform-wide configuration (USD).
                 </p>
               </div>
             )}

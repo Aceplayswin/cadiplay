@@ -5,7 +5,7 @@
  * than the full DataTable — these are static, unpaginated, read-only panels.
  */
 
-import { Card, inr, fmtTime } from '@/components/admin/AdminShell';
+import { Card, money, fmtTime } from '@/components/admin/AdminShell';
 
 const num = (n) =>
   Number(n || 0).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -66,14 +66,14 @@ export default function DashboardTables({ data }) {
     <div className="mt-6 grid gap-4 lg:grid-cols-2">
       <Panel
         title="Deposits Last 7 Days"
-        columns={['Date', 'Amount (₹)', 'Deposit Count', 'Average']}
+        columns={['Date', 'Amount ($)', 'Deposit Count', 'Average']}
         rows={d.deposits ?? []}
         renderRow={(r) => [r.date, num(r.amount), r.count, num(r.average)]}
       />
 
       <Panel
         title="Withdrawals Last 7 Days"
-        columns={['Date', 'Amount (₹)', 'Withdrawals Count', 'Average']}
+        columns={['Date', 'Amount ($)', 'Withdrawals Count', 'Average']}
         rows={d.withdrawals ?? []}
         renderRow={(r) => [r.date, num(r.amount), r.count, num(r.average)]}
       />
@@ -89,12 +89,12 @@ export default function DashboardTables({ data }) {
         title="Deposit Count Top 10 Today"
         columns={['#', 'Player', 'Count', 'Total Deposit']}
         rows={d.depositCountTop ?? []}
-        renderRow={(r, i) => [i + 1, r.player, r.count, inr(r.total)]}
+        renderRow={(r, i) => [i + 1, r.player, r.count, money(r.total)]}
       />
 
       <Panel
         title="Deposit Max Top 10 Today"
-        columns={['#', 'Player', 'Amount (₹)', 'Time', 'Deposit Method']}
+        columns={['#', 'Player', 'Amount ($)', 'Time', 'Deposit Method']}
         rows={d.depositMaxTop ?? []}
         renderRow={(r, i) => [i + 1, r.player, num(r.amount), time(r.time), r.method]}
       />
@@ -103,7 +103,7 @@ export default function DashboardTables({ data }) {
         title="Withdraw Count Top 10 Today"
         columns={['#', 'Player', 'Count', 'Total Withdraw']}
         rows={d.withdrawCountTop ?? []}
-        renderRow={(r, i) => [i + 1, r.player, r.count, inr(r.total)]}
+        renderRow={(r, i) => [i + 1, r.player, r.count, money(r.total)]}
       />
     </div>
   );

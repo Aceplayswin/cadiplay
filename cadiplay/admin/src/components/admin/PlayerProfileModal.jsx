@@ -17,7 +17,7 @@ import {
   StatusBadge,
   TxReference,
   Pagination,
-  inr,
+  money,
   fmtDate,
 } from './AdminShell';
 
@@ -173,7 +173,7 @@ function SportBetDetailModal({ bet, onClose }) {
                 <span
                   className={bet.profit_loss >= 0 ? 'text-emerald-400' : 'text-rose-400'}
                 >
-                  {inr(bet.profit_loss)}
+                  {money(bet.profit_loss)}
                 </span>
               )
             }
@@ -204,21 +204,21 @@ function detailColumns(d) {
     {
       key: 'balances',
       rows: [
-        ['Balance', inr((d.main_balance || 0) + (d.bonus_balance || 0))],
-        ['Real Balance', inr(d.main_balance)],
-        ['Sports Bonus Balance', inr(d.sports_bonus_balance)],
-        ['Casino Bonus Balance', inr(d.bonus_balance)],
-        ['Exchange Bonus Amount', inr(d.exposure_balance)],
-        ['Wagering Balance', inr(d.wagering_balance)],
-        ['Deposit Amount', inr(d.deposit_amount)],
-        ['Withdraw Amount', inr(d.withdraw_amount)],
+        ['Balance', money((d.main_balance || 0) + (d.bonus_balance || 0))],
+        ['Real Balance', money(d.main_balance)],
+        ['Sports Bonus Balance', money(d.sports_bonus_balance)],
+        ['Casino Bonus Balance', money(d.bonus_balance)],
+        ['Exchange Bonus Amount', money(d.exposure_balance)],
+        ['Wagering Balance', money(d.wagering_balance)],
+        ['Deposit Amount', money(d.deposit_amount)],
+        ['Withdraw Amount', money(d.withdraw_amount)],
       ],
     },
     {
       key: 'activity',
       rows: [
-        ['Gross Profit', inr(d.gross_profit)],
-        ['Net Profit', inr(d.net_profit)],
+        ['Gross Profit', money(d.gross_profit)],
+        ['Net Profit', money(d.net_profit)],
         ['Total Plays', d.total_plays],
         ['Games Played With Real Money', d.games_played_with_real_money],
         ['Visits', d.visits],
@@ -304,8 +304,8 @@ export default function PlayerProfileModal({
               },
               { label: 'Provider', render: (r) => dash(r.provider ?? r.game_name) },
               { label: 'Plays', render: (r) => r.plays },
-              { label: 'Bet', render: (r) => inr(r.bet) },
-              { label: 'Amount', render: (r) => inr(r.amount) },
+              { label: 'Bet', render: (r) => money(r.bet) },
+              { label: 'Amount', render: (r) => money(r.amount) },
               {
                 label: 'Result',
                 render: (r) => {
@@ -322,7 +322,7 @@ export default function PlayerProfileModal({
                       }
                     >
                       {sign}
-                      {inr(Math.abs(value))}
+                      {money(Math.abs(value))}
                     </span>
                   );
                 },
@@ -341,7 +341,7 @@ export default function PlayerProfileModal({
               { label: 'Expried', render: (r) => fmtDate(r.expires_at) },
               { label: 'Bonus Code', render: (r) => dash(r.bonus_code) },
               { label: 'Bonus', render: (r) => dash(r.bonus_name) },
-              { label: 'Amount', render: (r) => inr(r.amount) },
+              { label: 'Amount', render: (r) => money(r.amount) },
               { label: 'Auto Reddem', render: (r) => yesNo(r.auto_redeem) },
               { label: 'State', render: (r) => <StatusBadge status={r.state} /> },
               { label: 'Comments', render: (r) => dash(r.comments) },
@@ -361,7 +361,7 @@ export default function PlayerProfileModal({
               { label: 'Web', render: (r) => dash(d.country_code) },
               { label: 'Payment Method(ID)', render: (r) => dash(r.payment_method) },
               { label: 'Country', render: () => dash(d.country_code) },
-              { label: 'Amount', render: (r) => inr(r.amount) },
+              { label: 'Amount', render: (r) => money(r.amount) },
               { label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
           />
@@ -380,7 +380,7 @@ export default function PlayerProfileModal({
                 label: 'Method',
                 render: (r) => dash(r.payment_method ?? r.provider_name),
               },
-              { label: 'Amount', render: (r) => inr(r.amount) },
+              { label: 'Amount', render: (r) => money(r.amount) },
               { label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
           />
@@ -409,16 +409,16 @@ export default function PlayerProfileModal({
                   </span>
                 ),
               },
-              { label: 'Amount', render: (r) => inr(r.amount) },
+              { label: 'Amount', render: (r) => money(r.amount) },
               {
                 label: 'Total Amount',
                 // Wallet balance available after this credit/debit — not the
                 // movement size (Amount).
                 render: (r) =>
-                  r.wallet_balance == null ? '—' : inr(r.wallet_balance),
+                  r.wallet_balance == null ? '—' : money(r.wallet_balance),
               },
-              { label: 'Sports Bonus Amount', render: () => inr(0) },
-              { label: 'Casino Bonus Amount', render: () => inr(0) },
+              { label: 'Sports Bonus Amount', render: () => money(0) },
+              { label: 'Casino Bonus Amount', render: () => money(0) },
               { label: 'Sports Type', render: () => '—' },
               { label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
@@ -457,7 +457,7 @@ export default function PlayerProfileModal({
                   <span className="font-mono text-xs">{dash(r.event_key)}</span>
                 ),
               },
-              { label: 'Bet Amount', render: (r) => inr(r.stake) },
+              { label: 'Bet Amount', render: (r) => money(r.stake) },
               {
                 label: 'Status',
                 // The bet's own outcome (pending until the match settles), not

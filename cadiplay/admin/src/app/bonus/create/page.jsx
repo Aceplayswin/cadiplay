@@ -397,7 +397,7 @@ export default function CreateBonusPage() {
                   </Select>
                 </Field>
                 <Field
-                  label={form.value_type === 'percentage' ? 'Eligible Amount In Percent' : 'Amount (₹)'}
+                  label={form.value_type === 'percentage' ? 'Eligible Amount In Percent' : 'Amount ($)'}
                 >
                   <Input
                     type="number"
@@ -548,7 +548,7 @@ export default function CreateBonusPage() {
                     onChange={set('bonus_validity_days')}
                   />
                 </Field>
-                <Field label="Max bonus cap (₹)">
+                <Field label="Max bonus cap ($)">
                   <Input
                     type="number"
                     value={form.max_bonus_cap}
@@ -562,7 +562,7 @@ export default function CreateBonusPage() {
                     onChange={set('per_user_limit')}
                   />
                 </Field>
-                <Field label="Total budget (₹)">
+                <Field label="Total budget ($)">
                   <Input
                     type="number"
                     value={form.total_budget}
@@ -599,7 +599,7 @@ export default function CreateBonusPage() {
                     is met; wagering and deposits only count between Starts and Ends above.
                   </p>
                 </div>
-                <Field label="Min real balance (₹)">
+                <Field label="Min real balance ($)">
                   <Input
                     type="number"
                     min="0"
@@ -608,7 +608,7 @@ export default function CreateBonusPage() {
                     onChange={set('claim_min_balance')}
                   />
                 </Field>
-                <Field label="Min wagered during offer (₹)">
+                <Field label="Min wagered during offer ($)">
                   <Input
                     type="number"
                     min="0"
@@ -617,7 +617,7 @@ export default function CreateBonusPage() {
                     onChange={set('claim_min_wagering')}
                   />
                 </Field>
-                <Field label="Min deposited during offer (₹)">
+                <Field label="Min deposited during offer ($)">
                   <Input
                     type="number"
                     min="0"

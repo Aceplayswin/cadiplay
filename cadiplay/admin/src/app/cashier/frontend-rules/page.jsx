@@ -27,7 +27,7 @@ const COLUMNS = [
 const FORM = [
   { name: 'method_id', label: 'Payment method ID', type: 'number' },
   { name: 'country_code', label: 'Country code', placeholder: 'IN' },
-  { name: 'currency', label: 'Currency', placeholder: 'INR' },
+  { name: 'currency', label: 'Currency', placeholder: 'USD' },
   { name: 'min_amount', label: 'Min amount', type: 'number', default: '0' },
   { name: 'max_amount', label: 'Max amount', type: 'number' },
   { name: 'display_order', label: 'Display order', type: 'number', default: '0' },

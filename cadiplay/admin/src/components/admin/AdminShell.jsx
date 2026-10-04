@@ -931,11 +931,11 @@ export function TxReference({ reference, transaction }) {
               {tx.type === 'bet_settlement' && tx.bet_amount != null ? (
                 <>
                   <TxDetailRow label="Balance before bet">
-                    {tx.balance_before == null ? '—' : inr(tx.balance_before)}
+                    {tx.balance_before == null ? '—' : money(tx.balance_before)}
                   </TxDetailRow>
-                  <TxDetailRow label="Bet amount">{inr(tx.bet_amount)}</TxDetailRow>
+                  <TxDetailRow label="Bet amount">{money(tx.bet_amount)}</TxDetailRow>
                   <TxDetailRow label="Balance after bet">
-                    {tx.balance_after == null ? '—' : inr(tx.balance_after)}
+                    {tx.balance_after == null ? '—' : money(tx.balance_after)}
                   </TxDetailRow>
                   <TxDetailRow label="Result">
                     {tx.result === 'pending' ? (
@@ -948,13 +948,13 @@ export function TxReference({ reference, transaction }) {
                       >
                         {(tx.profit_loss ?? 0) >= 0 ? 'Win' : 'Loss'}{' '}
                         {(tx.profit_loss ?? 0) >= 0 ? '+' : '−'}
-                        {inr(Math.abs(tx.profit_loss ?? 0))}
+                        {money(Math.abs(tx.profit_loss ?? 0))}
                       </span>
                     )}
                   </TxDetailRow>
                 </>
               ) : (
-                <TxDetailRow label="Amount">{inr(tx.amount)}</TxDetailRow>
+                <TxDetailRow label="Amount">{money(tx.amount)}</TxDetailRow>
               )}
               <TxDetailRow label="Status">
                 <StatusBadge status={tx.status} />
@@ -1735,8 +1735,8 @@ export function useAdminData(fetcher, deps = []) {
   return { data, loading, error, reload, setData };
 }
 
-export const inr = (n) =>
-  `USDT ${(Number(n || 0) / 100).toLocaleString('en-US', {
+export const money = (n) =>
+  `USD ${(Number(n || 0) / 100).toLocaleString('en-US', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

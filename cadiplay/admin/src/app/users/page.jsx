@@ -15,7 +15,7 @@ import {
   Input,
   toast,
   useAdminData,
-  inr,
+  money,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -317,7 +317,7 @@ export default function AdminUsersPage() {
     {
       key: 'main_balance',
       label: 'Balance',
-      render: (r) => inr((r.main_balance || 0) + (r.bonus_balance || 0)),
+      render: (r) => money((r.main_balance || 0) + (r.bonus_balance || 0)),
     },
     {
       key: 'actions',
@@ -510,7 +510,7 @@ export default function AdminUsersPage() {
             Adjusting balance for{' '}
             <span className="font-semibold text-white">{adjustUser?.full_name || adjustUser?.username}</span>
             {' · current balance '}
-            <span className="font-semibold text-white">{inr(adjustUser?.main_balance)}</span>
+            <span className="font-semibold text-white">{money(adjustUser?.main_balance)}</span>
           </p>
 
           <Field label="Action">
@@ -571,10 +571,10 @@ export default function AdminUsersPage() {
               }`}
             >
               {adjustMode === 'deduct' ? 'Deducting' : 'Adding'}{' '}
-              <span className="font-semibold">{inr(Math.abs(parseFloat(adjustAmount) || 0))}</span>
+              <span className="font-semibold">{money(Math.abs(parseFloat(adjustAmount) || 0))}</span>
               {' — new balance will be '}
               <span className="font-semibold">
-                {inr(
+                {money(
                   (Number(adjustUser?.main_balance) || 0) +
                     (adjustMode === 'deduct' ? -1 : 1) * Math.abs(parseFloat(adjustAmount) || 0)
                 )}
@@ -742,7 +742,7 @@ export default function AdminUsersPage() {
                     <td className="px-3 py-2.5 text-slate-300">{r.phone || '—'}</td>
                     <td className="px-3 py-2.5 font-mono text-xs text-slate-300">{r.signup_ip || '—'}</td>
                     <td className="px-3 py-2.5 text-slate-300">
-                      {inr((r.main_balance || 0) + (r.bonus_balance || 0))}
+                      {money((r.main_balance || 0) + (r.bonus_balance || 0))}
                     </td>
                     <td className="px-3 py-2.5"><StatusBadge status={r.account_status} /></td>
                     <td className="px-3 py-2.5 text-xs text-amber-400">{r.matched_on?.join(', ')}</td>

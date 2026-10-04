@@ -109,8 +109,6 @@ def launch_game(user_id: int, body: dict, ip: str | None = None) -> dict:
         # keys — e.g. a standalone lottery provider) launch against that
         # vendor's config; everything else rides the platform-wide account.
         overrides = GameRepository.provider_overrides(game)
-        # Instant Games (and any other INR-only line) must send the locked
-        # player currency — aggregator error 10011 if this is USD after INR.
         currency = game_provider.get_config(overrides).currency_code
 
         try:

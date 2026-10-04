@@ -110,7 +110,7 @@ export default function InviteSubModal({ onClose }) {
               ))}
             </div>
             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">
-              Percentage of their earnings transferred to you. Rev share example: ₹30 → you ₹1.50 / they ₹28.50. CPA example: ₹100 first-deposit bounty → you ₹5 / they ₹95.
+              Percentage of their earnings transferred to you. Rev share example: $30 → you $1.50 / they $28.50. CPA example: $100 first-deposit bounty → you $5 / they $95.
             </p>
           </div>
 

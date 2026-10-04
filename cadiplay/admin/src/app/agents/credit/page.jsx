@@ -7,7 +7,7 @@ import {
   DataTable,
   ErrorState,
   fmtDate,
-  inr,
+  money,
   useAdminData,
 } from '@/components/admin/AdminShell';
 import { ArrowLeftRight, Scale, Landmark } from 'lucide-react';
@@ -75,11 +75,11 @@ export default function AgentCreditPage() {
     { key: 'amount', label: 'Amount', render: (r) => (
       // Signed from the performing agent's own side: down is credit leaving them.
       <span className={r.direction === 'down' ? 'font-semibold text-rose-400' : 'font-semibold text-emerald-400'}>
-        {r.direction === 'down' ? '−' : '+'}{inr(r.amount)}
+        {r.direction === 'down' ? '−' : '+'}{money(r.amount)}
       </span>
     )},
     { key: 'balance_after', label: 'Balance after', render: (r) => (
-      <span className="text-slate-300">{inr(r.balance_after)}</span>
+      <span className="text-slate-300">{money(r.balance_after)}</span>
     )},
     { key: 'remark', label: 'Remark', render: (r) => (
       <span className="text-sm text-slate-400">{r.remark}</span>
@@ -106,14 +106,14 @@ export default function AgentCreditPage() {
       // Signed from the agent's side: positive means the counterparty owed them
       // and has now paid.
       <span className={r.amount >= 0 ? 'font-semibold text-emerald-400' : 'font-semibold text-rose-400'}>
-        {inr(r.amount)}
+        {money(r.amount)}
       </span>
     )},
     { key: 'pl_before', label: 'P&L before', render: (r) => (
-      <span className="text-slate-400">{inr(r.pl_before)}</span>
+      <span className="text-slate-400">{money(r.pl_before)}</span>
     )},
     { key: 'pl_after', label: 'P&L after', render: (r) => (
-      <span className="text-slate-300">{inr(r.pl_after)}</span>
+      <span className="text-slate-300">{money(r.pl_after)}</span>
     )},
     { key: 'note', label: 'Note', render: (r) => (
       <span className="text-sm text-slate-400">{r.note}</span>
@@ -124,9 +124,9 @@ export default function AgentCreditPage() {
     <AdminShell
       title="Credit & Settlement"
       subtitle={
-        `${inr(transferSummary?.credit_down ?? 0)} pushed down · `
-        + `${inr(transferSummary?.credit_up ?? 0)} pulled up · `
-        + `${inr(settlementSummary?.settled ?? 0)} settled`
+        `${money(transferSummary?.credit_down ?? 0)} pushed down · `
+        + `${money(transferSummary?.credit_up ?? 0)} pulled up · `
+        + `${money(settlementSummary?.settled ?? 0)} settled`
       }
     >
       <div className="mb-6">

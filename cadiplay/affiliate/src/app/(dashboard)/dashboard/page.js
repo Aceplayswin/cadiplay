@@ -11,7 +11,7 @@ import {
   Wallet,
 } from 'lucide-react';
 
-import { inr } from '../../../lib/format';
+import { usd } from '../../../lib/format';
 import { useAffiliate } from '../../../context/AffiliateContext';
 import { useAffiliateData } from '../../../hooks/useAffiliateData';
 import { CardSkeleton, DataState } from '../../../components/ui/DataState';
@@ -77,7 +77,7 @@ export default function DashboardPage() {
           {me && (
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-brand-500/10 dark:bg-brand-500/20 text-brand-700 dark:text-brand-400 border border-brand-400/20 dark:border-brand-500/30">
               {me.commission_type === 'cpa'
-                ? `CPA: ${inr(me.cpa_amount)}`
+                ? `CPA: ${usd(me.cpa_amount)}`
                 : `Rev Share: ${me.commission_rate}%`}
             </span>
           )}

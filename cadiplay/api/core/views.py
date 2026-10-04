@@ -456,24 +456,24 @@ def wallet_transactions(request):
     ]
     return JsonResponse(data, safe=False)
 
-# --- INR ⇄ USDT exchange rate (crypto cashier) ---
+# --- USD ⇄ USDT exchange rate (crypto cashier) ---
 # Keyless: the deposit and withdrawal screens quote the rate before a player has
 # committed to anything, and the underlying CoinGecko price is public data.
 @require_http_methods(['GET'])
 def exchange_rate_usdt(request):
-    """The current USDT⇄INR rate, for display on the crypto cashier screens.
+    """The current USDT⇄USD rate, for display on the crypto cashier screens.
 
     Optional ``?amount=`` and ``?from=``/``?to=`` convert in the same call, so
     the client can show "≈ X USDT" without a second round trip. Defaults to
-    converting INR into USDT, which is the deposit direction.
+    converting USD into USDT, which is the deposit direction.
     """
     amount = request.GET.get('amount')
     try:
         if amount is None:
-            return JsonResponse(services.get_usdt_inr_quote())
+            return JsonResponse(services.get_usdt_usd_quote())
         return JsonResponse(services.convert_currency(
             amount,
-            request.GET.get('from', 'INR'),
+            request.GET.get('from', 'USD'),
             request.GET.get('to', 'USDT'),
         ))
     except ValueError as e:

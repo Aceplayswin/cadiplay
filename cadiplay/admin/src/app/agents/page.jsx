@@ -16,7 +16,7 @@ import {
   confirmDialog,
   toast,
   fmtDate,
-  inr,
+  money,
   useAdminData,
 } from '@/components/admin/AdminShell';
 import { LevelBadge } from '@/components/admin/AgentLevel';
@@ -107,7 +107,7 @@ export default function AgentListPage() {
           remark: credit.remark,
         }),
       });
-      toast.success(`Balance is now ${inr(result.balance)}`);
+      toast.success(`Balance is now ${money(result.balance)}`);
       setCreditRow(null);
       reload();
     } catch (err) {
@@ -168,9 +168,9 @@ export default function AgentListPage() {
       label: 'Credit',
       render: (r) => (
         <div>
-          <p className="font-semibold text-white">{inr(r.balance)}</p>
+          <p className="font-semibold text-white">{money(r.balance)}</p>
           {r.exposure > 0 && (
-            <p className="text-xs text-slate-500">{inr(r.exposure)} exposed</p>
+            <p className="text-xs text-slate-500">{money(r.exposure)} exposed</p>
           )}
         </div>
       ),
@@ -188,7 +188,7 @@ export default function AgentListPage() {
                 : 'text-slate-500'
           }
         >
-          {inr(r.unsettled_pl)}
+          {money(r.unsettled_pl)}
         </span>
       ),
     },
@@ -242,8 +242,8 @@ export default function AgentListPage() {
     <AdminShell
       title="Agents"
       subtitle={
-        `${summary?.active ?? 0} active · ${inr(summary?.total_balance ?? 0)} credit outstanding`
-        + ` · ${inr(summary?.total_exposure ?? 0)} exposed`
+        `${summary?.active ?? 0} active · ${money(summary?.total_balance ?? 0)} credit outstanding`
+        + ` · ${money(summary?.total_exposure ?? 0)} exposed`
       }
     >
       <DataTable
@@ -287,15 +287,15 @@ export default function AgentListPage() {
           <div className="rounded-lg bg-slate-950 p-4 text-sm">
             <div className="flex justify-between">
               <span className="text-slate-500">Current balance</span>
-              <span className="text-slate-200">{inr(creditRow?.balance)}</span>
+              <span className="text-slate-200">{money(creditRow?.balance)}</span>
             </div>
             <div className="mt-1 flex justify-between">
               <span className="text-slate-500">Free of open bets</span>
-              <span className="text-slate-200">{inr(creditRow?.available_credit)}</span>
+              <span className="text-slate-200">{money(creditRow?.available_credit)}</span>
             </div>
           </div>
 
-          <Field label="Amount (₹)">
+          <Field label="Amount ($)">
             <Input
               type="number"
               step="0.01"
@@ -310,8 +310,8 @@ export default function AgentListPage() {
               already committed to open bets is not the operator's to remove. */}
           {amount < 0 && (
             <p className="-mt-2 text-xs text-amber-400">
-              Clawing back {inr(-amount)}. Refused above{' '}
-              {inr(creditRow?.available_credit)}, which is what is free of open bets.
+              Clawing back {money(-amount)}. Refused above{' '}
+              {money(creditRow?.available_credit)}, which is what is free of open bets.
             </p>
           )}
 

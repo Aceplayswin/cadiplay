@@ -969,7 +969,7 @@ graph TD
   that bundles the sidebar/topbar chrome **and** a full admin component library:
   `Card`, `StatCard`, `Button`, `Field`, `Input`, `Select`, `Toggle`, `Modal`,
   `EmptyState`, `StatusBadge`, `DataTable` (search + pagination + skeletons), `BarChart`,
-  `ChartLegend`, the `useAdminData` fetch hook, and `inr`/`fmtDate` helpers. `AdminShell`
+  `ChartLegend`, the `useAdminData` fetch hook, and `money`/`fmtDate` helpers. `AdminShell`
   redirects to `/admin/login` if no `admin_token`. SweetAlert2 powers `toast` + `confirmDialog`.
 
 ### Services, hooks, store

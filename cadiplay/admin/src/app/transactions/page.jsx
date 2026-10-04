@@ -11,7 +11,7 @@ import {
   StatusBadge,
   TxReference,
   toast,
-  inr,
+  money,
   fmtDateOnly,
   fmtTime,
 } from '@/components/admin/AdminShell';
@@ -85,7 +85,7 @@ export default function AdminTransactionsPage() {
       label: 'Amount',
       render: (r) => (
         <span className={isOutgoing(r) ? 'font-semibold text-rose-400' : 'font-semibold text-emerald-400'}>
-          {isOutgoing(r) ? '−' : '+'}{inr(r.amount)}
+          {isOutgoing(r) ? '−' : '+'}{money(r.amount)}
         </span>
       ),
     },

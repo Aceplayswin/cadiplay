@@ -16,7 +16,7 @@ import {
   confirmDialog,
   toast,
   fmtDate,
-  inr,
+  money,
   Field,
   Input,
   Select,
@@ -267,13 +267,13 @@ export default function AffiliateDetailPage() {
                 </div>
                 <div className="bg-slate-950 p-4 rounded-lg">
                   <p className="text-xs text-slate-500">Total Deposits</p>
-                  <p className="text-xl font-bold text-white">{inr(data.stats.total_deposits)}</p>
+                  <p className="text-xl font-bold text-white">{money(data.stats.total_deposits)}</p>
                 </div>
                 <div className="bg-slate-950 p-4 rounded-lg border border-emerald-500/20">
                   <p className="text-xs text-emerald-500">Commission</p>
-                  <p className="text-xl font-bold text-emerald-400">{inr(data.stats.total_earnings)}</p>
+                  <p className="text-xl font-bold text-emerald-400">{money(data.stats.total_earnings)}</p>
                   {data.stats.pending_earnings > 0 && (
-                    <p className="mt-1 text-xs text-slate-500">{inr(data.stats.pending_earnings)} pending</p>
+                    <p className="mt-1 text-xs text-slate-500">{money(data.stats.pending_earnings)} pending</p>
                   )}
                 </div>
               </div>
@@ -332,8 +332,8 @@ export default function AffiliateDetailPage() {
               },
               { key: 'signed_up_at', label: 'Signed Up', render: (r) => fmtDate(r.signed_up_at) },
               { key: 'ftd_at', label: 'First Deposit', render: (r) => (r.ftd_at ? fmtDate(r.ftd_at) : <span className="text-slate-600">—</span>) },
-              { key: 'lifetime_deposits', label: 'Deposits', render: (r) => <span className="text-emerald-400">{inr(r.lifetime_deposits)}</span> },
-              { key: 'lifetime_commission', label: 'Commission', render: (r) => <span className="text-slate-300">{inr(r.lifetime_commission)}</span> },
+              { key: 'lifetime_deposits', label: 'Deposits', render: (r) => <span className="text-emerald-400">{money(r.lifetime_deposits)}</span> },
+              { key: 'lifetime_commission', label: 'Commission', render: (r) => <span className="text-slate-300">{money(r.lifetime_commission)}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
             rows={data.referred_users}
@@ -345,7 +345,7 @@ export default function AffiliateDetailPage() {
             columns={[
               { key: 'requested_at', label: 'Requested', render: (r) => fmtDate(r.requested_at) },
               { key: 'processed_at', label: 'Processed', render: (r) => (r.processed_at ? fmtDate(r.processed_at) : <span className="text-slate-600">—</span>) },
-              { key: 'amount', label: 'Amount', render: (r) => <span className="font-bold text-emerald-400">{inr(r.amount)}</span> },
+              { key: 'amount', label: 'Amount', render: (r) => <span className="font-bold text-emerald-400">{money(r.amount)}</span> },
               { key: 'method_label', label: 'Method', render: (r) => <span className="text-slate-300">{r.method_label}</span> },
               { key: 'reference', label: 'Reference', render: (r) => <span className="font-mono text-xs text-slate-500">{r.reference || '—'}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
@@ -462,7 +462,7 @@ function CommissionTab({ data, onSave, busy }) {
             />
           </Field>
 
-          <Field label="CPA amount (₹)">
+          <Field label="CPA amount ($)">
             <Input
               type="number"
               min="0"
@@ -478,7 +478,7 @@ function CommissionTab({ data, onSave, busy }) {
             <Input type="number" min="0" max="100" step="0.5" value={terms.overrideRate} onChange={set('overrideRate')} />
           </Field>
 
-          <Field label="Payout threshold (₹)">
+          <Field label="Payout threshold ($)">
             <Input type="number" min="0" value={terms.payoutThreshold} onChange={set('payoutThreshold')} />
           </Field>
 

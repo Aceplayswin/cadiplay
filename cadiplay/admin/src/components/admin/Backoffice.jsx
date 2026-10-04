@@ -24,7 +24,7 @@ import {
   Field,
   Input,
   Select,
-  inr,
+  money,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -366,7 +366,7 @@ export const col = {
   money: (key, label) => ({
     key,
     label,
-    render: (r) => inr(r[key]),
+    render: (r) => money(r[key]),
   }),
   /** Money that reads green when positive and red when negative. */
   signed: (key, label) => ({
@@ -374,7 +374,7 @@ export const col = {
     label,
     render: (r) => (
       <span className={Number(r[key]) >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-        {inr(r[key])}
+        {money(r[key])}
       </span>
     ),
   }),

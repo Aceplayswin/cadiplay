@@ -64,8 +64,8 @@ class ProviderConfig:
 # Per-provider override keys (as stored on the ``game_providers`` row) mapped to
 # the ProviderConfig field they replace. Blank/NULL values are ignored, so a
 # provider only overrides what it actually integrates differently.
-# ``currency_code`` is included: Instant Games (and other INR-only lines) lock
-# the player to INR on first launch — sending USD afterwards is error 10011.
+# ``currency_code`` is included so a vendor can launch in a currency other
+# than the platform default (USD) without changing GAME_CURRENCY_CODE.
 _OVERRIDE_FIELDS = (
     'agency_uid',
     'aes_secret_key',
@@ -74,11 +74,6 @@ _OVERRIDE_FIELDS = (
     'callback_path',
     'currency_code',
 )
-
-# Huidu Instant Games (Aviator, Mines, Plinko, …) are an INR line. A blank
-# provider currency would fall through to GAME_CURRENCY_CODE (USD) and the
-# aggregator then rejects the already-created INR player with error 10011.
-_INR_PROVIDER_SLUGS = frozenset({'instant'})
 
 
 def get_config(overrides: dict | None = None) -> ProviderConfig:
@@ -109,8 +104,6 @@ def get_config(overrides: dict | None = None) -> ProviderConfig:
         value = extras.get(field)
         if value not in (None, ''):
             values[field] = value.rstrip('/') if field == 'server_url' else value
-    if extras.get('currency_code') in (None, '') and extras.get('slug') in _INR_PROVIDER_SLUGS:
-        values['currency_code'] = 'INR'
     values['currency_code'] = normalize_currency_code(values.get('currency_code'))
     return ProviderConfig(**values)
 
@@ -324,8 +317,7 @@ def request_launch_url(
         'member_account': build_member_account(user_id, overrides),
         'game_uid': game_uid,
         'credit_amount': str(credit_amount),
-        # Instant Games lock the player to INR; other lines use the configured
-        # code. Never send USDT (aggregator 10018).
+        # Platform currency is USD. Never send USDT (aggregator 10018).
         'currency_code': cfg.currency_code,
         'language': language or cfg.default_language,
         'home_url': cfg.home_url,

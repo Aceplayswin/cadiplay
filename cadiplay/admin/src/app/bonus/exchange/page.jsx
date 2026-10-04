@@ -20,7 +20,7 @@ import {
   Select,
   toast,
   useAdminData,
-  inr,
+  money,
 } from '@/components/admin/AdminShell';
 
 export default function ExchangeBonusPage() {
@@ -123,7 +123,7 @@ export default function ExchangeBonusPage() {
                     : `${result.player} cannot redeem ${result.bonus_name}`}
                 </p>
                 <p className="mt-1 text-sm text-slate-400">
-                  Value {inr(result.amount)} · claimed {result.times_claimed} time(s) before
+                  Value {money(result.amount)} · claimed {result.times_claimed} time(s) before
                 </p>
 
                 {!result.eligible && (

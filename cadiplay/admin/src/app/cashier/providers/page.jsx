@@ -36,7 +36,7 @@ const FORM = [
   { name: 'name', label: 'Name', required: true },
   { name: 'code', label: 'Code', required: true },
   { name: 'api_endpoint', label: 'API endpoint', full: true },
-  { name: 'currencies', label: 'Currencies', placeholder: 'INR,USD' },
+  { name: 'currencies', label: 'Currencies', placeholder: 'USD' },
   { name: 'deposit_countries', label: 'Deposit countries', placeholder: 'IN,NP' },
   { name: 'withdrawal_countries', label: 'Withdrawal countries' },
   { name: 'supports_deposit', label: 'Supports deposit', type: 'toggle', default: true },

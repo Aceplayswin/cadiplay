@@ -1,7 +1,7 @@
 'use client';
 
 import { Search, ChevronRight } from 'lucide-react';
-import { fmtDateShort, inr } from '../../../../lib/format';
+import { fmtDateShort, usd } from '../../../../lib/format';
 
 const STATUS_STYLES = {
   active:  'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900/30',
@@ -65,11 +65,11 @@ export default function ReferralTable({ players, search, onSearchChange, onSelec
                     </span>
                   </td>
                   <td className="p-4 text-slate-600 dark:text-slate-300 font-medium">{fmtDateShort(p.signed_up_at)}</td>
-                  <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{inr(p.current_balance)}</td>
+                  <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{usd(p.current_balance)}</td>
                   <td className="p-4 text-slate-600 dark:text-slate-300 font-medium">{p.ftd_at ? fmtDateShort(p.ftd_at) : '—'}</td>
-                  <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{p.ftd_amount > 0 ? inr(p.ftd_amount) : '—'}</td>
-                  <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{inr(p.lifetime_deposits)}</td>
-                  <td className="p-4 font-bold text-brand-600 dark:text-brand-400 font-display">{inr(p.lifetime_commission)}</td>
+                  <td className="p-4 font-semibold text-slate-700 dark:text-slate-300">{p.ftd_amount > 0 ? usd(p.ftd_amount) : '—'}</td>
+                  <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{usd(p.lifetime_deposits)}</td>
+                  <td className="p-4 font-bold text-brand-600 dark:text-brand-400 font-display">{usd(p.lifetime_commission)}</td>
                   <td className="p-4">
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border capitalize ${STATUS_STYLES[p.status]}`}>
                       {p.status}

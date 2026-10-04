@@ -1,13 +1,13 @@
-"""CoinGecko client: the live INR ⇄ USDT rate used to price crypto deposits.
+"""CoinGecko client: the live USD ⇄ USDT rate used to price crypto deposits.
 
-Wallets are denominated in USDT, but a player funding from an INR rail needs a
-so both sides of the cashier need to know what one USDT is worth in rupees right
+Wallets are denominated in USDT, but a player funding from a USD rail needs a
+so both sides of the cashier need to know what one USDT is worth in dollars right
 now. That number comes from CoinGecko's public Simple Price API::
 
     GET https://api.coingecko.com/api/v3/simple/price
-        ?ids=tether&vs_currencies=usdt&include_last_updated_at=true
+        ?ids=tether&vs_currencies=usd&include_last_updated_at=true
 
-    -> {"tether": {"usdt": 94.53, "last_updated_at": 1788460840}}
+    -> {"tether": {"usd": 1.00, "last_updated_at": 1788460840}}
 
 A demo/Pro API key may be supplied, in which case it is sent as a header and,
 for a Pro key, the Pro host is used instead; without a key the public endpoint is
@@ -34,9 +34,9 @@ logger = logging.getLogger(__name__)
 # ``fresh`` expires quickly so the quoted rate tracks the market; ``lkg`` (last
 # known good) lives long and is served when a fetch fails; ``cooldown`` throttles
 # retries so a rate-limited or unreachable CoinGecko isn't hammered per request.
-_FRESH_KEY = 'exchange_rate:usdt_inr'
-_LKG_KEY = 'exchange_rate:usdt_inr_lkg'
-_COOLDOWN_KEY = 'exchange_rate:usdt_inr_cooldown'
+_FRESH_KEY = 'exchange_rate:usdt_usd'
+_LKG_KEY = 'exchange_rate:usdt_usd_lkg'
+_COOLDOWN_KEY = 'exchange_rate:usdt_usd_cooldown'
 
 _LKG_TTL = 24 * 60 * 60  # keep the last good rate for a day
 _COOLDOWN_TTL = 30       # seconds to wait before retrying after a failure
@@ -46,7 +46,7 @@ _PRO_HOST = 'https://pro-api.coingecko.com/api/v3'
 
 # CoinGecko's id for Tether, and the fiat we quote it against.
 _COIN_ID = 'tether'
-_VS_CURRENCY = 'usdt'
+_VS_CURRENCY = 'usd'
 
 
 def _api_key() -> str:
@@ -68,19 +68,19 @@ def _fresh_ttl() -> int:
 def _fallback_rate() -> Decimal | None:
     """Configured rate of last resort, used only when CoinGecko has never
     answered since this process started (so there is no last-known-good copy)."""
-    raw = getattr(settings, 'USDT_INR_FALLBACK_RATE', '') or ''
+    raw = getattr(settings, 'USDT_USD_FALLBACK_RATE', '') or ''
     if not raw:
         return None
     try:
         rate = Decimal(str(raw))
     except (InvalidOperation, ValueError):
-        logger.warning('exchange_rate: USDT_INR_FALLBACK_RATE is not a number: %r', raw)
+        logger.warning('exchange_rate: USDT_USD_FALLBACK_RATE is not a number: %r', raw)
         return None
     return rate if rate > 0 else None
 
 
 def _http_fetch() -> dict | None:
-    """Fetch the current USDT price in INR from CoinGecko.
+    """Fetch the current USDT price in USD from CoinGecko.
 
     Returns ``{'rate': Decimal, 'last_updated_at': int | None}``, or ``None`` on
     any error so the caller can fall back to the last-known-good rate.
@@ -146,8 +146,8 @@ def _http_fetch() -> dict | None:
     }
 
 
-def get_usdt_inr_rate() -> dict | None:
-    """Return the current USDT→INR quote, fetching it if the cached one is stale.
+def get_usdt_usd_rate() -> dict | None:
+    """Return the current USDT→USD quote, fetching it if the cached one is stale.
 
     Shape: ``{'rate': Decimal, 'last_updated_at': int | None, 'stale': bool}``,
     where ``stale`` marks a last-known-good or configured fallback rate served
