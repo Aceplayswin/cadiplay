@@ -89,6 +89,8 @@ class UserSetting(models.Model):
     notifications_enabled = models.BooleanField(default=True)
     marketing_opt_in = models.BooleanField(default=False)
     settings = models.JSONField(null=True, blank=True)
+    signup_ip = models.CharField(max_length=45, null=True, blank=True)
+    last_ip = models.CharField(max_length=45, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -147,6 +149,7 @@ class Transaction(models.Model):
     payment_method = models.CharField(max_length=50, null=True, blank=True)
     reference_number = models.CharField(max_length=255, null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
+    ip_address = models.CharField(max_length=45, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -283,6 +286,7 @@ class GameSession(models.Model):
         max_length=15, choices=Status.choices, default=Status.WAIT
     )
     last_played_at = models.DateTimeField(null=True, blank=True)
+    ip_address = models.CharField(max_length=45, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

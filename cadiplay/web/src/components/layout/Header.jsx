@@ -27,11 +27,8 @@ import {
   Plus,
   Sparkles,
   User,
-  Play,
-  Loader2,
 } from 'lucide-react';
 import { useBranding } from '@/hooks/useBranding';
-import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { NAV_GAME_LINKS } from '@/lib/gameRoutes';
 import { ThemeToggleButton } from '@/components/ThemeToggle';
 import { UserAuthActions } from '@/components/UserAuthActions';
@@ -91,7 +88,6 @@ export function Header() {
   const brandName = branding.product_name;
   const token = useAuthStore((s) => s.token);
   const wallet = useAuthStore((s) => s.wallet);
-  const { tryDemo, demoLoading } = useDemoLogin({ redirectTo: '/' });
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [getAppOpen, setGetAppOpen] = useState(false);
@@ -233,23 +229,6 @@ export function Header() {
             <Download className="h-4 w-4" />
             <span className="hidden sm:inline">Get the app</span>
           </button>
-
-          {/* Play Demo — reachable at every width. Icon-only on narrow screens
-              (the same shape as "Get the app" above) so phones keep the action
-              instead of dropping it out of the bar. */}
-          {!token && (
-            <button
-              type="button"
-              onClick={tryDemo}
-              disabled={demoLoading}
-              title="Play Demo"
-              aria-label="Play Demo"
-              className="inline-flex items-center gap-2 rounded-xl border border-hairline/10 px-2.5 py-2 text-xs font-bold text-app-fg transition hover:border-brand-400/50 hover:bg-panel disabled:opacity-60 xl:px-4"
-            >
-              {demoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-              <span className="hidden xl:inline">{demoLoading ? 'Starting…' : 'Play Demo'}</span>
-            </button>
-          )}
 
           {/* Wallet / balance pill — body opens the wallet page, the + opens deposit */}
           <div className="hidden items-center gap-2 rounded-full border border-hairline/10 bg-panel/60 py-1 pl-3 pr-1 md:flex">

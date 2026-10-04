@@ -9,6 +9,8 @@ from decimal import Decimal, ROUND_HALF_UP
 
 USDT_SCALE = Decimal('100')
 _DP = Decimal('0.01')
+MIN_DEPOSIT_USDT = Decimal('30')
+MIN_WITHDRAWAL_USDT = Decimal('50')
 
 
 def usdt_amount(value) -> float:

@@ -52,6 +52,8 @@ CREATE TABLE IF NOT EXISTS user_settings (
   notifications_enabled BOOLEAN DEFAULT TRUE,
   marketing_opt_in BOOLEAN DEFAULT FALSE,
   settings JSON,
+  signup_ip VARCHAR(45),
+  last_ip VARCHAR(45),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_user_settings_user (user_id),
@@ -120,6 +122,7 @@ CREATE TABLE IF NOT EXISTS transactions (
   fraud_score INT DEFAULT 0,
   metadata JSON,
   notes TEXT,
+  ip_address VARCHAR(45),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
@@ -314,6 +317,7 @@ CREATE TABLE IF NOT EXISTS game_sessions (
   last_balance DECIMAL(20,2),
   status ENUM('wait', 'profit', 'loss') DEFAULT 'wait',
   last_played_at DATETIME,
+  ip_address VARCHAR(45),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -1603,6 +1607,10 @@ CALL _cadiplay_add_column('game_providers', 'delayed_settlement', "delayed_settl
 
 -- game_sessions: outstanding (unresolved) round counter drives the WAIT status.
 CALL _cadiplay_add_column('game_sessions', 'pending_rounds', "pending_rounds INT NOT NULL DEFAULT 0 AFTER rounds_count");
+CALL _cadiplay_add_column('user_settings', 'signup_ip', "signup_ip VARCHAR(45) NULL AFTER settings");
+CALL _cadiplay_add_column('user_settings', 'last_ip', "last_ip VARCHAR(45) NULL AFTER signup_ip");
+CALL _cadiplay_add_column('transactions', 'ip_address', "ip_address VARCHAR(45) NULL AFTER notes");
+CALL _cadiplay_add_column('game_sessions', 'ip_address', "ip_address VARCHAR(45) NULL AFTER last_played_at");
 
 -- game_rounds: per-round settlement state + the game actually played (lobby
 -- launches report the specific table, not the lobby the player entered).

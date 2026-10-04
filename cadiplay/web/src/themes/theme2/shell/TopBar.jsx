@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, Search, Bell, Wallet, Download, Play, Loader2 } from 'lucide-react';
+import { Menu, Search, Bell, Wallet, Download } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { useAuthStore } from '@/store/auth';
-import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { UserAuthActions } from '@/components/UserAuthActions';
 import { GetAppModal } from '@/components/GetAppModal';
@@ -20,7 +19,6 @@ export function Theme2TopBar({ onMenu }) {
   // Real balance, not `available` — a pending withdrawal only holds funds, it
   // does not debit them, so netting the hold off made this read USDT 0.00.
   const balance = wallet?.main ?? wallet?.real ?? 0;
-  const { tryDemo, demoLoading } = useDemoLogin({ redirectTo: '/' });
   const [getAppOpen, setGetAppOpen] = useState(false);
 
   return (
@@ -51,25 +49,9 @@ export function Theme2TopBar({ onMenu }) {
           <span className="hidden md:inline">Get the app</span>
         </button>
 
-        {/* Play Demo — reachable at every width; icon-only on narrow screens. */}
-        {isHydrated && !token && (
-          <button
-            type="button"
-            onClick={tryDemo}
-            disabled={demoLoading}
-            title="Play Demo"
-            aria-label="Play Demo"
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 text-xs font-bold text-white transition hover:border-amber-400/50 disabled:opacity-60 lg:inline-flex lg:h-auto lg:w-auto lg:items-center lg:gap-2 lg:px-4 lg:py-2"
-          >
-            {demoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-            <span className="hidden lg:inline">{demoLoading ? 'Starting…' : 'Play Demo'}</span>
-          </button>
-        )}
-
         {/* Wallet pill. Signed out there is no balance to read (it is always
             USDT 0.00 and the pill routes to login), so narrow screens show the
-            wallet mark + Deposit only — that is the room Play Demo needs to
-            stay on the bar on a 360px phone. */}
+            wallet mark + Deposit only. */}
         <div className="flex shrink-0 items-center gap-1.5 rounded-full border border-white/5 bg-[#0a101a] py-1 pl-2.5 pr-1 sm:gap-2 sm:pl-3">
           <Wallet className="h-4 w-4 text-amber-400" />
           <span

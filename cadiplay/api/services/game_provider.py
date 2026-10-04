@@ -64,8 +64,9 @@ class ProviderConfig:
 # Per-provider override keys (as stored on the ``game_providers`` row) mapped to
 # the ProviderConfig field they replace. Blank/NULL values are ignored, so a
 # provider only overrides what it actually integrates differently.
-# ``currency_code`` is intentionally absent: this platform is USDT, and a vendor
-# row must not replace the launch currency (a stored INR would go out on the wire).
+# ``currency_code`` is intentionally absent: aggregator lines are USD, and a
+# vendor row must not replace the launch currency (a stored INR/USDT would go
+# out on the wire). Platform wallets stay USDT.
 _OVERRIDE_FIELDS = (
     'agency_uid',
     'aes_secret_key',
@@ -305,9 +306,9 @@ def request_launch_url(
         'member_account': build_member_account(user_id, overrides),
         'game_uid': game_uid,
         'credit_amount': str(credit_amount),
-        # Platform wallets are USDT. Ignore a caller or provider currency so the
-        # encrypted launch payload cannot go out as INR.
-        'currency_code': 'USDT',
+        # Aggregator game lines are USD. Platform wallets stay USDT — do not
+        # send USDT (code 10018) or a provider-row INR.
+        'currency_code': 'USD',
         'language': language or cfg.default_language,
         'home_url': cfg.home_url,
         'platform': platform,

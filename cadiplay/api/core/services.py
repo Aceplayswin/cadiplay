@@ -14,7 +14,7 @@ from django.db.models.functions import Cast
 from django.utils import timezone
 
 from core import bonus_services
-from core.money import stored_amount, usdt_amount
+from core.money import MIN_DEPOSIT_USDT, MIN_WITHDRAWAL_USDT, stored_amount, usdt_amount
 from core.auth_jwt import sign_token
 from core.models import (
     Banner,
@@ -49,6 +49,20 @@ def _check_password(password: str, password_hash: str) -> bool:
 
 def _player_users():
     return User.objects.filter(role=User.Role.USER, usersetting__is_demo=False)
+
+
+def client_ip(request) -> str | None:
+    """First public IP on the request. Honours X-Forwarded-For behind a proxy."""
+    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+    ip = (forwarded.split(',')[0].strip() if forwarded else '') or request.META.get('REMOTE_ADDR')
+    ip = (ip or '').strip()
+    return ip[:45] or None
+
+
+def touch_last_ip(user_id: int, ip: str | None) -> None:
+    if not ip:
+        return
+    UserSetting.objects.filter(user_id=user_id).update(last_ip=ip[:45])
 
 
 def _create_user_settings(user: User, **kwargs) -> UserSetting:
@@ -204,6 +218,8 @@ def register_user(
             ai_voice_executive_id=voice_id,
             referred_by=referred_by,
             referral_code=bonus_services._generate_referral_code(),
+            signup_ip=(signup_ip or None)[:45] if signup_ip else None,
+            last_ip=(signup_ip or None)[:45] if signup_ip else None,
         )
         # Fire the money-based welcome + referral bonuses (each is a no-op if the
         # admin hasn't configured/activated one).
@@ -270,7 +286,7 @@ def create_demo_session() -> dict:
     return {'demoId': demo_id, 'token': token, 'expiresAt': expires_at.isoformat()}
 
 
-def login_user(phone: str, password: str) -> dict:
+def login_user(phone: str, password: str, ip: str | None = None) -> dict:
     user = User.objects.filter(phone=phone, role=User.Role.USER).first()
     if not user or not user.password_hash:
         raise ValueError('Invalid credentials')
@@ -280,6 +296,7 @@ def login_user(phone: str, password: str) -> dict:
         raise ValueError('Invalid credentials')
     user.last_login_at = timezone.now()
     user.save(update_fields=['last_login_at'])
+    touch_last_ip(user.id, ip)
     payload = {'sub': user.id, 'role': User.Role.USER}
     prefs = get_user_settings(user)
     if prefs and prefs.is_demo:
@@ -533,10 +550,13 @@ def create_deposit(
     payment_method: str,
     currency: str = 'USDT',
     reference_number: str | None = None,
+    ip: str | None = None,
 ) -> dict:
     _require_player(user_id)
     if amount <= 0:
         raise ValueError('Amount must be greater than zero')
+    if Decimal(str(amount)) < stored_amount(MIN_DEPOSIT_USDT):
+        raise ValueError(f'Minimum deposit is USDT {MIN_DEPOSIT_USDT}')
     Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': currency})
     with tenant_atomic():
         tx = Transaction.objects.create(
@@ -547,7 +567,9 @@ def create_deposit(
             status=Transaction.Status.PENDING,
             payment_method=payment_method,
             reference_number=(reference_number or None),
+            ip_address=(ip or None)[:45] if ip else None,
         )
+    touch_last_ip(user_id, ip)
     # No balance change here — the deposit stays PENDING until the product admin
     # confirms it (see confirm_deposit). Nothing is credited on the user's action.
     return {'transactionId': tx.id, 'status': 'pending'}
@@ -610,13 +632,13 @@ def reject_deposit(transaction_id: int, reason: str) -> dict:
     return {'rejected': True}
 
 
-def create_withdrawal(user_id: int, amount: float, payment_method: str) -> dict:
+def create_withdrawal(user_id: int, amount: float, payment_method: str, ip: str | None = None) -> dict:
     _require_player(user_id)
     wallet_data = get_wallet(user_id)
     if amount > wallet_data['available']:
         raise ValueError('Insufficient balance')
-    if amount < 500:
-        raise ValueError('Minimum withdrawal is USDT 5')
+    if Decimal(str(amount)) < stored_amount(MIN_WITHDRAWAL_USDT):
+        raise ValueError(f'Minimum withdrawal is USDT {MIN_WITHDRAWAL_USDT}')
 
     with tenant_atomic():
         tx = Transaction.objects.create(
@@ -625,7 +647,9 @@ def create_withdrawal(user_id: int, amount: float, payment_method: str) -> dict:
             amount=Decimal(str(amount)),
             status=Transaction.Status.PENDING,
             payment_method=payment_method,
+            ip_address=(ip or None)[:45] if ip else None,
         )
+    touch_last_ip(user_id, ip)
         # Place a HOLD only — the balance itself is untouched until an admin
         # approves. The hold is what stops the same money being staked or
         # withdrawn twice while the request sits in the queue.

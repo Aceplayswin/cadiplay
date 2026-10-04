@@ -11,10 +11,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Bell, Download, Play, Loader2 } from 'lucide-react';
+import { Bell, Download } from 'lucide-react';
 import { useAuthStore } from '@/store/auth';
 import { useBranding } from '@/hooks/useBranding';
-import { useDemoLogin } from '@/hooks/useDemoLogin';
 import { ProfileMenu } from '@/components/ProfileMenu';
 import { GetAppModal } from '@/components/GetAppModal';
 import { NAV_GAME_LINKS } from '@/lib/gameRoutes';
@@ -128,7 +127,6 @@ export function Theme5TopBar() {
 
   const token = useAuthStore((s) => s.token);
   const isHydrated = useAuthStore((s) => s.isHydrated);
-  const { tryDemo, demoLoading } = useDemoLogin({ redirectTo: '/' });
   const [getAppOpen, setGetAppOpen] = useState(false);
 
   const isActive = (href) => (href === '/' ? pathname === '/' : pathname?.startsWith(href));
@@ -172,21 +170,6 @@ export function Theme5TopBar() {
               <Download className="h-4 w-4" />
               <span className="hidden md:inline">Get the app</span>
             </button>
-
-            {/* Play Demo — reachable at every width; icon-only on narrow screens. */}
-            {isHydrated && !token && (
-              <button
-                type="button"
-                onClick={tryDemo}
-                disabled={demoLoading}
-                title="Play Demo"
-                aria-label="Play Demo"
-                className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-black/15 bg-white px-2.5 py-2 text-xs font-black uppercase tracking-wide text-[#0f1b33] transition hover:border-[#1d4ed8] hover:text-[#1d4ed8] disabled:opacity-60 lg:px-4"
-              >
-                {demoLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                <span className="hidden lg:inline">{demoLoading ? 'Starting…' : 'Play Demo'}</span>
-              </button>
-            )}
 
             {isHydrated && token ? (
               <>
