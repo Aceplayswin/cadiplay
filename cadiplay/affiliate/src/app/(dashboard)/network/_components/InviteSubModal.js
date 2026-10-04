@@ -82,7 +82,7 @@ export default function InviteSubModal({ onClose }) {
           {/* Info note */}
           <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200/50 dark:border-slate-700/50">
             <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-              Recruit sub-affiliates to your network and earn an **override commission** on all traffic they refer.
+              Recruit sub-affiliates and earn an override on their rev share and CPA (first deposit) — taken from their cut, not paid on top by the house.
             </p>
           </div>
 
@@ -110,7 +110,7 @@ export default function InviteSubModal({ onClose }) {
               ))}
             </div>
             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-2">
-              The percentage of their commission base that will be credited as override earnings to your ledger.
+              Percentage of their earnings transferred to you. Rev share example: ₹30 → you ₹1.50 / they ₹28.50. CPA example: ₹100 first-deposit bounty → you ₹5 / they ₹95.
             </p>
           </div>
 

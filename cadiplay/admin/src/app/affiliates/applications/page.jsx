@@ -21,7 +21,7 @@ import { adminApi } from '@/services/adminApi';
 
 export default function AffiliateApplicationsPage() {
   const { data, loading, error, reload } = useAdminData(
-    '/api/v1/admin/affiliates/applications?limit=200',
+    '/api/v1/admin/affiliates/applications',
     [],
   );
   const { data: settings } = useAdminData('/api/v1/admin/affiliates/settings', []);
@@ -248,7 +248,7 @@ export default function AffiliateApplicationsPage() {
                 )}
 
                 {terms.commissionType !== 'revenue_share' && (
-                  <Field label="CPA amount (USDT)">
+                  <Field label="CPA amount (₹)">
                     <Input
                       type="number"
                       min="0"

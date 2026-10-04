@@ -84,19 +84,20 @@ export default function LoginPage() {
 
 
 
-          {/* Email */}
+          {/* Email or username */}
 
 
           <div>
 
-            <label className={labelClasses}>Email Address</label>
+            <label className={labelClasses}>Email or Username</label>
 
 
             <div className="relative">
               <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
               <input
                 id="login-email"
-                type="email"
+                /* Not type="email": the same field accepts a username. */
+                type="text"
                 required
                 placeholder="alex@partner.com"
                 value={email}

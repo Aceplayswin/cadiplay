@@ -24,6 +24,7 @@ from core import (
 )
 from core.ai import chat_respond, fraud_score, welcome_call
 from core.game_services import GameError
+from core.money import present_wallet, stored_amount, usdt_amount
 from core.geo import detect_geo_from_ip
 from core.middleware import require_auth
 from core.models import AiCallLog, Transaction, User, UserSetting, Wallet
@@ -364,7 +365,7 @@ def user_settings(request):
 @require_http_methods(['GET'])
 def wallet_get(request):
     try:
-        return JsonResponse(services.get_wallet(request.auth.sub))
+        return JsonResponse(present_wallet(services.get_wallet(request.auth.sub)))
     except Exception as e:
         return _error_response(e, 404)
 
@@ -375,7 +376,7 @@ def wallet_breakdown(request):
     """Itemised wallet view for the Wallet page — balances plus a per-source
     breakdown of bonuses, deposits/withdrawals, and game-play totals."""
     try:
-        return JsonResponse(services.get_wallet_breakdown(request.auth.sub))
+        return JsonResponse(present_wallet(services.get_wallet_breakdown(request.auth.sub)))
     except Exception as e:
         return _error_response(e, 404)
 
@@ -388,9 +389,9 @@ def wallet_deposit(request):
         body = _json_body(request)
         result = services.create_deposit(
             request.auth.sub,
-            float(body['amount']),
+            float(stored_amount(body['amount'])),
             body['paymentMethod'],
-            body.get('currency', 'USDT'),
+            'USDT',
             # Optional UTR / reference the user pastes from their payment app.
             reference_number=(body.get('referenceNumber') or body.get('reference_number')),
         )
@@ -424,7 +425,7 @@ def wallet_withdraw(request):
     try:
         body = _json_body(request)
         result = services.create_withdrawal(
-            request.auth.sub, float(body['amount']), body['paymentMethod']
+            request.auth.sub, float(stored_amount(body['amount'])), body['paymentMethod']
         )
         return JsonResponse(result, status=201)
     except (KeyError, json.JSONDecodeError) as e:
@@ -441,7 +442,7 @@ def wallet_transactions(request):
         {
             'id': t.id,
             'type': t.type,
-            'amount': float(t.amount),
+            'amount': usdt_amount(t.amount),
             'currency': t.currency,
             'status': t.status,
             'payment_method': t.payment_method,
@@ -559,7 +560,7 @@ def games_bet(request):
         result = services.place_bet(
             request.auth.sub,
             body['gameId'],
-            float(body['amount']),
+            float(stored_amount(body['amount'])),
             float(body['odds']) if body.get('odds') else None,
         )
         return JsonResponse(result, status=201)
@@ -1199,7 +1200,7 @@ def admin_wallet_adjust(request, user_id):
         body = _json_body(request)
         return JsonResponse(
             admin_services.wallet_adjustment(
-                user_id, float(body['amount']), body.get('notes', '')
+                user_id, float(stored_amount(body['amount'])), body.get('notes', '')
             )
         )
     except Wallet.DoesNotExist:

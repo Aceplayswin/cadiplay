@@ -3,15 +3,16 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { AlertCircle, Coins, ArrowLeft, CheckCircle2, Eye, EyeOff, Send, ShieldCheck, ArrowRight, Users } from 'lucide-react';
+import { AlertCircle, DollarSign, ArrowLeft, CheckCircle2, Eye, EyeOff, Send, ShieldCheck, ArrowRight, Users } from 'lucide-react';
 import { fetchProgram, submitApplication } from '../../services/affiliateApi';
-import { useBranding } from '@/hooks/useBranding';
+import { useBranding } from '../../hooks/useBranding';
 
 // Blank slate for the form — kept outside the component so we're not
 // recreating this object on every render
 
 const initialForm = {
   fullName: '',
+  username: '',
   email: '',
   // The applicant sets their own password here — approval turns the record into
   // a login, and a staff-generated password would have to be transmitted
@@ -71,6 +72,19 @@ function ApplyForm() {
         setError('Enter a valid email address.');
         return;
       }
+      // Optional, but a handle that would be rejected server-side should fail
+      // here rather than after the applicant has filled in three more steps.
+      const username = formData.username.trim();
+      if (username) {
+        if (username.length < 3) {
+          setError('Choose a username of at least 3 characters.');
+          return;
+        }
+        if (!/^[a-zA-Z0-9._-]+$/.test(username)) {
+          setError('Usernames may only contain letters, numbers, dots, dashes and underscores.');
+          return;
+        }
+      }
       if (formData.password.length < 8) {
         setError('Choose a password of at least 8 characters.');
         return;
@@ -95,6 +109,7 @@ function ApplyForm() {
     try {
       const response = await submitApplication({
         fullName: formData.fullName.trim(),
+        username: formData.username.trim() || undefined,
         email: formData.email.trim(),
         password: formData.password,
         phone: formData.phone.trim() || undefined,
@@ -284,7 +299,6 @@ function ApplyForm() {
 // screen (form + success), so it's pulled out here instead of copy-pasted
 function PageHeader() {
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'Cadiplay';
   return (
     <div className="mb-8 flex items-center justify-between">
       <Link href="/" className="inline-flex items-center space-x-2 text-sm text-slate-500 hover:text-slate-900 transition-colors">
@@ -292,8 +306,8 @@ function PageHeader() {
         <span>Back to Landing Page</span>
       </Link>
       <div className="flex items-center space-x-2">
-        <img src={logoUrl || '/logo/image.png'} alt={`${brandName} Logo`} className="h-8 w-auto object-contain" />
-        <span className="font-bold text-slate-900 font-display">{brandName.toUpperCase()}</span>
+        <img src={logoUrl || '/logo/image.png'} alt={productName ? `${productName} Logo` : 'Logo'} className="h-8 w-auto object-contain" />
+        <span className="font-bold text-slate-900 font-display">{productName}</span>
       </div>
     </div>
   );
@@ -364,6 +378,20 @@ function StepAccountDetails({ formData, updateField, onNext, showPassword, setSh
           onChange={(e) => updateField('fullName', e.target.value)}
           className={inputClasses}
         />
+      </div>
+
+      <div>
+        <label className={labelClasses}>Username</label>
+        <input
+          type="text"
+          placeholder="alexmorgan"
+          value={formData.username}
+          onChange={(e) => updateField('username', e.target.value)}
+          className={inputClasses}
+        />
+        <p className="mt-1.5 text-xs text-slate-400">
+          Optional. Sign in with this instead of your email address.
+        </p>
       </div>
 
       <div>

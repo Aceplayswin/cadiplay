@@ -1,9 +1,9 @@
 'use client';
 
-import { X, Coins, TrendingUp, Banknote, CalendarDays, UserPlus, ShieldCheck, ArrowDown, Gamepad2, Loader2 } from 'lucide-react';
+import { X, DollarSign, TrendingUp, Banknote, Wallet, UserPlus, ArrowDown, Gamepad2, Loader2 } from 'lucide-react';
 import { useAffiliateData } from '../../../../hooks/useAffiliateData';
 import { DataState } from '../../../../components/ui/DataState';
-import { fmtDateShort, usdt, relativeTime } from '../../../../lib/format';
+import { fmtDateShort, inr, relativeTime } from '../../../../lib/format';
 
 const STATUS_DOT = {
   active:  'bg-emerald-500',
@@ -17,7 +17,6 @@ const STATUS_DOT = {
 // Maps the API's activity `type` onto an icon.
 const ACTIVITY_ICONS = {
   signup:     UserPlus,
-  kyc:        ShieldCheck,
   deposit:    Banknote,
   commission: ArrowDown,
   active:     Gamepad2,
@@ -39,22 +38,13 @@ export default function ReferralDetailPanel({ referralId, onClose }) {
 
   const maxDep = Math.max(...(monthly.values.length ? monthly.values : [0]), 1);
 
-  const daysActive = player?.last_active_at && player?.signed_up_at
-    ? Math.max(
-        Math.round(
-          (new Date(player.last_active_at) - new Date(player.signed_up_at))
-          / (1000 * 60 * 60 * 24),
-        ),
-        0,
-      )
-    : 0;
 
   const statCards = player
     ? [
-        { label: 'Lifetime Deposits', value: usdt(player.lifetime_deposits), icon: Coins, accent: 'text-brand-600 dark:text-brand-400' },
-        { label: 'Commission Earned', value: usdt(player.lifetime_commission), icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
-        { label: 'First Deposit', value: player.ftd_amount > 0 ? usdt(player.ftd_amount) : '—', icon: Banknote, accent: 'text-sky-600 dark:text-sky-400' },
-        { label: 'Days Active', value: daysActive, icon: CalendarDays, accent: 'text-violet-600 dark:text-violet-400' },
+        { label: 'Lifetime Deposits', value: inr(player.lifetime_deposits), icon: DollarSign, accent: 'text-brand-600 dark:text-brand-400' },
+        { label: 'Commission Earned', value: inr(player.lifetime_commission), icon: TrendingUp, accent: 'text-emerald-600 dark:text-emerald-400' },
+        { label: 'First Deposit', value: player.ftd_amount > 0 ? inr(player.ftd_amount) : '—', icon: Banknote, accent: 'text-sky-600 dark:text-sky-400' },
+        { label: 'Current Balance', value: inr(player.current_balance), icon: Wallet, accent: 'text-violet-600 dark:text-violet-400' },
       ]
     : [];
 
@@ -78,12 +68,16 @@ export default function ReferralDetailPanel({ referralId, onClose }) {
            
            
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-black font-black text-sm">
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'P'}
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                (player?.full_name || 'P').trim().charAt(0).toUpperCase()
+              )}
             </div>
 
             <div>
               <h2 className="text-base font-black font-display text-slate-900 dark:text-slate-100">
-                {player ? player.player_ref : 'Loading…'}
+                {player ? player.full_name || player.player_ref : 'Loading…'}
               </h2>
 
               {player && (
@@ -92,6 +86,9 @@ export default function ReferralDetailPanel({ referralId, onClose }) {
                   <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                     {player.status}
                   </span>
+                  {player.username && (
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500">· {player.username}</span>
+                  )}
                   {player.country_code && (
                     <span className="text-[10px] text-slate-400 dark:text-slate-500">· {player.country_code}</span>
                   )}
@@ -132,7 +129,7 @@ export default function ReferralDetailPanel({ referralId, onClose }) {
               {monthly.values.map((val, i) => (
                 <div key={monthly.labels[i] ?? i} className="flex-1 flex flex-col items-center gap-1">
                   <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400">
-                    {val > 0 ? usdt(val) : ''}
+                    {val > 0 ? inr(val) : ''}
                   </span>
                   <div
                     className="w-full rounded-t-lg bg-gradient-to-t from-brand-500 to-brand-400 transition-all duration-500"

@@ -10,11 +10,10 @@
 
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { useBranding } from '@/hooks/useBranding';
+import { useBranding } from '../../../hooks/useBranding';
 
 export default function AuthShell({ children, backHref = '/', backLabel = 'Back to Home' }) {
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'Cadiplay';
   return (
     <div className="min-h-screen text-slate-800 py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden flex flex-col justify-center">
       <div className="max-w-md w-full mx-auto relative z-10">
@@ -37,8 +36,8 @@ export default function AuthShell({ children, backHref = '/', backLabel = 'Back 
           </Link>
 
           <div className="flex items-center space-x-2">
-            <img src={logoUrl || '/logo/image.png'} alt={`${brandName} Logo`} className="h-8 w-auto object-contain" />
-            <span className="font-bold text-slate-900 font-display">{brandName.toUpperCase()}</span>
+            <img src={logoUrl || '/logo/image.png'} alt={productName ? `${productName} Logo` : 'Logo'} className="h-8 w-auto object-contain" />
+            <span className="font-bold text-slate-900 font-display">{productName}</span>
           </div>
         </div>
 

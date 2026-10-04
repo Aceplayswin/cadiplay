@@ -16,8 +16,8 @@ import { useAuthStore } from '@/store/auth';
 import { PaymentGateway } from '@/components/payments/PaymentGateway';
 import { T5Card, t5Input, t5BtnPrimary, t5BtnOutline, T5FormPage } from '../components/ui';
 
-const MIN_DEPOSIT = 100;
-const QUICK_AMOUNTS = [500, 1000, 2500, 5000, 10000];
+const MIN_DEPOSIT = 1;
+const QUICK_AMOUNTS = [5, 10, 25, 50, 100];
 const PAYMENT_METHODS = [
   { id: 'upi', label: 'UPI (Instant)', desc: 'Google Pay, PhonePe, Paytm', icon: Smartphone, eta: 'Instant' },
   { id: 'imps', label: 'IMPS', desc: 'Instant transfer', icon: Landmark, eta: 'Instant' },

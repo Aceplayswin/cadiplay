@@ -19,9 +19,9 @@ import { useAffiliateData } from '../../../../hooks/useAffiliateData';
 import { DataState } from '../../../../components/ui/DataState';
 import { confirmDialog, revealOnce, toast } from '../../../../lib/toast';
 import { fmtDate, label as humanize } from '../../../../lib/format';
-import { useBranding } from '@/hooks/useBranding';
+import { useBranding } from '../../../../hooks/useBranding';
 
-const API_DOCS_URL = 'https://docs.cadiplay.com/affiliate-integration';
+const API_DOCS_URL = 'https://docs.dollara.com/affiliate-integration';
 
 function downloadBlob(filename, text) {
   const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
@@ -51,7 +51,6 @@ function downloadBlob(filename, text) {
  */
 export default function SettingsApiPage() {
   const { product_name: productName } = useBranding();
-  const brandName = productName || 'Cadiplay';
   const [busy, setBusy] = useState(false);
   const [webhookUrl, setWebhookUrl] = useState('');
   const [webhookDirty, setWebhookDirty] = useState(false);
@@ -348,7 +347,7 @@ export default function SettingsApiPage() {
               <input
                 type="text"
                 value={effectiveWebhook}
-                placeholder="https://your-domain.example/webhooks/cadiplay"
+                placeholder="https://your-domain.example/webhooks/dollara"
                 onChange={(event) => {
                   setWebhookUrl(event.target.value);
                   setWebhookDirty(true);
@@ -387,7 +386,7 @@ export default function SettingsApiPage() {
               {/* Says plainly what is and is not live, rather than implying
                   events are already being delivered. */}
               <p className="rounded-2xl bg-slate-50 px-3 py-2.5 text-xs text-slate-500 dark:bg-slate-950/60 dark:text-slate-400">
-                Inbound signed calls to {brandName} are live today. Outbound delivery of
+                Inbound signed calls to {productName || 'the platform'} are live today. Outbound delivery of
                 events to this URL is not enabled yet — the address is stored so it
                 is ready when it ships.
               </p>
@@ -489,7 +488,7 @@ export default function SettingsApiPage() {
           onRetry={logsQuery.reload}
           empty={!logs.length}
           emptyTitle="No signed calls yet"
-          emptyHint={`Once your integration signs a request to ${brandName} it shows up here, valid or not.`}
+          emptyHint={`Once your integration signs a request to ${productName || 'the platform'} it shows up here, valid or not.`}
           emptyIcon={Terminal}
         >
         <div className="overflow-x-auto">

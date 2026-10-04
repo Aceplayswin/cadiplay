@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AlertCircle, X, Check, ArrowUpRight, CreditCard, Globe } from 'lucide-react';
 import { affiliateApi } from '../../../../../services/affiliateApi';
-import { usdt } from '../../../../../lib/format';
+import { inr } from '../../../../../lib/format';
 
 const METHOD_ICONS = {
   bank: CreditCard,
@@ -18,7 +18,9 @@ export default function RequestPayoutModal({
   onClose,
   onRequested,
 }) {
-  const [amount, setAmount] = useState(balance);
+  const shownBalance = Number(balance || 0) / 100;
+  const shownMinimum = Number(minimumThreshold || 0) / 100;
+  const [amount, setAmount] = useState(shownBalance);
   const [methodId, setMethodId] = useState(
     methods.find((m) => m.is_primary)?.id || methods[0]?.id,
   );
@@ -27,7 +29,7 @@ export default function RequestPayoutModal({
   const [error, setError] = useState('');
 
   const selectedMethod = methods.find((m) => m.id === methodId);
-  const canSubmit = amount >= minimumThreshold && amount > 0 && amount <= balance;
+  const canSubmit = amount >= shownMinimum && amount > 0 && amount <= shownBalance;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +40,7 @@ export default function RequestPayoutModal({
     try {
       await affiliateApi('/api/v1/affiliate/payouts/request', {
         method: 'POST',
-        body: JSON.stringify({ amount, methodId }),
+        body: JSON.stringify({ amount: amount * 100, methodId }),
       });
       setDone(true);
       // Brief success state, then let the page refetch the new balance.
@@ -98,7 +100,7 @@ export default function RequestPayoutModal({
                   Available
                 </p>
                 <p className="mt-2 text-3xl font-black text-slate-900 dark:text-slate-100">
-                  {usdt(balance)}
+                  {inr(balance)}
                 </p>
               </div>
               <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 p-4">
@@ -106,7 +108,7 @@ export default function RequestPayoutModal({
                   Minimum
                 </p>
                 <p className="mt-2 text-3xl font-black text-slate-900 dark:text-slate-100">
-                  {usdt(minimumThreshold)}
+                  {inr(minimumThreshold)}
                 </p>
               </div>
               <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/30 p-4">
@@ -128,7 +130,7 @@ export default function RequestPayoutModal({
                 <input
                   type="number"
                   min="0"
-                  max={balance}
+                  max={shownBalance}
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value))}
                   className="mt-2 w-full rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-colors"

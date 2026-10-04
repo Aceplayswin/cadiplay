@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { inr, num } from '../../../lib/format';
 
 
 
@@ -31,7 +32,7 @@ export default function StatCard({ title, value, icon: Icon, trend, isCurrency =
 
           <span className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-slate-100 font-display">
 
-            {isCurrency ? `USDT ${Number(value).toLocaleString()}` : Number(value).toLocaleString()}
+            {isCurrency ? inr(value) : num(value)}
 
           </span>
 

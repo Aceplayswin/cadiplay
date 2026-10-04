@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, User, FileText, Coins, Users,
-  List, CreditCard, Key, Activity, Loader2,
+  ArrowLeft, User, FileText, DollarSign, Users,
+  CreditCard, Key, Activity, Loader2,
 } from 'lucide-react';
 import {
   AdminShell,
@@ -16,7 +16,7 @@ import {
   confirmDialog,
   toast,
   fmtDate,
-  usdt,
+  inr,
   Field,
   Input,
   Select,
@@ -27,9 +27,8 @@ import { adminApi } from '@/services/adminApi';
 const TABS = [
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'kyc', label: 'KYC Docs', icon: FileText },
-  { id: 'commission', label: 'Commission', icon: Coins },
+  { id: 'commission', label: 'Commission', icon: DollarSign },
   { id: 'users', label: 'Referred Users', icon: Users },
-  { id: 'ledger', label: 'Ledger', icon: List },
   { id: 'payouts', label: 'Payout History', icon: CreditCard },
   { id: 'api', label: 'API Keys', icon: Key },
   { id: 'activity', label: 'Activity Log', icon: Activity },
@@ -126,35 +125,6 @@ export default function AffiliateDetailPage() {
         { method: 'POST' },
       );
       toast.success('Key revoked');
-      reload();
-    } catch (err) {
-      toast.error(err.message);
-    }
-  };
-
-  const approveEntry = async (entryId) => {
-    try {
-      await adminApi(`/api/v1/admin/affiliates/ledger/${entryId}/approve`, {
-        method: 'POST',
-      });
-      toast.success('Entry approved — the affiliate can now withdraw it');
-      reload();
-    } catch (err) {
-      toast.error(err.message);
-    }
-  };
-
-  const clawbackEntry = async (entryId) => {
-    const reason = window.prompt('Why is this commission being reversed?');
-    if (!reason) return;
-    try {
-      // Writes a compensating negative entry rather than editing the original,
-      // so the ledger keeps the record of what happened.
-      await adminApi(`/api/v1/admin/affiliates/ledger/${entryId}/clawback`, {
-        method: 'POST',
-        body: JSON.stringify({ reason }),
-      });
-      toast.success('Commission clawed back');
       reload();
     } catch (err) {
       toast.error(err.message);
@@ -280,20 +250,31 @@ export default function AffiliateDetailPage() {
               <h3 className="font-semibold text-white">Performance Summary</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-950 p-4 rounded-lg">
-                  <p className="text-xs text-slate-500">Total Players</p>
+                  <p className="text-xs text-slate-500">Clicks</p>
+                  <p className="text-xl font-bold text-white">{(data.stats.clicks ?? 0).toLocaleString()}</p>
+                </div>
+                <div className="bg-slate-950 p-4 rounded-lg">
+                  <p className="text-xs text-slate-500">Signups</p>
                   <p className="text-xl font-bold text-white">{data.stats.signups.toLocaleString()}</p>
                 </div>
                 <div className="bg-slate-950 p-4 rounded-lg">
-                  <p className="text-xs text-slate-500">Total FTDs</p>
+                  <p className="text-xs text-slate-500">First Deposits</p>
                   <p className="text-xl font-bold text-white">{data.stats.ftds.toLocaleString()}</p>
                 </div>
                 <div className="bg-slate-950 p-4 rounded-lg">
+                  <p className="text-xs text-slate-500">Conversion</p>
+                  <p className="text-xl font-bold text-emerald-400">{(data.stats.conversion_rate ?? 0).toFixed(1)}%</p>
+                </div>
+                <div className="bg-slate-950 p-4 rounded-lg">
                   <p className="text-xs text-slate-500">Total Deposits</p>
-                  <p className="text-xl font-bold text-white">{usdt(data.stats.total_deposits)}</p>
+                  <p className="text-xl font-bold text-white">{inr(data.stats.total_deposits)}</p>
                 </div>
                 <div className="bg-slate-950 p-4 rounded-lg border border-emerald-500/20">
-                  <p className="text-xs text-emerald-500">Total Earnings</p>
-                  <p className="text-xl font-bold text-emerald-400">{usdt(data.stats.total_earnings)}</p>
+                  <p className="text-xs text-emerald-500">Commission</p>
+                  <p className="text-xl font-bold text-emerald-400">{inr(data.stats.total_earnings)}</p>
+                  {data.stats.pending_earnings > 0 && (
+                    <p className="mt-1 text-xs text-slate-500">{inr(data.stats.pending_earnings)} pending</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -335,48 +316,27 @@ export default function AffiliateDetailPage() {
 
         {activeTab === 'users' && (
           <DataTable
+            searchKeys={['full_name', 'username', 'player_ref']}
             columns={[
-              { key: 'player_ref', label: 'Player', render: (r) => <span className="font-medium text-white">{r.player_ref}</span> },
+              {
+                key: 'player_ref',
+                label: 'Player',
+                render: (r) => (
+                  <div>
+                    <p className="font-medium text-white">{r.full_name || r.username || r.player_ref}</p>
+                    {(r.username || r.full_name) && (
+                      <p className="text-xs text-slate-500">{r.username || '—'}</p>
+                    )}
+                  </div>
+                ),
+              },
               { key: 'signed_up_at', label: 'Signed Up', render: (r) => fmtDate(r.signed_up_at) },
               { key: 'ftd_at', label: 'First Deposit', render: (r) => (r.ftd_at ? fmtDate(r.ftd_at) : <span className="text-slate-600">—</span>) },
-              { key: 'lifetime_deposits', label: 'Deposits', render: (r) => <span className="text-emerald-400">{usdt(r.lifetime_deposits)}</span> },
-              { key: 'lifetime_commission', label: 'Commission', render: (r) => <span className="text-slate-300">{usdt(r.lifetime_commission)}</span> },
+              { key: 'lifetime_deposits', label: 'Deposits', render: (r) => <span className="text-emerald-400">{inr(r.lifetime_deposits)}</span> },
+              { key: 'lifetime_commission', label: 'Commission', render: (r) => <span className="text-slate-300">{inr(r.lifetime_commission)}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
             ]}
             rows={data.referred_users}
-          />
-        )}
-
-        {activeTab === 'ledger' && (
-          <DataTable
-            columns={[
-              { key: 'period_start', label: 'Period', render: (r) => <span className="font-medium text-white">{r.period_start}</span> },
-              { key: 'entry_type', label: 'Type', render: (r) => (
-                <div>
-                  <span className="capitalize text-slate-300">{r.entry_type.replace(/_/g, ' ')}</span>
-                  {r.source_affiliate_name && (
-                    <p className="text-xs text-slate-500">from {r.source_affiliate_name}</p>
-                  )}
-                </div>
-              )},
-              { key: 'base_label', label: 'Base', render: (r) => <span className="text-slate-400">{r.base_label}</span> },
-              { key: 'rate', label: 'Rate', render: (r) => <span className="text-amber-400">{r.rate > 0 ? `${r.rate}%` : '—'}</span> },
-              { key: 'amount', label: 'Earned', render: (r) => <span className="font-bold text-emerald-400">{usdt(r.amount)}</span> },
-              { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
-              { key: 'ledger_actions', label: '', render: (r) => (
-                <div className="flex justify-end gap-1.5">
-                  {r.status === 'pending' && (
-                    <Button variant="secondary" size="sm" onClick={() => approveEntry(r.id)}>Approve</Button>
-                  )}
-                  {(r.status === 'pending' || r.status === 'approved') && (
-                    <Button variant="ghost" size="sm" className="text-slate-400 hover:text-rose-400" onClick={() => clawbackEntry(r.id)}>
-                      Claw back
-                    </Button>
-                  )}
-                </div>
-              )},
-            ]}
-            rows={data.commission_ledger}
           />
         )}
 
@@ -385,7 +345,7 @@ export default function AffiliateDetailPage() {
             columns={[
               { key: 'requested_at', label: 'Requested', render: (r) => fmtDate(r.requested_at) },
               { key: 'processed_at', label: 'Processed', render: (r) => (r.processed_at ? fmtDate(r.processed_at) : <span className="text-slate-600">—</span>) },
-              { key: 'amount', label: 'Amount', render: (r) => <span className="font-bold text-emerald-400">{usdt(r.amount)}</span> },
+              { key: 'amount', label: 'Amount', render: (r) => <span className="font-bold text-emerald-400">{inr(r.amount)}</span> },
               { key: 'method_label', label: 'Method', render: (r) => <span className="text-slate-300">{r.method_label}</span> },
               { key: 'reference', label: 'Reference', render: (r) => <span className="font-mono text-xs text-slate-500">{r.reference || '—'}</span> },
               { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} /> },
@@ -452,75 +412,94 @@ function CommissionTab({ data, onSave, busy }) {
 
   const set = (key) => (e) => setTerms({ ...terms, [key]: e.target.value });
 
+  // Only the active model’s rate is editable; the other stays visible but locked.
+  // Hybrid keeps both open. Values are preserved so switching type doesn’t wipe them.
+  const revShareLocked = terms.commissionType === 'cpa';
+  const cpaLocked = terms.commissionType === 'revenue_share';
+
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="w-full space-y-6">
       <div>
         <h3 className="font-semibold text-white">Commission terms</h3>
-        <p className="mb-4 text-sm text-slate-400">
-          Overrides the programme defaults for this affiliate only. Changes apply
-          to future commission runs; entries already written are not recalculated.
-        </p>
+      </div>
 
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSave(terms);
-          }}
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Commission type">
-              <Select value={terms.commissionType} onChange={set('commissionType')}>
-                <option value="revenue_share">Revenue Share</option>
-                <option value="cpa">CPA (Cost Per Action)</option>
-                <option value="hybrid">Hybrid</option>
-              </Select>
-            </Field>
+      <form
+        className="space-y-6"
+        onSubmit={(e) => {
+          e.preventDefault();
+          onSave(terms);
+        }}
+      >
+        <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2 xl:grid-cols-3">
+          <Field label="Commission type">
+            <Select value={terms.commissionType} onChange={set('commissionType')}>
+              <option value="revenue_share">Revenue Share</option>
+              <option value="cpa">CPA (Cost Per Action)</option>
+              <option value="hybrid">Hybrid</option>
+            </Select>
+          </Field>
 
-            <Field label="Tier">
-              <Select value={terms.tierLabel} onChange={set('tierLabel')}>
-                <option>Bronze</option>
-                <option>Silver</option>
-                <option>Gold</option>
-                <option>Platinum</option>
-              </Select>
-            </Field>
-          </div>
+          <Field label="Tier">
+            <Select value={terms.tierLabel} onChange={set('tierLabel')}>
+              <option>Bronze</option>
+              <option>Silver</option>
+              <option>Gold</option>
+              <option>Platinum</option>
+            </Select>
+          </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Rev share (%)">
-              <Input type="number" min="0" max="100" step="0.5" value={terms.commissionRate} onChange={set('commissionRate')} />
-            </Field>
-            <Field label="CPA amount (USDT)">
-              <Input type="number" min="0" value={terms.cpaAmount} onChange={set('cpaAmount')} />
-            </Field>
-          </div>
+          <Field label="Rev share (%)">
+            <Input
+              type="number"
+              min="0"
+              max="100"
+              step="0.5"
+              value={terms.commissionRate}
+              onChange={set('commissionRate')}
+              readOnly={revShareLocked}
+              className={revShareLocked ? 'cursor-not-allowed opacity-60' : ''}
+              title={revShareLocked ? 'Not used for CPA commission' : undefined}
+            />
+          </Field>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label={`Override to parent (%)${data.parent_name ? ` — ${data.parent_name}` : ''}`}>
-              <Input type="number" min="0" max="100" step="0.5" value={terms.overrideRate} onChange={set('overrideRate')} />
-            </Field>
-            <Field label="Payout threshold (USDT)">
-              <Input type="number" min="0" value={terms.payoutThreshold} onChange={set('payoutThreshold')} />
-            </Field>
-          </div>
+          <Field label="CPA amount (₹)">
+            <Input
+              type="number"
+              min="0"
+              value={terms.cpaAmount}
+              onChange={set('cpaAmount')}
+              readOnly={cpaLocked}
+              className={cpaLocked ? 'cursor-not-allowed opacity-60' : ''}
+              title={cpaLocked ? 'Not used for revenue share commission' : undefined}
+            />
+          </Field>
 
-          <Field label="Parent affiliate ID">
+          <Field label={`Override to parent (%)${data.parent_name ? ` — ${data.parent_name}` : ''}`}>
+            <Input type="number" min="0" max="100" step="0.5" value={terms.overrideRate} onChange={set('overrideRate')} />
+          </Field>
+
+          <Field label="Payout threshold (₹)">
+            <Input type="number" min="0" value={terms.payoutThreshold} onChange={set('payoutThreshold')} />
+          </Field>
+
+          <Field label="Parent affiliate ID" className="sm:col-span-2 xl:col-span-3">
             <Input
               type="number"
               placeholder="Blank for a direct partner"
               value={terms.parentAffiliateId}
               onChange={set('parentAffiliateId')}
             />
+            <p className="mt-1.5 text-xs text-slate-500">
+              Reassigning the parent moves this affiliate in the network tree. A change
+              that would create a loop is refused.
+            </p>
           </Field>
-          <p className="-mt-2 text-xs text-slate-500">
-            Reassigning the parent moves this affiliate in the network tree. A change
-            that would create a loop is refused.
-          </p>
+        </div>
 
+        <div className="flex justify-end border-t border-slate-800 pt-5">
           <Button type="submit" busy={busy}>Save commission terms</Button>
-        </form>
-      </div>
+        </div>
+      </form>
     </div>
   );
 }

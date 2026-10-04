@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fetchProgram } from '../services/affiliateApi';
-import { usdt } from '../lib/format';
-import { useBranding } from '@/hooks/useBranding';
+import { inr } from '../lib/format';
+import { useBranding } from '../hooks/useBranding';
 import {
   TrendingUp,
-  Coins,
+  DollarSign,
   Zap,
   ArrowRight,
   Layers,
@@ -25,8 +25,7 @@ import {
 
 export default function LandingPage() {
   const { product_name: productName, logo_url: logoUrl } = useBranding();
-  const brandName = productName || 'Cadiplay';
-
+  const brandName = productName || '';
 
   // Inputs for the earnings calculator down in the "Calculator" section
 
@@ -36,7 +35,7 @@ export default function LandingPage() {
   const [dealType, setDealType] = useState('revshare');                 // 'revshare' | 'cpa'
 
   // Programme terms come from the API, so the calculator quotes the rates the
-  // platform actually pays. They were hardcoded at 45% / USDT 120, which drifted the
+  // platform actually pays. They were hardcoded at 45% / a flat fee, which drifted the
   // moment anyone changed the real defaults in admin.
   const [programme, setProgramme] = useState(null);
 
@@ -100,13 +99,13 @@ export default function LandingPage() {
             <img src={logoUrl || '/logo/image.png'} alt={brandName} className="h-9 w-auto object-contain"
               onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
             <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-brand-600 to-brand-300 hidden items-center justify-center">
-              <Coins className="w-5 h-5 text-black" />
+              <DollarSign className="w-5 h-5 text-black" />
 
             </div>
             <div>
 
 
-              <span className="text-xl font-black font-display tracking-tight text-slate-900">{brandName.toUpperCase()}</span>
+              <span className="text-xl font-black font-display tracking-tight text-slate-900">{brandName}</span>
               <span className="text-[9px] font-bold text-brand-600 uppercase tracking-[0.2em] block -mt-0.5">Affiliate Network</span>
 
 
@@ -335,7 +334,7 @@ export default function LandingPage() {
                 </button>
                 <button onClick={() => setDealType('cpa')}
                   className={`flex-1 py-2 rounded-md text-xs font-bold transition-all ${dealType === 'cpa' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900'}`}>
-                  {usdt(cpaAmount)} CPA
+                  {inr(cpaAmount)} CPA
                 </button>
               </div>
             </div>
@@ -365,7 +364,7 @@ export default function LandingPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1.5">
                     <span className="text-slate-600">Avg. deposit</span>
-                    <span className="font-bold text-brand-600 font-display">{usdt(avgDeposit)}</span>
+                    <span className="font-bold text-brand-600 font-display">{inr(avgDeposit)}</span>
                   </div>
                   <input type="range" min="50"
                     max="1000" step="25"
@@ -382,7 +381,7 @@ export default function LandingPage() {
                 <div>
                   <div className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Monthly Earnings</div>
                   <div className="text-3xl font-extrabold text-brand-600 font-display mt-1">
-                    {usdt(estimatedEarnings)}
+                    {inr(estimatedEarnings)}
                   </div>
                 </div>
                 <Link href="/apply" className="px-5 py-2.5 text-xs font-bold text-black bg-gradient-to-r from-brand-400 to-brand-500 rounded-lg shadow-md hover:scale-105 transition-all shrink-0">
@@ -418,7 +417,7 @@ export default function LandingPage() {
 
 
 
-                icon: Zap, title: 'CPA Bounty', highlight: 'Flat Rate $', featured: true,
+                icon: Zap, title: 'CPA Bounty', highlight: `Flat ${inr(cpaAmount)} / FTD`, featured: true,
                 points: ['Per-FTD payouts', 'High conversion rates', 'Custom thresholds']
               },
               {
@@ -586,7 +585,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center space-x-2">
             <img src={logoUrl || '/logo/image.png'} alt={brandName} className="h-6 w-auto object-contain" />
-            <span className="text-sm font-bold font-display text-slate-800">{brandName.toUpperCase()}</span>
+            <span className="text-sm font-bold font-display text-slate-800">{brandName}</span>
           </div>
 
 

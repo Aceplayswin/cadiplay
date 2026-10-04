@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from 'react';
 import { ChevronDown, ChevronRight, UserPlus, Calendar } from 'lucide-react';
-import { fmtDateShort, usdt, num } from '../../../../lib/format';
+import { fmtDateShort, inr, num } from '../../../../lib/format';
 
 const STATUS_DOT = {
   approved: 'bg-emerald-500',
@@ -105,22 +105,34 @@ export default function SubAffiliateTable({ items }) {
                         </span>
                         
                     </td>
-                    <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{usdt(sub.sub_commission)}</td>
+                    <td className="p-4 font-bold text-slate-800 dark:text-slate-200">{inr(sub.sub_commission)}</td>
                     <td className="p-4 font-semibold text-slate-500 dark:text-slate-400">{sub.override_rate}%</td>
                     <td className="p-4 font-extrabold text-emerald-600 dark:text-emerald-400 font-display">
 
 
-                      +{usdt(sub.override_earned)}
+                      +{inr(sub.override_earned)}
                     </td>
 
 
                     <td className="p-4">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 capitalize">
+                      <span
+                        title={sub.status_hint || ''}
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold border border-slate-200/60 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 capitalize"
+                      >
                         <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[sub.status]}`} />
 
                         {sub.status}
 
                       </span>
+
+                      {/* Approval is an admin decision, so the recruiting
+                          affiliate gets the reason rather than a button they
+                          are not allowed to press. */}
+                      {sub.status_hint && (
+                        <span className="block text-[9px] text-slate-400 dark:text-slate-500 mt-1 max-w-[13rem] leading-snug">
+                          {sub.status_hint}
+                        </span>
+                      )}
                     </td>
 
 

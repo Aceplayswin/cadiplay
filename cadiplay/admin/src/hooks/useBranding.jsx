@@ -4,10 +4,9 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { fetchBranding } from '@/services/tenant';
 import { applyThemeColors } from '@/themes/palettes';
 
-// Defaults so the UI never flashes empty before branding loads; Cadiplay is the
-// platform's default brand name.
+// Neutral defaults so the UI never hardcodes a brand and never flashes empty.
 const DEFAULT_BRANDING = {
-  product_name: 'Cadiplay',
+  product_name: '',
   logo_url: '',
   favicon_url: '',
   theme_color: '#F5C542',

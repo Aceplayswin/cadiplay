@@ -17,7 +17,7 @@ SQL directly beyond the repositories and the ORM transaction helpers.
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import timedelta
 from decimal import Decimal
 
@@ -26,6 +26,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from core import bonus_services, game_logging
+from core.money import stored_amount, usdt_amount
 from core.game_schemas import CallbackPayload, LaunchRequest
 from core.models import (
     GameRound,
@@ -112,7 +113,7 @@ def launch_game(user_id: int, body: dict) -> dict:
             launch_url = game_provider.request_launch_url(
                 user_id=user_id,
                 game_uid=req.game_uid,
-                credit_amount=f'{available:.2f}',
+                credit_amount=f'{usdt_amount(available):.2f}',
                 language=req.language,
                 platform=req.platform,
                 overrides=overrides,
@@ -138,7 +139,7 @@ def launch_game(user_id: int, body: dict) -> dict:
                 session.game_name = game_name
                 session.member_account = member_account
                 session.launch_url = launch_url
-                session.currency = wallet.currency
+                session.currency = 'USDT'
                 session.save(update_fields=[
                     'game_name', 'member_account', 'launch_url', 'currency',
                     'updated_at',
@@ -152,7 +153,7 @@ def launch_game(user_id: int, body: dict) -> dict:
                     game_name=game_name,
                     member_account=member_account,
                     launch_url=launch_url,
-                    currency=wallet.currency,
+                    currency='USDT',
                     status=GameSession.Status.WAIT,
                 )
             GameRepository.increment_play_count(game.id)
@@ -233,6 +234,13 @@ def process_callback(envelope: dict, raw_body: str | None = None) -> dict:
         )
         raise GameError('invalid_params', str(exc)) from exc
 
+    # Provider amounts are USDT. The wallet is stored at 100x that figure.
+    cb = replace(
+        cb,
+        bet_amount=stored_amount(cb.bet_amount),
+        win_amount=stored_amount(cb.win_amount),
+    )
+
     game_logging.callback_received(cb.serial_number, cb.member_account, cb.game_uid)
 
     user_id_str = game_provider.strip_member_account(
@@ -277,7 +285,7 @@ def process_callback(envelope: dict, raw_body: str | None = None) -> dict:
                 result='heartbeat', message='Balance sync',
             )
             game_logging.heartbeat(user_id, cb.game_uid, cb.serial_number, balance)
-        return game_provider.build_ack(f'{balance:.2f}', cb.timestamp, secret)
+        return game_provider.build_ack(f'{usdt_amount(balance):.2f}', cb.timestamp, secret)
 
     # 4. Fast idempotency pre-check (avoids opening a txn for known duplicates).
     if GameRoundRepository.exists(cb.serial_number):
@@ -289,7 +297,7 @@ def process_callback(envelope: dict, raw_body: str | None = None) -> dict:
             result='duplicate', message='Duplicate serial_number (pre-check)',
         )
         game_logging.duplicate(user_id, cb.game_uid, cb.serial_number, 'pre-check')
-        return game_provider.build_ack(f'{balance:.2f}', cb.timestamp, secret)
+        return game_provider.build_ack(f'{usdt_amount(balance):.2f}', cb.timestamp, secret)
 
     # 5. Settle atomically under a wallet row lock.
     try:
@@ -304,7 +312,7 @@ def process_callback(envelope: dict, raw_body: str | None = None) -> dict:
             result='duplicate', message='Duplicate serial_number (race)',
         )
         game_logging.duplicate(user_id, cb.game_uid, cb.serial_number, 'race')
-        return game_provider.build_ack(f'{balance:.2f}', cb.timestamp, secret)
+        return game_provider.build_ack(f'{usdt_amount(balance):.2f}', cb.timestamp, secret)
     except Wallet.DoesNotExist:
         CallbackLogRepository.record(
             serial_number=cb.serial_number, member_account=cb.member_account,
@@ -326,7 +334,9 @@ def process_callback(envelope: dict, raw_body: str | None = None) -> dict:
         user_id, cb.game_uid, cb.serial_number,
         cb.bet_amount, cb.win_amount, settlement.credit_amount,
     )
-    return game_provider.build_ack(f'{settlement.credit_amount:.2f}', cb.timestamp, secret)
+    return game_provider.build_ack(
+        f'{usdt_amount(settlement.credit_amount):.2f}', cb.timestamp, secret,
+    )
 
 
 class _DuplicateRound(Exception):
@@ -468,7 +478,9 @@ def _settle(user_id: int, cb: CallbackPayload) -> SettlementResult:
                 win_amount=cb.win_amount,
                 balance_before=balance_before,
                 balance_after=balance_before + net,
-                currency=cb.currency_code or wallet.currency,
+                # Wallet is USDT. The aggregator's currency_code is a label only
+                # and must not retag the round (they have sent INR).
+                currency='USDT',
                 provider_timestamp=cb.timestamp,
             )
         except IntegrityError as exc:
@@ -520,7 +532,7 @@ def _settle(user_id: int, cb: CallbackPayload) -> SettlementResult:
                 user_id=user_id,
                 type=Transaction.TxType.BET_SETTLEMENT,
                 amount=abs(net),
-                currency=cb.currency_code or wallet.currency,
+                currency='USDT',
                 status=Transaction.Status.COMPLETED,
                 reference_number=cb.serial_number,
                 notes=f'{"Win" if net > 0 else "Loss"} on {cb.game_uid} '
@@ -558,15 +570,15 @@ def serialize_session(s: GameSession) -> dict:
         'game_name': s.game_name,
         'game_uid': s.game_uid,
         'category': s.game.category if s.game else None,
-        'total_bet': float(s.total_bet),
-        'total_win': float(s.total_win),
-        'profit_loss': float(s.profit_loss),
+        'total_bet': usdt_amount(s.total_bet),
+        'total_win': usdt_amount(s.total_win),
+        'profit_loss': usdt_amount(s.profit_loss),
         'rounds': s.rounds_count,
         'pending_rounds': s.pending_rounds,
         'status': s.status,
         'result': 'pending' if pending else ('won' if s.profit_loss >= ZERO else 'lost'),
         'settled': not pending,
-        'last_balance': float(s.last_balance) if s.last_balance is not None else None,
+        'last_balance': usdt_amount(s.last_balance) if s.last_balance is not None else None,
         'last_played_at': s.last_played_at.isoformat() if s.last_played_at else None,
         'created_at': s.created_at.isoformat(),
     }
@@ -584,11 +596,11 @@ def serialize_round(r: GameRound) -> dict:
         # session's game for a lobby launch.
         'game_name': r.game_name or (r.game.name if r.game else None),
         'game_uid': r.game_uid,
-        'bet_amount': float(r.bet_amount),
-        'win_amount': float(r.win_amount),
-        'profit_loss': float(net),
-        'balance_before': float(r.balance_before) if r.balance_before is not None else None,
-        'balance_after': float(r.balance_after) if r.balance_after is not None else None,
+        'bet_amount': usdt_amount(r.bet_amount),
+        'win_amount': usdt_amount(r.win_amount),
+        'profit_loss': usdt_amount(net),
+        'balance_before': usdt_amount(r.balance_before) if r.balance_before is not None else None,
+        'balance_after': usdt_amount(r.balance_after) if r.balance_after is not None else None,
         'currency': r.currency,
         'settle_status': r.settle_status,
         'result': 'pending' if is_pending else ('won' if net >= ZERO else 'lost'),
@@ -638,13 +650,13 @@ def get_user_pnl(user_id: int) -> dict:
     """Aggregate betting profit/loss for a user."""
     pnl = GameRoundRepository.user_pnl(user_id)
     return {
-        'total_bet': float(pnl['total_bet']),
-        'total_win': float(pnl['total_win']),
-        'profit_loss': float(pnl['profit_loss']),
+        'total_bet': usdt_amount(pnl['total_bet']),
+        'total_win': usdt_amount(pnl['total_win']),
+        'profit_loss': usdt_amount(pnl['profit_loss']),
         'rounds': pnl['rounds'],
         # Stakes on bets the provider has not resolved yet — excluded from the
         # win/loss verdict a player sees.
-        'pending_amount': float(pnl['pending_amount']),
+        'pending_amount': usdt_amount(pnl['pending_amount']),
         'pending_rounds': pnl['pending_rounds'],
     }
 
@@ -673,8 +685,8 @@ def get_big_wins(limit: int = 12, min_win: float | None = None) -> list[dict]:
             'game_uid': r.game_uid,
             'category': r.game.category if r.game else None,
             'thumbnail_url': r.game.thumbnail_url if r.game else None,
-            'bet_amount': float(r.bet_amount),
-            'win_amount': float(r.win_amount),
+            'bet_amount': usdt_amount(r.bet_amount),
+            'win_amount': usdt_amount(r.win_amount),
             'multiplier': (
                 round(float(r.win_amount / r.bet_amount), 2)
                 if r.bet_amount > ZERO

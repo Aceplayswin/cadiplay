@@ -21,8 +21,13 @@ export default function CreditModal({ target, targetType, myBalance, onClose, on
   const [error, setError] = useState('');
 
   const numeric = Number(amount || 0);
+  // The field is the USDT figure on screen. Balances from the API are still
+  // stored at 100x, which is what money() divides back down for display.
+  const storedDelta = numeric * 100;
   const projected =
-    direction === 'down' ? Number(myBalance || 0) - numeric : Number(myBalance || 0) + numeric;
+    direction === 'down'
+      ? Number(myBalance || 0) - storedDelta
+      : Number(myBalance || 0) + storedDelta;
 
   const submit = async (event) => {
     event.preventDefault();
@@ -38,7 +43,7 @@ export default function CreditModal({ target, targetType, myBalance, onClose, on
         remark: remark || undefined,
       });
       toast.success(
-        `${money(numeric)} ${direction === 'down' ? 'credited to' : 'taken back from'} ${
+        `${money(storedDelta)} ${direction === 'down' ? 'credited to' : 'taken back from'} ${
           target.username
         }`,
       );

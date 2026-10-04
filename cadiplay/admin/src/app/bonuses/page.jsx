@@ -14,6 +14,8 @@ import {
   Wallet,
   Percent,
   Ban,
+  Ticket,
+  RefreshCw,
 } from 'lucide-react';
 import { adminApi } from '@/services/adminApi';
 import {
@@ -29,7 +31,7 @@ import {
   Select,
   toast,
   useAdminData,
-  usdt,
+  inr,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
@@ -50,13 +52,31 @@ const BONUS_TYPES = [
 
 const typeMeta = (t) => BONUS_TYPES.find((x) => x.value === t) || { label: t, hint: '' };
 
+// Bonus money is stored at 100x the USDT figure in the form. Percentages and
+// the wagering multiplier are not money and stay as entered.
+const BONUS_MONEY_FIELDS = [
+  'min_deposit', 'max_bonus_cap', 'referrer_reward', 'total_budget',
+  'claim_min_balance', 'claim_min_wagering', 'claim_min_deposit_total',
+];
+
+function scaleBonusMoney(fields, factor) {
+  const next = { ...fields };
+  for (const key of BONUS_MONEY_FIELDS) {
+    if (next[key] !== '' && next[key] != null) next[key] = Number(next[key]) * factor;
+  }
+  if (next.value_type !== 'percentage' && next.value_amount !== '' && next.value_amount != null) {
+    next.value_amount = Number(next.value_amount) * factor;
+  }
+  return next;
+}
+
 const emptyBonus = {
   name: '',
   display_title: '',
   description: '',
   bonus_type: 'joining',
   value_type: 'fixed',
-  value_amount: 100,
+  value_amount: 1,
   min_deposit: 0,
   max_bonus_cap: '',
   referrer_reward: 0,
@@ -68,12 +88,31 @@ const emptyBonus = {
   per_user_limit: 1,
   total_budget: '',
   bonus_validity_days: 30,
+  // Old players. `is_new_player_only` is the exclude switch; `old_player_rule`
+  // says who counts as old — registered before this bonus starts, or more
+  // than `new_player_days` days ago. See bonus_services.old_player_cutoff.
+  is_new_player_only: false,
+  old_player_rule: 'since_start',
+  new_player_days: 7,
+  // Claim conditions — blank = no requirement. The player's Bonus page shows
+  // the offer with a disabled Claim button until every one of these is met.
+  claim_min_balance: '',
+  claim_min_wagering: '',
+  claim_min_deposit_total: '',
   start_date: '',
   end_date: '',
 };
 
 // API sends ISO timestamps; <input type="datetime-local"> wants YYYY-MM-DDTHH:mm.
 const toLocalInput = (iso) => (iso ? iso.slice(0, 16) : '');
+
+// What the chosen old-player rule means for the player, shown under the picker.
+const OLD_PLAYER_HINT = {
+  include: 'Every registered player can take this bonus.',
+  since_start:
+    'Accounts opened before the start date (or before the bonus is created, when it has no start date) see the offer but cannot claim it.',
+  days: 'Accounts older than this many days at the time of claiming see the offer but cannot claim it.',
+};
 
 export default function AdminBonusesPage() {
   const { data: bonuses, loading, reload } = useAdminData('/api/v1/admin/bonuses');
@@ -82,6 +121,12 @@ export default function AdminBonusesPage() {
   const { data: issued, loading: issuedLoading, reload: reloadIssued } = useAdminData(
     '/api/v1/admin/bonuses/issued',
   );
+  // Coupon-code redemptions: who typed which code, and what it paid out.
+  const {
+    data: redemptions,
+    loading: redemptionsLoading,
+    reload: reloadRedemptions,
+  } = useAdminData('/api/v1/admin/bonuses/redemptions');
 
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyBonus);
@@ -93,6 +138,7 @@ export default function AdminBonusesPage() {
     reload();
     reloadStats();
     reloadIssued();
+    reloadRedemptions();
   };
 
   const save = async (e) => {
@@ -101,17 +147,32 @@ export default function AdminBonusesPage() {
       toast.error('Internal name is required');
       return;
     }
+    if (
+      form.is_new_player_only &&
+      form.old_player_rule === 'days' &&
+      !(Number(form.new_player_days) >= 1)
+    ) {
+      toast.error('Days since registration must be at least 1');
+      return;
+    }
     setBusy(true);
     // Empty strings → null so the backend clears optional numerics/dates.
-    const payload = {
-      ...form,
+    const { old_player_rule, ...fields } = form;
+    const payload = scaleBonusMoney({
+      ...fields,
+      // 0 = "registered before this bonus starts"; N = "more than N days ago".
+      new_player_days: old_player_rule === 'days' ? Number(form.new_player_days) : 0,
       max_bonus_cap: form.max_bonus_cap === '' ? null : form.max_bonus_cap,
       total_budget: form.total_budget === '' ? null : form.total_budget,
       per_user_limit: form.per_user_limit === '' ? null : form.per_user_limit,
+      claim_min_balance: form.claim_min_balance === '' ? null : form.claim_min_balance,
+      claim_min_wagering: form.claim_min_wagering === '' ? null : form.claim_min_wagering,
+      claim_min_deposit_total:
+        form.claim_min_deposit_total === '' ? null : form.claim_min_deposit_total,
       promo_code: form.promo_code?.trim() || null,
       start_date: form.start_date || null,
       end_date: form.end_date || null,
-    };
+    }, 100);
     try {
       if (editing === 'new') {
         await adminApi('/api/v1/admin/bonuses/create', { method: 'POST', body: JSON.stringify(payload) });
@@ -172,9 +233,13 @@ export default function AdminBonusesPage() {
     try {
       const res = await adminApi(`/api/v1/admin/bonuses/${granting.id}/grant`, {
         method: 'POST',
-        body: JSON.stringify({ userId: grant.userId, amount: grant.amount || null, notes: grant.notes }),
+        body: JSON.stringify({
+          userId: grant.userId,
+          amount: grant.amount ? Number(grant.amount) * 100 : null,
+          notes: grant.notes,
+        }),
       });
-      toast.success(`Granted ${usdt(res.amount)} to user #${grant.userId}`);
+      toast.success(`Granted ${inr(res.amount)} to user #${grant.userId}`);
       setGranting(null);
       setGrant({ userId: '', amount: '', notes: '' });
       refreshAll();
@@ -196,8 +261,32 @@ export default function AdminBonusesPage() {
     }
   };
 
+  // Mint a fresh, unused code into the form. Server-side generation keeps the
+  // uniqueness check (and the unambiguous alphabet) in one place.
+  const generateCode = async () => {
+    try {
+      const res = await adminApi('/api/v1/admin/bonuses/generate-code', {
+        method: 'POST',
+        body: JSON.stringify({ length: 8 }),
+      });
+      setForm((f) => ({ ...f, promo_code: res.code, claim_method: 'code' }));
+      toast.success(`Generated ${res.code}`);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const copyCode = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success(`Copied ${code}`);
+    } catch {
+      toast.error('Could not copy the code');
+    }
+  };
+
   const openEdit = (r) => {
-    setForm({
+    setForm(scaleBonusMoney({
       name: r.name,
       display_title: r.display_title || '',
       description: r.description || '',
@@ -215,9 +304,15 @@ export default function AdminBonusesPage() {
       per_user_limit: r.per_user_limit ?? '',
       total_budget: r.total_budget ?? '',
       bonus_validity_days: r.bonus_validity_days ?? 30,
+      is_new_player_only: !!r.is_new_player_only,
+      old_player_rule: r.new_player_days > 0 ? 'days' : 'since_start',
+      new_player_days: r.new_player_days > 0 ? r.new_player_days : 7,
+      claim_min_balance: r.claim_min_balance ?? '',
+      claim_min_wagering: r.claim_min_wagering ?? '',
+      claim_min_deposit_total: r.claim_min_deposit_total ?? '',
       start_date: toLocalInput(r.start_date),
       end_date: toLocalInput(r.end_date),
-    });
+    }, 0.01));
     setEditing(r.id);
   };
 
@@ -229,6 +324,18 @@ export default function AdminBonusesPage() {
         <div>
           <p className="font-medium text-white">{r.display_title || r.name}</p>
           <p className="text-xs text-slate-500">{r.name}</p>
+          {r.is_new_player_only && (
+            <span
+              className="mt-1 inline-block whitespace-nowrap rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-400 ring-1 ring-amber-500/30"
+              title={
+                r.new_player_days > 0
+                  ? `Old players excluded: accounts older than ${r.new_player_days} days`
+                  : 'Old players excluded: accounts registered before the bonus started'
+              }
+            >
+              New players only
+            </span>
+          )}
         </div>
       ),
     },
@@ -246,13 +353,35 @@ export default function AdminBonusesPage() {
       render: (r) => (
         <div>
           <span className="font-medium text-white">
-            {r.value_type === 'percentage' ? `${r.value_amount}%` : usdt(r.value_amount)}
+            {r.value_type === 'percentage' ? `${r.value_amount}%` : inr(r.value_amount)}
           </span>
           {r.bonus_type === 'referral' && r.referrer_reward > 0 && (
-            <span className="block text-xs text-slate-500">referrer {usdt(r.referrer_reward)}</span>
+            <span className="block text-xs text-slate-500">referrer {inr(r.referrer_reward)}</span>
           )}
         </div>
       ),
+    },
+    {
+      key: 'promo_code',
+      label: 'Coupon',
+      render: (r) =>
+        r.promo_code ? (
+          <div>
+            <button
+              type="button"
+              onClick={() => copyCode(r.promo_code)}
+              title="Copy code"
+              className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 font-mono text-xs font-semibold tracking-wider text-indigo-300 transition hover:bg-indigo-500/20"
+            >
+              {r.promo_code}
+            </button>
+            <span className="mt-0.5 block text-xs text-slate-500">
+              {r.redeemed_count} redeemed
+            </span>
+          </div>
+        ) : (
+          <span className="text-xs text-slate-600">—</span>
+        ),
     },
     {
       key: 'credit_target',
@@ -269,7 +398,7 @@ export default function AdminBonusesPage() {
       label: 'Awarded',
       render: (r) => (
         <div>
-          <span className="text-slate-300">{usdt(r.total_awarded)}</span>
+          <span className="text-slate-300">{inr(r.total_awarded)}</span>
           <span className="block text-xs text-slate-500">{r.total_claims} claims</span>
         </div>
       ),
@@ -311,14 +440,14 @@ export default function AdminBonusesPage() {
     ) },
     { key: 'bonus', label: 'Bonus', render: (r) => <span className="text-slate-300">{r.bonus}</span> },
     { key: 'source', label: 'Source', render: (r) => <span className="capitalize text-slate-400">{r.source}</span>, filter: 'select' },
-    { key: 'amount', label: 'Amount', render: (r) => <span className="font-medium text-white">{usdt(r.amount)}</span> },
+    { key: 'amount', label: 'Amount', render: (r) => <span className="font-medium text-white">{inr(r.amount)}</span> },
     {
       key: 'wagering',
       label: 'Wagering',
       render: (r) =>
         r.wagering_required > 0 ? (
           <span className="text-xs text-slate-400">
-            {usdt(r.wagering_completed)} / {usdt(r.wagering_required)}
+            {inr(r.wagering_completed)} / {inr(r.wagering_required)}
           </span>
         ) : (
           <span className="text-xs text-slate-500">—</span>
@@ -340,6 +469,57 @@ export default function AdminBonusesPage() {
     },
   ];
 
+  const redemptionColumns = [
+    {
+      key: 'username',
+      label: 'Player',
+      render: (r) => (
+        <div>
+          <p className="font-medium text-white">{r.username}</p>
+          <p className="text-xs text-slate-500">#{r.user_id}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'code',
+      label: 'Code',
+      render: (r) =>
+        r.code ? (
+          <span className="rounded-md border border-indigo-500/30 bg-indigo-500/10 px-2 py-0.5 font-mono text-xs font-semibold tracking-wider text-indigo-300">
+            {r.code}
+          </span>
+        ) : (
+          <span className="text-xs text-slate-600">—</span>
+        ),
+      filter: 'select',
+    },
+    { key: 'bonus', label: 'Campaign', render: (r) => <span className="text-slate-300">{r.bonus}</span> },
+    {
+      key: 'amount',
+      label: 'Amount',
+      render: (r) => <span className="font-medium text-white">{inr(r.amount)}</span>,
+    },
+    {
+      key: 'wagering',
+      label: 'Wagering',
+      render: (r) =>
+        r.wagering_required > 0 ? (
+          <span className="text-xs text-slate-400">
+            {inr(r.wagering_completed)} / {inr(r.wagering_required)}
+          </span>
+        ) : (
+          <span className="text-xs text-slate-500">—</span>
+        ),
+    },
+    { key: 'status', label: 'Status', render: (r) => <StatusBadge status={r.status} />, filter: 'select' },
+    {
+      key: 'redeemed_at',
+      label: 'Redeemed',
+      render: (r) => <span className="text-xs text-slate-500">{fmtDate(r.redeemed_at)}</span>,
+      filter: 'date',
+    },
+  ];
+
   const isPercent = form.value_type === 'percentage';
   const meta = typeMeta(form.bonus_type);
 
@@ -349,17 +529,24 @@ export default function AdminBonusesPage() {
       subtitle="Fully controllable, money-based bonus engine"
       actions={<Button icon={Plus} onClick={() => { setForm(emptyBonus); setEditing('new'); }}>Add bonus</Button>}
     >
-      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard label="Campaigns" value={stats?.total ?? '—'} icon={Gift} accent="brand" />
         <StatCard label="Active now" value={stats?.active ?? '—'} icon={Play} accent="emerald" />
-        <StatCard label="Total awarded" value={stats ? usdt(stats.total_awarded) : '—'} icon={Wallet} accent="sky" />
+        <StatCard label="Total awarded" value={stats ? inr(stats.total_awarded) : '—'} icon={Wallet} accent="sky" />
         <StatCard label="Total claims" value={stats?.total_claims ?? '—'} icon={Users} accent="rose" />
+        <StatCard
+          label="Coupon redemptions"
+          value={redemptions?.length ?? '—'}
+          icon={Ticket}
+          accent="amber"
+        />
       </div>
 
       <div className="mb-4 flex gap-1 rounded-lg border border-slate-800 bg-slate-900 p-1 w-fit">
         {[
           ['campaigns', 'Campaigns'],
           ['issued', 'Issued bonuses'],
+          ['redemptions', 'Coupon redemptions'],
         ].map(([key, label]) => (
           <button
             key={key}
@@ -373,19 +560,20 @@ export default function AdminBonusesPage() {
         ))}
       </div>
 
-      {tab === 'campaigns' ? (
+      {tab === 'campaigns' && (
         <DataTable
           columns={columns}
           rows={bonuses}
           loading={loading}
           searchable
-          searchKeys={['name', 'display_title', 'bonus_type']}
+          searchKeys={['name', 'display_title', 'bonus_type', 'promo_code']}
           searchPlaceholder="Search bonuses…"
           noun="bonus"
           emptyIcon={Gift}
           emptyMessage="No bonuses configured"
         />
-      ) : (
+      )}
+      {tab === 'issued' && (
         <DataTable
           columns={issuedColumns}
           rows={issued}
@@ -396,6 +584,19 @@ export default function AdminBonusesPage() {
           noun="issued bonus"
           emptyIcon={Wallet}
           emptyMessage="No bonuses have been awarded yet"
+        />
+      )}
+      {tab === 'redemptions' && (
+        <DataTable
+          columns={redemptionColumns}
+          rows={redemptions}
+          loading={redemptionsLoading}
+          searchable
+          searchKeys={['username', 'code', 'bonus']}
+          searchPlaceholder="Search redemptions…"
+          noun="redemption"
+          emptyIcon={Ticket}
+          emptyMessage="No coupon codes have been redeemed yet"
         />
       )}
 
@@ -419,7 +620,7 @@ export default function AdminBonusesPage() {
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="welcome100" required />
             </Field>
             <Field label="Display title (shown to players)">
-              <Input value={form.display_title} onChange={(e) => setForm({ ...form, display_title: e.target.value })} placeholder="Welcome Bonus USDT 100" />
+              <Input value={form.display_title} onChange={(e) => setForm({ ...form, display_title: e.target.value })} placeholder="Welcome Bonus ₹100" />
             </Field>
             <div className="sm:col-span-2">
               <Field label="Description">
@@ -448,21 +649,21 @@ export default function AdminBonusesPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Value type">
                 <Select value={form.value_type} onChange={(e) => setForm({ ...form, value_type: e.target.value })}>
-                  <option value="fixed">Fixed (USDT)</option>
+                  <option value="fixed">Fixed (₹)</option>
                   <option value="percentage">Percentage (%)</option>
                 </Select>
               </Field>
-              <Field label={isPercent ? 'Percentage' : 'Amount (USDT)'}>
+              <Field label={isPercent ? 'Percentage' : 'Amount (₹)'}>
                 <Input type="number" step="0.01" value={form.value_amount} onChange={(e) => setForm({ ...form, value_amount: e.target.value })} />
               </Field>
-              <Field label="Min deposit / qualifying amount (USDT)">
+              <Field label="Min deposit / qualifying amount (₹)">
                 <Input type="number" step="0.01" value={form.min_deposit} onChange={(e) => setForm({ ...form, min_deposit: e.target.value })} />
               </Field>
-              <Field label="Max bonus cap (USDT, blank = no cap)">
+              <Field label="Max bonus cap (₹, blank = no cap)">
                 <Input type="number" step="0.01" value={form.max_bonus_cap} onChange={(e) => setForm({ ...form, max_bonus_cap: e.target.value })} placeholder="No cap" />
               </Field>
               {form.bonus_type === 'referral' && (
-                <Field label="Referrer reward (USDT)">
+                <Field label="Referrer reward (₹)">
                   <Input type="number" step="0.01" value={form.referrer_reward} onChange={(e) => setForm({ ...form, referrer_reward: e.target.value })} />
                 </Field>
               )}
@@ -489,7 +690,7 @@ export default function AdminBonusesPage() {
               <Field label="Max per user (blank = unlimited)">
                 <Input type="number" value={form.per_user_limit} onChange={(e) => setForm({ ...form, per_user_limit: e.target.value })} placeholder="Unlimited" />
               </Field>
-              <Field label="Total budget cap (USDT, blank = uncapped)">
+              <Field label="Total budget cap (₹, blank = uncapped)">
                 <Input type="number" step="0.01" value={form.total_budget} onChange={(e) => setForm({ ...form, total_budget: e.target.value })} placeholder="Uncapped" />
               </Field>
               <Field label="Bonus validity (days)">
@@ -504,10 +705,91 @@ export default function AdminBonusesPage() {
                 </Select>
               </Field>
               {(form.claim_method === 'code' || form.promo_code) && (
-                <Field label="Promo code">
-                  <Input value={form.promo_code} onChange={(e) => setForm({ ...form, promo_code: e.target.value.toUpperCase() })} placeholder="WELCOME100" />
+                <div className="sm:col-span-2">
+                  <Field label="Coupon code">
+                    <div className="flex gap-2">
+                      <Input
+                        value={form.promo_code}
+                        onChange={(e) =>
+                          setForm({
+                            ...form,
+                            // Codes are stored upper-case and space-free so the
+                            // player's input always matches however they type it.
+                            promo_code: e.target.value.toUpperCase().replace(/\s+/g, ''),
+                          })
+                        }
+                        placeholder="WELCOME100"
+                        className="font-mono tracking-wider"
+                      />
+                      <Button type="button" variant="secondary" icon={RefreshCw} onClick={generateCode}>
+                        Generate
+                      </Button>
+                    </div>
+                  </Field>
+                  <p className="mt-1.5 text-xs text-indigo-300/80">
+                    Players enter this on their Bonus page to claim it. Codes are
+                    unique across campaigns and each player can redeem a code once
+                    {form.per_user_limit > 1 ? ` (up to ${form.per_user_limit}× here)` : ''}.
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+
+          <hr className="border-slate-800" />
+
+          {/* Old players */}
+          <section>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Old players</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field label="Old players">
+                <Select
+                  value={form.is_new_player_only ? 'exclude' : 'include'}
+                  onChange={(e) => setForm({ ...form, is_new_player_only: e.target.value === 'exclude' })}
+                >
+                  <option value="include">Include (every player can claim)</option>
+                  <option value="exclude">Exclude (new registrations only)</option>
+                </Select>
+              </Field>
+              {form.is_new_player_only && (
+                <Field label="Who counts as old">
+                  <Select value={form.old_player_rule} onChange={(e) => setForm({ ...form, old_player_rule: e.target.value })}>
+                    <option value="since_start">Registered before this bonus starts</option>
+                    <option value="days">Registered more than N days ago</option>
+                  </Select>
                 </Field>
               )}
+              {form.is_new_player_only && form.old_player_rule === 'days' && (
+                <Field label="Days since registration (N)">
+                  <Input type="number" min="1" value={form.new_player_days} onChange={(e) => setForm({ ...form, new_player_days: e.target.value })} />
+                </Field>
+              )}
+            </div>
+            <p className="mt-1.5 text-xs text-indigo-300/80">
+              {OLD_PLAYER_HINT[form.is_new_player_only ? form.old_player_rule : 'include']}
+            </p>
+          </section>
+
+          <hr className="border-slate-800" />
+
+          {/* Claim conditions */}
+          <section>
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-500">Claim conditions</p>
+            <p className="mb-3 text-xs text-slate-400">
+              What a player must have before they can claim. Blank = no requirement. Players see the
+              offer with a disabled Claim button until every condition is met; wagering and deposits
+              only count between the start and end dates below.
+            </p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <Field label="Min real balance (₹)">
+                <Input type="number" step="0.01" min="0" value={form.claim_min_balance} onChange={(e) => setForm({ ...form, claim_min_balance: e.target.value })} placeholder="None" />
+              </Field>
+              <Field label="Min wagered during offer (₹)">
+                <Input type="number" step="0.01" min="0" value={form.claim_min_wagering} onChange={(e) => setForm({ ...form, claim_min_wagering: e.target.value })} placeholder="None" />
+              </Field>
+              <Field label="Min deposited during offer (₹)">
+                <Input type="number" step="0.01" min="0" value={form.claim_min_deposit_total} onChange={(e) => setForm({ ...form, claim_min_deposit_total: e.target.value })} placeholder="None" />
+              </Field>
             </div>
           </section>
 
@@ -559,7 +841,7 @@ export default function AdminBonusesPage() {
             <Input type="text" inputMode="numeric" value={grant.userId} onChange={(e) => setGrant({ ...grant, userId: e.target.value })} placeholder="e.g. 10000011" required />
           </Field>
           <Field label="Amount override (USDT, blank = the bonus's configured value)">
-            <Input type="number" step="0.01" value={grant.amount} onChange={(e) => setGrant({ ...grant, amount: e.target.value })} placeholder={granting ? String(granting.value_amount) : ''} />
+            <Input type="number" step="0.01" value={grant.amount} onChange={(e) => setGrant({ ...grant, amount: e.target.value })} placeholder={granting ? String(Number(granting.value_amount) / (granting.value_type === 'percentage' ? 1 : 100)) : ''} />
           </Field>
           <Field label="Note (optional)">
             <Input value={grant.notes} onChange={(e) => setGrant({ ...grant, notes: e.target.value })} placeholder="Reason / campaign" />

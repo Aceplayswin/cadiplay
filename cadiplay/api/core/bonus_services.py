@@ -38,6 +38,7 @@ from decimal import Decimal
 from django.db.models import F
 from django.utils import timezone
 
+from core.money import usdt_amount
 from core.models import (
     Bonus, BonusProvider, Transaction, User, UserBonus, UserSetting, Wallet,
 )
@@ -515,7 +516,7 @@ def claim_promo_code(user_id: int, code: str, deposit_amount: Decimal = ZERO) ->
     )
     return {
         'claimed': True,
-        'amount': float(awarded.amount) if awarded else 0,
+        'amount': usdt_amount(awarded.amount) if awarded else 0,
         'title': bonus.display_title or bonus.name,
     }
 
@@ -535,9 +536,13 @@ def list_public_bonuses() -> list[dict]:
             'description': b.description,
             'bonus_type': b.bonus_type,
             'value_type': b.value_type,
-            'value_amount': float(b.value_amount),
-            'min_deposit': float(b.min_deposit),
-            'max_bonus_cap': float(b.max_bonus_cap) if b.max_bonus_cap is not None else None,
+            'value_amount': (
+                float(b.value_amount)
+                if b.value_type == Bonus.ValueType.PERCENTAGE
+                else usdt_amount(b.value_amount)
+            ),
+            'min_deposit': usdt_amount(b.min_deposit),
+            'max_bonus_cap': usdt_amount(b.max_bonus_cap) if b.max_bonus_cap is not None else None,
             'wagering_multiplier': float(b.wagering_multiplier),
             'claim_method': b.claim_method,
             'has_promo_code': bool(b.promo_code),
@@ -555,12 +560,12 @@ def list_user_bonuses(user_id: int) -> list[dict]:
         out.append({
             'id': ub.id,
             'title': (ub.bonus.display_title or ub.bonus.name) if ub.bonus else (ub.notes or 'Bonus'),
-            'amount': float(ub.amount),
+            'amount': usdt_amount(ub.amount),
             'source': ub.source,
             'status': ub.status,
-            'wagering_required': float(required),
-            'wagering_completed': float(ub.wagering_completed),
-            'wagering_remaining': float(remaining),
+            'wagering_required': usdt_amount(required),
+            'wagering_completed': usdt_amount(ub.wagering_completed),
+            'wagering_remaining': usdt_amount(remaining),
             # Progress bar for the bonus page.
             'progress_percent': (
                 float(min(ub.wagering_completed / required, Decimal('1')) * 100)

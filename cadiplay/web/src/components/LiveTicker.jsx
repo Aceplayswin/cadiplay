@@ -71,7 +71,7 @@ function TickerSection({ title, items, highlight }) {
           <li
             key={`${item.username}-${i}`}
             className={`rounded-lg bg-panel/50 px-2 py-1.5 text-xs ${
-              highlight && item.amount >= 10000 ? 'animate-pulse-glow border border-brand-500/30' : ''
+              highlight && item.amount >= 100 ? 'animate-pulse-glow border border-brand-500/30' : ''
             }`}
           >
             <span className="text-app-fg/80">{item.username}</span>

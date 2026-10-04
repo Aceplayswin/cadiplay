@@ -14,6 +14,7 @@ from django.db.models.functions import Cast
 from django.utils import timezone
 
 from core import bonus_services
+from core.money import stored_amount, usdt_amount
 from core.auth_jwt import sign_token
 from core.models import (
     Banner,
@@ -234,7 +235,7 @@ def register_user(
         'userId': user.id,
         'username': user.username,
         'token': token,
-        'welcomeBonus': float(joining.amount) if joining else 0,
+        'welcomeBonus': usdt_amount(joining.amount) if joining else 0,
         'voiceId': voice_id,
     }
 
@@ -615,7 +616,7 @@ def create_withdrawal(user_id: int, amount: float, payment_method: str) -> dict:
     if amount > wallet_data['available']:
         raise ValueError('Insufficient balance')
     if amount < 500:
-        raise ValueError('Minimum withdrawal is USDT 500')
+        raise ValueError('Minimum withdrawal is USDT 5')
 
     with tenant_atomic():
         tx = Transaction.objects.create(
@@ -730,8 +731,8 @@ def list_games(
             'game_type': g.game_type,
             'thumbnail_url': g.thumbnail_url,
             'rtp': float(g.rtp) if g.rtp else None,
-            'min_bet': float(g.min_bet),
-            'max_bet': float(g.max_bet),
+            'min_bet': usdt_amount(g.min_bet),
+            'max_bet': usdt_amount(g.max_bet),
             'is_featured': g.is_featured,
             'is_provably_fair': g.is_provably_fair,
             'play_count': g.play_count,
@@ -869,7 +870,7 @@ def admin_create_user(
         else:
             raise ValueError('Could not allocate a username, please try again')
 
-        balance = Decimal(str(initial_balance or 0))
+        balance = stored_amount(initial_balance or 0)
         if balance < 0:
             balance = Decimal('0')
         Wallet.objects.create(user=user, main_balance=balance)

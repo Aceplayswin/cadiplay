@@ -1,7 +1,7 @@
 import Swal from 'sweetalert2';
 
 // One place for feedback, so pages stop hand-rolling Swal calls that drift
-// apart in styling. Ported from cadiplay/admin's AdminShell.
+// apart in styling. Ported from dollara/admin's AdminShell.
 
 const SWAL_BASE = {
   background: '#0f172a',

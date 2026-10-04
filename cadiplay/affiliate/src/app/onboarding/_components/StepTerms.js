@@ -7,24 +7,28 @@
 
 
 
+import { useEffect, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { primaryBtn } from './tokens';
-import { useBranding } from '@/hooks/useBranding';
+import { useBranding } from '../../../hooks/useBranding';
+import { fetchProgram } from '../../../services/affiliateApi';
+import { inr } from '../../../lib/format';
 
 
 
-function getTerms(brandName) {
-  return [
-    ['Partnership Terms', `By joining the ${brandName} Affiliate Program, you agree to promote ${brandName}'s iGaming platform in compliance with all applicable laws and regulations in your jurisdiction.`],
-    ['Commission Structure', 'Commissions are calculated on net gaming revenue (NGR) after deduction of bonuses, chargebacks, and processing fees. Rates are as agreed in your partner contract.'],
-    ['No Negative Carryover', 'Negative balances from one period will not carry over to the next. Each commission period starts fresh.'],
-    ['Cookie Window', 'Attribution is based on a 30-day last-click cookie. Players must register within 30 days of clicking your tracking link to be attributed to your account.'],
-    ['Prohibited Promotions', 'Self-referrals, spam, incentivised traffic, and promotions targeting minors are strictly prohibited and will result in immediate account suspension and commission forfeiture.'],
-    ['Payment Schedule', 'Commissions are paid weekly every Monday, subject to a minimum threshold of USDT 100. Payouts below the threshold roll forward.'],
-    ['KYC Requirement', 'Identity verification is required before any payout can be processed. Failure to complete KYC within 30 days will suspend commission accrual.'],
-    ['Termination', 'Either party may terminate this agreement with 14 days written notice. Any earned commissions to the termination date remain payable.'],
-  ];
-}
+// Programme numbers (payout threshold, cookie window) are quoted from the live
+// settings rather than hardcoded — the terms a partner accepts must match what
+// the platform actually enforces, and the programme is priced in INR.
+const termsFor = (brandName, minPayout, cookieDays) => [
+  ['Partnership Terms', `By joining the ${brandName} Affiliate Program, you agree to promote ${brandName}'s iGaming platform in compliance with all applicable laws and regulations in your jurisdiction.`],
+  ['Commission Structure', 'Commissions are calculated on net gaming revenue (NGR) after deduction of bonuses, chargebacks, and processing fees. Rates are as agreed in your partner contract.'],
+  ['No Negative Carryover', 'Negative balances from one period will not carry over to the next. Each commission period starts fresh.'],
+  ['Cookie Window', `Attribution is based on a ${cookieDays}-day last-click cookie. Players must register within ${cookieDays} days of clicking your tracking link to be attributed to your account.`],
+  ['Prohibited Promotions', 'Self-referrals, spam, incentivised traffic, and promotions targeting minors are strictly prohibited and will result in immediate account suspension and commission forfeiture.'],
+  ['Payment Schedule', `Commissions are paid weekly every Monday, subject to a minimum threshold of ${inr(minPayout)}. Payouts below the threshold roll forward.`],
+  ['KYC Requirement', 'Identity verification is required before any payout can be processed. Failure to complete KYC within 30 days will suspend commission accrual.'],
+  ['Termination', 'Either party may terminate this agreement with 14 days written notice. Any earned commissions to the termination date remain payable.'],
+];
 
 
 
@@ -32,8 +36,20 @@ function getTerms(brandName) {
 
 export default function StepTerms({ agreed, setAgreed, onNext, loading }) {
   const { product_name: productName } = useBranding();
-  const brandName = productName || 'Cadiplay';
-  const TERMS = getTerms(brandName);
+  const brandName = productName || 'the platform';
+  const [programme, setProgramme] = useState(null);
+
+  useEffect(() => {
+    // Falls back to the documented defaults if the call fails — the step must
+    // still render rather than blocking onboarding on a settings fetch.
+    fetchProgram().then(setProgramme).catch(() => {});
+  }, []);
+
+  const TERMS = termsFor(
+    brandName,
+    programme?.minPayoutAmount ?? 1000,
+    programme?.cookieDays ?? 30,
+  );
   return (
     <div className="animate-fade-up space-y-6">
 

@@ -1,5 +1,5 @@
 import { Inter, Outfit } from 'next/font/google';
-import { BrandProvider } from '@/hooks/useBranding';
+import { BrandProvider } from '../hooks/useBranding';
 import './globals.css';
 
 // Outfit backs the `font-display` Tailwind family and Inter backs `font-sans`.
@@ -9,13 +9,14 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' });
 
-// Static fallback title; useBranding sets the real product name at runtime
-// once branding loads (Next.js metadata can't be dynamic from a client fetch).
 export const metadata = {
-  title: 'Cadiplay Affiliates',
+  title: 'Affiliates',
   description:
     'Partner portal for the affiliate programme — tracking links, '
     + 'referrals, commission and payouts.',
+  icons: {
+    icon: [{ url: '/icon-512.png', sizes: '512x512', type: 'image/png' }],
+  },
 };
 
 export default function RootLayout({ children }) {

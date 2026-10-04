@@ -144,7 +144,8 @@ def f(value) -> float:
 
 def usdt(value) -> str:
     """Server-formatted money, for labels the client shows verbatim."""
-    return f'USDT {Decimal(str(value or 0)):,.2f}'.replace('.00', '')
+    shown = Decimal(str(value or 0)) / Decimal('100')
+    return f'USDT {shown:,.2f}'.replace('.00', '')
 
 
 def _rate_or_default(affiliate_value, default_value) -> Decimal:

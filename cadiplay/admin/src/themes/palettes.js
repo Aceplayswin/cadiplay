@@ -11,7 +11,7 @@
 // default renders. Injection only ever *overrides*.
 //
 // Token keys mirror super_admin/api/tenants/theme_palettes.py and the offline
-// defaults in cadiplay/api/services/theme_palettes.py. Keep the three in sync.
+// defaults in dollara/api/services/theme_palettes.py. Keep the three in sync.
 
 const TRIPLET = 'triplet'; // CSS var holds an "r g b" triplet (for rgb(... / alpha))
 const HEX = 'hex'; // CSS var holds a hex string

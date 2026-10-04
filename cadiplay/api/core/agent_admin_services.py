@@ -43,6 +43,7 @@ from core.agent_models import (Agent, AgentAuditLog, AgentSettlement,
 from core.agent_services import (ZERO, _money, _q, _validate_password, audit,
                                  get_program_settings, save_program_settings)
 from core.models import User, UserSetting, Wallet
+from core.money import stored_amount, usdt_amount
 from core.services import hash_password
 from tenants.state import tenant_atomic
 
@@ -720,7 +721,7 @@ def delete_agent(agent_id: int, admin_id: int) -> dict:
         raise ValueError('Move this agent\'s players to another account first.')
     if Decimal(agent.balance or 0) != ZERO:
         raise ValueError(
-            f'This agent still holds a balance of {_q(agent.balance)}. '
+            f'This agent still holds a balance of {usdt_amount(agent.balance)} USDT. '
             'Withdraw it before deleting.'
         )
     if Decimal(agent.exposure or 0) != ZERO:
@@ -769,7 +770,7 @@ def adjust_credit(agent_id: int, admin_id: int, *, amount, remark=None) -> dict:
     clawback is capped at available credit rather than balance — credit already
     committed to open bets is not the operator's to remove.
     """
-    amount = Decimal(str(amount or 0))
+    amount = stored_amount(amount or 0)
     if amount == ZERO:
         raise ValueError('Amount must not be zero')
 
@@ -783,7 +784,7 @@ def adjust_credit(agent_id: int, admin_id: int, *, amount, remark=None) -> dict:
         if amount < ZERO and -amount > agent.available_credit:
             raise ValueError(
                 'That exceeds the credit this agent has free of open bets '
-                f'({_q(agent.available_credit)}).'
+                f'({usdt_amount(agent.available_credit)} USDT).'
             )
 
         agent.balance = Decimal(agent.balance or 0) + amount

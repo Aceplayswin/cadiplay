@@ -15,7 +15,7 @@ const SECTIONS = [
   {
     title: 'Deposits & Withdrawals',
     items: [
-      'Minimum withdrawal is USDT 500. Withdrawals are processed within 2–24 hours.',
+      'Minimum withdrawal is USDT 5. Withdrawals are processed within 2–24 hours.',
       'KYC verification is required before your first withdrawal.',
       'Funds must be wagered at least once before withdrawal.',
     ],

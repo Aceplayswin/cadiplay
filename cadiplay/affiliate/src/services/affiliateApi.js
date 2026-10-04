@@ -2,7 +2,7 @@ import { API_URL } from './tenant';
 
 // Session storage for the affiliate portal.
 //
-// Mirrors cadiplay/admin's adminApi.js deliberately — that pattern is already
+// Mirrors dollara/admin's adminApi.js deliberately — that pattern is already
 // proven against this API. The keys are namespaced so a portal session and an
 // admin session can coexist in one browser without overwriting each other.
 

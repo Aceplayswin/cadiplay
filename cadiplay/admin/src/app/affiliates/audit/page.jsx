@@ -10,15 +10,15 @@ import {
   toast,
   confirmDialog
 } from '@/components/admin/AdminShell';
-import { ErrorState, fmtDate, usdt, useAdminData } from '@/components/admin/AdminShell';
+import { ErrorState, fmtDate, inr, useAdminData } from '@/components/admin/AdminShell';
 import { adminApi } from '@/services/adminApi';
 import { ShieldAlert, History, AlertTriangle, EyeOff, PlayCircle } from 'lucide-react';
 
 export default function FraudAuditPage() {
   const [activeTab, setActiveTab] = useState('fraud');
 
-  const fraudQuery = useAdminData('/api/v1/admin/affiliates/fraud-flags?limit=200', []);
-  const auditQuery = useAdminData('/api/v1/admin/affiliates/audit?limit=200', []);
+  const fraudQuery = useAdminData('/api/v1/admin/affiliates/fraud-flags', []);
+  const auditQuery = useAdminData('/api/v1/admin/affiliates/audit', []);
   const runsQuery = useAdminData('/api/v1/admin/affiliates/commissions/runs?limit=50', []);
 
   const flags = fraudQuery.data?.records ?? [];
@@ -158,7 +158,7 @@ export default function FraudAuditPage() {
       <span className="text-slate-400">{r.entries_approved}</span>
     )},
     { key: 'total_amount', label: 'Total', render: (r) => (
-      <span className="font-semibold text-emerald-400">{usdt(r.total_amount)}</span>
+      <span className="font-semibold text-emerald-400">{inr(r.total_amount)}</span>
     )},
     { key: 'status', label: 'Status', render: (r) => (
       <div>

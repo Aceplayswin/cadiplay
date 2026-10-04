@@ -13,7 +13,7 @@ import { Landmark, Smartphone, Bitcoin, Clock } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 
-const MIN_WITHDRAWAL = 500;
+const MIN_WITHDRAWAL = 5;
 
 const METHODS = [
   { id: 'bank_transfer', label: 'Bank Transfer', desc: 'NEFT / IMPS to your account', icon: Landmark },

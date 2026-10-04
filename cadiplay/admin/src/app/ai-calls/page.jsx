@@ -9,12 +9,12 @@ import {
   Modal,
   Button,
   useAdminData,
-  usdt,
+  inr,
   fmtDate,
 } from '@/components/admin/AdminShell';
 
 export default function AdminAiCallsPage() {
-  const { data: calls, loading } = useAdminData('/api/v1/admin/ai-calls?limit=200');
+  const { data: calls, loading } = useAdminData('/api/v1/admin/ai-calls');
   const [transcript, setTranscript] = useState(null);
 
   const columns = [
@@ -32,7 +32,7 @@ export default function AdminAiCallsPage() {
       label: 'Deposit intent',
       render: (r) =>
         r.deposit_intent ? (
-          <span className="font-semibold text-emerald-400">{r.deposit_amount ? usdt(r.deposit_amount) : 'Yes'}</span>
+          <span className="font-semibold text-emerald-400">{r.deposit_amount ? inr(r.deposit_amount) : 'Yes'}</span>
         ) : (
           <span className="text-slate-500">No</span>
         ),

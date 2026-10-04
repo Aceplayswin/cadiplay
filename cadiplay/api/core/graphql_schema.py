@@ -6,6 +6,7 @@ from strawberry.schema.config import StrawberryConfig
 from strawberry.types import Info
 
 from core import services
+from core.money import present_wallet, usdt_amount
 from core.models import Transaction, User, UserSetting
 
 
@@ -51,7 +52,7 @@ class UserType:
     @strawberry.field
     def wallet(self) -> Optional[WalletType]:
         try:
-            w = services.get_wallet(self.id)
+            w = present_wallet(services.get_wallet(self.id))
             return WalletType(**w)
         except Exception:
             return None
@@ -122,7 +123,7 @@ class Query:
         if not auth:
             return None
         try:
-            w = services.get_wallet(auth.sub)
+            w = present_wallet(services.get_wallet(auth.sub))
             return WalletType(**w)
         except Exception:
             return None
@@ -175,7 +176,7 @@ class Query:
             result.append(
                 LiveTickerType(
                     username=masked,
-                    amount=float(t.amount),
+                    amount=usdt_amount(t.amount),
                     type='deposit',
                     timestamp=t.created_at.isoformat(),
                 )

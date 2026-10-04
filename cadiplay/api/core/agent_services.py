@@ -38,6 +38,7 @@ from django.db.models import Count, DecimalField, F, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
+from core.money import stored_amount
 from core.agent_models import (Agent, AgentAuditLog, AgentSettlement,
                                AgentTransfer, SportBet, SportEvent,
                                SportMarket)
@@ -915,7 +916,7 @@ def create_client(agent: Agent, *, username, password, name, level,
     partnership = Decimal(str(partnership or 0))
     if partnership < 0 or partnership > 100:
         raise ValueError('Partnership must be between 0 and 100')
-    credit = Decimal(str(credit or 0))
+    credit = stored_amount(credit or 0)
     if credit < 0:
         raise ValueError('Opening credit cannot be negative')
 
@@ -1102,7 +1103,7 @@ def create_player(agent: Agent, *, username, password, full_name=None,
     if User.objects.filter(username=username).exists():
         raise ValueError('That username is already taken')
 
-    credit = Decimal(str(credit or 0))
+    credit = stored_amount(credit or 0)
     if credit < 0:
         raise ValueError('Opening credit cannot be negative')
 
@@ -1227,7 +1228,7 @@ def transfer_credit(agent: Agent, *, counterparty_type, counterparty_id,
     audited without replaying the whole history to work out what a balance was
     at the time.
     """
-    amount = Decimal(str(amount or 0))
+    amount = stored_amount(amount or 0)
     if amount <= 0:
         raise ValueError('Amount must be greater than zero')
     if direction not in AgentTransfer.Direction.values:
@@ -1334,7 +1335,7 @@ def settle(agent: Agent, *, counterparty_type, counterparty_id, amount,
     ``amount`` is signed from the agent's side: positive means the counterparty
     owed the agent.
     """
-    amount = Decimal(str(amount or 0))
+    amount = stored_amount(amount or 0)
     if amount == 0:
         raise ValueError('Settlement amount cannot be zero')
     if counterparty_type not in AgentSettlement.CounterpartyType.values:

@@ -7,8 +7,8 @@ import { useAffiliate } from '../../../../context/AffiliateContext';
 export default function DeepLinkBuilderTab({ links = [] }) {
   const { me } = useAffiliate();
   const [platform, setPlatform] = useState('android');
-  const [bundleId, setBundleId] = useState('com.cadiplay.gaming');
-  const [deepPath, setDeepPath] = useState('cadiplay://slots/crash-game');
+  const [bundleId, setBundleId] = useState('com.dollara.gaming');
+  const [deepPath, setDeepPath] = useState('dollara://slots/crash-game');
   const [sub, setSub] = useState('');
   const [copied, setCopied] = useState(false);
 
@@ -100,7 +100,7 @@ export default function DeepLinkBuilderTab({ links = [] }) {
               App Package / Bundle ID
               
               </label>
-            <input type="text" value={bundleId} onChange={(e) => setBundleId(e.target.value)} placeholder="com.cadiplay.gaming" className={inputCls} />
+            <input type="text" value={bundleId} onChange={(e) => setBundleId(e.target.value)} placeholder="com.dollara.gaming" className={inputCls} />
           </div>
 
 
@@ -108,7 +108,7 @@ export default function DeepLinkBuilderTab({ links = [] }) {
           {/* Deep link target */}
           <div>
             <label className={labelCls}>Target Deep Link URL</label>
-            <input type="text" value={deepPath} onChange={(e) => setDeepPath(e.target.value)} placeholder="cadiplay://slots/crash-game" className={inputCls} />
+            <input type="text" value={deepPath} onChange={(e) => setDeepPath(e.target.value)} placeholder="dollara://slots/crash-game" className={inputCls} />
             <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
               The in-app screen the user should land on after install.
               </p>

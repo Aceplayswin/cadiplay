@@ -1,4 +1,4 @@
-# Cadiplay Affiliate Portal — Developer Documentation
+# Dollara Affiliate Portal — Developer Documentation
 
 **Stack:** Next.js 14 (App Router) · JavaScript · Tailwind CSS · Lucide React · SweetAlert2  
 **Port:** `3003`  
@@ -8,22 +8,22 @@
 
 ## Project Purpose
 
-This is the **partner-facing affiliate portal** for the Cadiplay iGaming platform. It is intentionally kept as a separate Next.js app (its own `package.json`, own port, own auth) rather than a route inside `cadiplay/web` or `cadiplay/admin` because affiliates are a distinct trust boundary — not players, not staff.
+This is the **partner-facing affiliate portal** for the Dollara iGaming platform. It is intentionally kept as a separate Next.js app (its own `package.json`, own port, own auth) rather than a route inside `dollara/web` or `dollara/admin` because affiliates are a distinct trust boundary — not players, not staff.
 
 There are three portals in total:
 
 | Portal | Path | Port | Who uses it |
 |---|---|---|---|
-| Player web | `cadiplay/web` | 3000 | Players |
-| Staff admin | `cadiplay/admin` | 3002 | Internal staff |
-| **Affiliate** | `cadiplay/affiliate` | **3003** | External partners |
+| Player web | `dollara/web` | 3000 | Players |
+| Staff admin | `dollara/admin` | 3002 | Internal staff |
+| **Affiliate** | `dollara/affiliate` | **3003** | External partners |
 
 ---
 
 ## Running Locally
 
 ```bash
-cd shamb_01/cadiplay/affiliate
+cd shamb_01/dollara/affiliate
 npm install
 npm run dev          # starts on http://localhost:3003
 ```
@@ -33,11 +33,11 @@ npm run dev          # starts on http://localhost:3003
 ## Folder Structure
 
 ```
-cadiplay/affiliate/
+dollara/affiliate/
 ├── package.json               # deps + "dev": "next dev -p 3003"
 ├── tailwind.config.js         # brand color tokens (brand-400 to brand-600 = gold/amber)
 ├── public/
-│   ├── logo/image.png         # Cadiplay logo used in headers
+│   ├── logo/image.png         # Dollara logo used in headers
 │   ├── banner-image/banner1.png
 │   ├── web/website_image.png  # platform screenshot used in landing page brand section
 │   └── payment/               # bhmi.png, imps.png, upi.png — payment method logos
@@ -159,7 +159,7 @@ brand: {
 
 ### `login/_components/AuthShell.js`
 Used by all three login screens (`login`, `2fa`, `forgot`). Provides:
-- The top bar (back link + Cadiplay logo)
+- The top bar (back link + Dollara logo)
 - The frosted glass card wrapper
 - Exported CSS tokens: `inputClasses`, `labelClasses`, `primaryBtn`, `Spinner`
 
@@ -257,8 +257,8 @@ To add a new step: create a new `StepXxx.js` in `_components/`, add its state to
 | Phase | Scope |
 |---|---|
 | **Phase 1 (current)** | All UI built with mock/static data. No real API calls. |
-| **Phase 2** | Replace `setTimeout` mocks with real `fetch` calls to `cadiplay/api`. Add JWT auth, session cookies. |
-| **Phase 3** | Add the Affiliates section to `cadiplay/admin` for staff-facing approval, commission overrides. |
+| **Phase 2** | Replace `setTimeout` mocks with real `fetch` calls to `dollara/api`. Add JWT auth, session cookies. |
+| **Phase 3** | Add the Affiliates section to `dollara/admin` for staff-facing approval, commission overrides. |
 
 ---
 

@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import { Download, BarChart3, Globe2, Link2, Users } from 'lucide-react';
 import { useAffiliateData } from '../../../hooks/useAffiliateData';
 import { affiliateDownload } from '../../../services/affiliateApi';
-import { usdt, num } from '../../../lib/format';
+import { inr, num, fmtDateShort } from '../../../lib/format';
 import { toast } from '../../../lib/toast';
 
 
@@ -16,13 +16,11 @@ function preset(days) {
   return [from.toISOString().slice(0, 10), to.toISOString().slice(0, 10)];
 }
 
+// Range bounds are plain `YYYY-MM-DD` days with no time of day to show, so
+// this stays date-only — it is a boundary label, not an event timestamp.
 function formatDate(value) {
   if (!value) return 'All time';
-  return new Date(value).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return fmtDateShort(value);
 }
 
 // check if a date sits inside the selected range
@@ -84,7 +82,7 @@ export default function ReportsPage() {
         primary: item.clicks,
         secondary: item.signups,
         tertiary: item.ftds,
-        extra: usdt(item.commission),
+        extra: inr(item.commission),
       })),
     [records],
   );
@@ -292,7 +290,7 @@ export default function ReportsPage() {
             Revenue
           </p>
           <p className="mt-3 text-3xl font-black font-display text-slate-900 dark:text-slate-100">
-            {usdt(summary.totalD)}
+            {inr(summary.totalD)}
           </p>
         </div>
       </div>
