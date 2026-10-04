@@ -64,16 +64,21 @@ class ProviderConfig:
 # Per-provider override keys (as stored on the ``game_providers`` row) mapped to
 # the ProviderConfig field they replace. Blank/NULL values are ignored, so a
 # provider only overrides what it actually integrates differently.
-# ``currency_code`` is intentionally absent: aggregator lines are USD, and a
-# vendor row must not replace the launch currency (a stored INR/USDT would go
-# out on the wire). Platform wallets stay USDT.
+# ``currency_code`` is included: Instant Games (and other INR-only lines) lock
+# the player to INR on first launch — sending USD afterwards is error 10011.
 _OVERRIDE_FIELDS = (
     'agency_uid',
     'aes_secret_key',
     'player_prefix',
     'server_url',
     'callback_path',
+    'currency_code',
 )
+
+# Huidu Instant Games (Aviator, Mines, Plinko, …) are an INR line. A blank
+# provider currency would fall through to GAME_CURRENCY_CODE (USD) and the
+# aggregator then rejects the already-created INR player with error 10011.
+_INR_PROVIDER_SLUGS = frozenset({'instant'})
 
 
 def get_config(overrides: dict | None = None) -> ProviderConfig:
@@ -99,14 +104,27 @@ def get_config(overrides: dict | None = None) -> ProviderConfig:
         'default_language': raw['DEFAULT_LANGUAGE'],
         'http_timeout': raw['HTTP_TIMEOUT'],
     }
+    extras = overrides or {}
     for field in _OVERRIDE_FIELDS:
-        value = (overrides or {}).get(field)
+        value = extras.get(field)
         if value not in (None, ''):
             values[field] = value.rstrip('/') if field == 'server_url' else value
+    if extras.get('currency_code') in (None, '') and extras.get('slug') in _INR_PROVIDER_SLUGS:
+        values['currency_code'] = 'INR'
+    values['currency_code'] = normalize_currency_code(values.get('currency_code'))
     return ProviderConfig(**values)
 
 
 DEFAULT_LAUNCH_PATH = '/game/v1'
+
+
+def normalize_currency_code(code: str | None, *, fallback: str = 'USD') -> str:
+    """Aggregator ISO currency. USDT is the wallet token, not a launch currency."""
+    raw = (code or '').strip().upper()
+    if not raw:
+        return fallback
+    # The aggregator rejects USDT with 10018 ("line does not support currency").
+    return 'USD' if raw == 'USDT' else raw
 
 
 def normalize_launch_path(path: str | None) -> str:
@@ -306,9 +324,9 @@ def request_launch_url(
         'member_account': build_member_account(user_id, overrides),
         'game_uid': game_uid,
         'credit_amount': str(credit_amount),
-        # Aggregator game lines are USD. Platform wallets stay USDT — do not
-        # send USDT (code 10018) or a provider-row INR.
-        'currency_code': 'USD',
+        # Instant Games lock the player to INR; other lines use the configured
+        # code. Never send USDT (aggregator 10018).
+        'currency_code': cfg.currency_code,
         'language': language or cfg.default_language,
         'home_url': cfg.home_url,
         'platform': platform,

@@ -104,6 +104,7 @@ class GameRepository:
             'player_prefix': provider.player_prefix,
             'callback_path': provider.callback_path,
             'currency_code': provider.currency_code,
+            'slug': provider.slug,
         }
 
     @staticmethod

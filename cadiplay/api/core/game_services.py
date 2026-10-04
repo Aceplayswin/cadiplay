@@ -109,6 +109,9 @@ def launch_game(user_id: int, body: dict, ip: str | None = None) -> dict:
         # keys — e.g. a standalone lottery provider) launch against that
         # vendor's config; everything else rides the platform-wide account.
         overrides = GameRepository.provider_overrides(game)
+        # Instant Games (and any other INR-only line) must send the locked
+        # player currency — aggregator error 10011 if this is USD after INR.
+        currency = game_provider.get_config(overrides).currency_code
 
         try:
             launch_url = game_provider.request_launch_url(
@@ -140,7 +143,7 @@ def launch_game(user_id: int, body: dict, ip: str | None = None) -> dict:
                 session.game_name = game_name
                 session.member_account = member_account
                 session.launch_url = launch_url
-                session.currency = 'USD'
+                session.currency = currency
                 if ip:
                     session.ip_address = ip[:45]
                 session.save(update_fields=[
@@ -159,7 +162,7 @@ def launch_game(user_id: int, body: dict, ip: str | None = None) -> dict:
                     game_name=game_name,
                     member_account=member_account,
                     launch_url=launch_url,
-                    currency='USD',
+                    currency=currency,
                     status=GameSession.Status.WAIT,
                     ip_address=(ip or None)[:45] if ip else None,
                 )
@@ -486,8 +489,7 @@ def _settle(user_id: int, cb: CallbackPayload) -> SettlementResult:
                 win_amount=cb.win_amount,
                 balance_before=balance_before,
                 balance_after=balance_before + net,
-                # Wallet is USDT. Bets are launched and labelled as USD.
-                currency='USD',
+                currency=game_provider.normalize_currency_code(cb.currency_code),
                 provider_timestamp=cb.timestamp,
             )
         except IntegrityError as exc:
