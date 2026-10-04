@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import {
 import { formatAmountNumber } from '@/lib/money';
+import {
   Home,
   Trophy,
   Dices,
