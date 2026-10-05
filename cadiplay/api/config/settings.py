@@ -231,7 +231,7 @@ GAME_PROVIDER = {
     # legacy registered path) and reverse-proxied/aliased to games_callback.
     'CALLBACK_PATH': os.getenv('GAME_CALLBACK_PATH', '/api/v1/games/callback'),
     'HOME_URL': os.getenv('GAME_HOME_URL', 'http://localhost:3000'),
-    'CURRENCY_CODE': os.getenv('GAME_CURRENCY_CODE', 'INR'),
+    'CURRENCY_CODE': os.getenv('GAME_CURRENCY_CODE', 'USD'),
     'DEFAULT_LANGUAGE': os.getenv('GAME_DEFAULT_LANGUAGE', 'en'),
     'HTTP_TIMEOUT': int(os.getenv('GAME_HTTP_TIMEOUT', '15')),
 }

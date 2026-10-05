@@ -88,6 +88,7 @@ affected screens return a schema error:
 ```bash
 python manage.py ensure_payment_method_columns   # Cashier → Payment Methods columns
 python manage.py ensure_bonus_claim_columns      # Bonus claim conditions (min balance / wagering / deposits)
+python manage.py normalize_currency_to_usd       # Rewrite stored INR/USDT codes to USD
 ```
 
 Fresh installs get the full schema (including single-session and blocked-IP

@@ -23,6 +23,7 @@ import {
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
 import { formatDateTime as fmtDateTime } from '@/lib/datetime';
+import { displayCurrency } from '@/lib/money';
 import { T5Card, T5FormPage, t5BtnOutline } from '../components/ui';
 
 // ── formatting ──────────────────────────────────────────────────────────────
@@ -190,7 +191,7 @@ export default function Theme5Profile() {
 
       <T5Card className="mt-4 p-5 sm:p-6">
         <GroupHead icon={WalletIcon}>Preferences</GroupHead>
-        <Row label="Currency" value={user?.currency} />
+        <Row label="Currency" value={displayCurrency(user?.currency)} />
         <Row label="Language" value={user?.website_language?.toUpperCase()} />
       </T5Card>
 

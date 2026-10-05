@@ -7,6 +7,7 @@ from strawberry.types import Info
 
 from core import services
 from core.models import Transaction, User, UserSetting
+from core.money import present_currency
 
 
 @strawberry.type
@@ -166,7 +167,7 @@ class Query:
             full_name=user.full_name,
             phone=user.phone,
             account_status=user.account_status,
-            currency=prefs.currency if prefs else 'INR',
+            currency=present_currency(prefs.currency if prefs else None),
             website_language=prefs.website_language if prefs else 'en',
             country_code=user.country_code,
             state=user.state,

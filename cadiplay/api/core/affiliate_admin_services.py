@@ -26,7 +26,7 @@ from core.affiliate_models import (Affiliate, AffiliateApiKey, AffiliateAuditLog
                                    AffiliatePayout, AffiliatePayoutMethod,
                                    AffiliateReferral, AffiliateSupportTicket)
 from core.affiliate_services import (ZERO, _attach_player_identity, _iso, audit,
-                                     f, get_program_settings, inr, money,
+                                     f, get_program_settings, usd, money,
                                      notify, save_program_settings,
                                      serialize_affiliate, serialize_api_key,
                                      serialize_kyc_document,
@@ -505,7 +505,7 @@ def delete_affiliate(affiliate_id: int, admin_id: int) -> dict:
     ).aggregate(total=Sum('amount'))['total'] or ZERO
     if outstanding > ZERO:
         raise ValueError(
-            f'This affiliate still has {inr(outstanding)} of unpaid commission. '
+            f'This affiliate still has {usd(outstanding)} of unpaid commission. '
             'Pay it out or claw it back before deleting.'
         )
     if Affiliate.objects.filter(parent_id=affiliate.id).exists():
@@ -635,7 +635,7 @@ def approve_payout(payout_id: int, admin_id: int) -> dict:
     _staff_audit(payout.affiliate_id, admin_id, 'payout.approved',
                  target=f'payout:{payout.id}', after={'amount': f(payout.amount)})
     notify(payout.affiliate_id, 'payout', 'Payout approved',
-           f'Your payout of {inr(payout.amount)} has been approved and is being sent.')
+           f'Your payout of {usd(payout.amount)} has been approved and is being sent.')
     return serialize_payout(payout)
 
 
@@ -676,7 +676,7 @@ def mark_payout_paid(payout_id: int, admin_id: int, reference: str) -> dict:
                  target=f'payout:{payout.id}',
                  after={'amount': f(payout.amount), 'reference': reference})
     notify(payout.affiliate_id, 'payout', 'Payout sent',
-           f'{inr(payout.amount)} has been sent. Reference: {reference}.')
+           f'{usd(payout.amount)} has been sent. Reference: {reference}.')
     return serialize_payout(payout)
 
 
@@ -811,7 +811,7 @@ def clawback_ledger_entry(entry_id: int, admin_id: int, reason: str) -> dict:
                  target=f'entry:{entry.id}',
                  after={'amount': f(entry.amount), 'reason': reason})
     notify(entry.affiliate_id, 'commission', 'Commission reversed',
-           f'{inr(entry.amount)} was reversed. Reason: {reason}')
+           f'{usd(entry.amount)} was reversed. Reason: {reason}')
     return serialize_ledger_entry(entry)
 
 

@@ -49,6 +49,7 @@ from core.models import (
     Bonus, BonusProvider, GameRound, Transaction, User, UserBonus, UserSetting,
     Wallet,
 )
+from core.money import BACKEND_CURRENCY
 from tenants.state import tenant_atomic
 
 ZERO = Decimal('0')
@@ -249,8 +250,8 @@ def _requirement_error(bonus: Bonus, user_id: int) -> str | None:
     for req in claim_requirements(bonus, user_id):
         if not req['met']:
             return (
-                f"{req['label']} must reach ₹{req['required']:,.2f} to claim this "
-                f"bonus (you are at ₹{req['current']:,.2f})."
+                f"{req['label']} must reach USDT {req['required']:,.2f} to claim this "
+                f"bonus (you are at USDT {req['current']:,.2f})."
             )
     return None
 
@@ -339,7 +340,9 @@ def _award_bonus(
 
     with tenant_atomic():
         # Materialise the wallet so the credit below never races a missing row.
-        Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': 'INR'})
+        Wallet.objects.get_or_create(
+            user_id=user_id, defaults={'currency': BACKEND_CURRENCY}
+        )
 
         user_bonus = UserBonus.objects.create(
             user_id=user_id,
@@ -768,7 +771,7 @@ def preview_coupon(user_id: int, code: str) -> dict:
     """Check a code without redeeming it — powers the web form's live validation.
 
     Returns the reward the player would get and whether they can take it, so the
-    UI can show "₹100 — ready to redeem" before they commit.
+    UI can show "USDT 100 — ready to redeem" before they commit.
     """
     bonus = find_coupon(code)
     if not bonus:

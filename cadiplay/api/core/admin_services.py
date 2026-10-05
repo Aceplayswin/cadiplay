@@ -46,6 +46,7 @@ from core.repositories import (
     sports_category_slugs,
 )
 from core import bonus_services, game_services
+from core.money import present_currency
 from core.data_export import IST, fmt_when, fmt_when_ist
 from core.services import get_user_settings, hash_password
 from tenants.state import get_current_tenant_id, tenant_atomic
@@ -91,7 +92,7 @@ def _serialize_user(u: User, wallet: Wallet | None = None, user_settings: UserSe
         'state': u.state,
         'signup_ip': u.signup_ip,
         'created_by': u.created_by,
-        'currency': prefs.currency if prefs else 'INR',
+        'currency': present_currency(prefs.currency if prefs else None),
         'account_status': u.account_status,
         'phone_verified': prefs.phone_verified if prefs else False,
         'fraud_score': prefs.fraud_score if prefs else 0,

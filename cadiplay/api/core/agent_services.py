@@ -46,6 +46,7 @@ from core.auth_jwt import sign_token
 from core.models import (Game, GameRound, PlatformSetting, Transaction, User,
                          UserSetting, Wallet)
 from core.repositories import sports_category_slugs
+from core.money import BACKEND_CURRENCY, present_currency
 from core.services import _check_password, hash_password
 from tenants.state import get_current_tenant_id, tenant_atomic
 
@@ -82,7 +83,7 @@ DEFAULT_PROGRAM_SETTINGS = {
     'min_partnership': 0,
     'max_partnership': 100,
     'review_hours': 24,
-    'currency': 'INR',
+    'currency': BACKEND_CURRENCY,
 }
 
 MONEY = DecimalField(max_digits=20, decimal_places=2)
@@ -402,7 +403,7 @@ def get_identity(agent: Agent) -> dict:
         'level': agent.level,
         'levelLabel': agent.get_level_display(),
         'canCreate': agent.can_create_below,
-        'currency': agent.currency,
+        'currency': present_currency(agent.currency),
         'timezone': agent.timezone,
         'creditReference': _q(agent.credit_reference),
         'balance': _q(agent.balance),
@@ -2061,6 +2062,7 @@ def get_program_settings() -> dict:
                 value = {}
         if isinstance(value, dict):
             merged.update(value)
+    merged['currency'] = BACKEND_CURRENCY
     return merged
 
 
@@ -2073,7 +2075,7 @@ def save_program_settings(values: dict) -> dict:
     current = get_program_settings()
     for key in DEFAULT_PROGRAM_SETTINGS:
         if key in values and values[key] is not None:
-            current[key] = values[key]
+            current[key] = BACKEND_CURRENCY if key == 'currency' else values[key]
     PlatformSetting.objects.update_or_create(
         setting_key=SETTINGS_KEY, defaults={'setting_value': current}
     )
@@ -2092,7 +2094,7 @@ def get_program_overview() -> dict:
         'defaultPartnership': _q(settings['default_partnership']),
         'defaultCommissionRate': _q(settings['default_commission_rate']),
         'defaultLevel': settings['default_level'],
-        'currency': settings['currency'],
+        'currency': present_currency(settings['currency']),
         'reviewHours': settings['review_hours'],
         # What an agent can open beneath them at the default level, so the page
         # can describe the hierarchy without hardcoding it.
@@ -2173,7 +2175,7 @@ def apply_as_agent(*, username, password, name, email, phone=None,
                 experience=(experience or '').strip()[:40] or None,
                 application_notes=(notes or '').strip() or None,
                 requested_parent_code=(parent_code or '').strip()[:20] or None,
-                currency=settings['currency'],
+                currency=BACKEND_CURRENCY,
                 applied_at=timezone.now(),
                 # The RESOLVED upline. Nothing is routed by it — every
                 # application goes to the one staff queue either way — but it

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/services/api';
 import { useAuthStore } from '@/store/auth';
+import { displayCurrency } from '@/lib/money';
 
 const LANGUAGES = [
   { value: 'en', label: 'English' },
@@ -46,7 +47,7 @@ export default function Theme1Settings() {
           website_language: data.website_language ?? DEFAULTS.website_language,
           communication_language:
             data.communication_language ?? DEFAULTS.communication_language,
-          currency: data.currency ?? DEFAULTS.currency,
+          currency: displayCurrency(data.currency ?? DEFAULTS.currency),
           notifications_enabled:
             data.notifications_enabled ?? DEFAULTS.notifications_enabled,
           marketing_opt_in: data.marketing_opt_in ?? DEFAULTS.marketing_opt_in,

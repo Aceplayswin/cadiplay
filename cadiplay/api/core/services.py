@@ -17,6 +17,7 @@ from django.db.models.functions import Abs, Cast, Substr
 from django.utils import timezone
 
 from core import bonus_services
+from core.money import BACKEND_CURRENCY, present_currency, store_currency
 from core.data_export import IST
 from core.auth_jwt import sign_token
 from core.models import (
@@ -94,7 +95,7 @@ def _serialize_preferences(user: User, prefs: UserSetting | None) -> dict:
         'last_login_at': user.last_login_at.isoformat() if user.last_login_at else None,
         'website_language': prefs.website_language if prefs else 'en',
         'communication_language': prefs.communication_language if prefs else 'en',
-        'currency': prefs.currency if prefs else 'INR',
+        'currency': present_currency(prefs.currency if prefs else None),
         'notifications_enabled': prefs.notifications_enabled if prefs else True,
         'marketing_opt_in': prefs.marketing_opt_in if prefs else False,
     }
@@ -122,6 +123,8 @@ def update_user_preferences(user_id: int, changes: dict) -> dict:
             value = str(value).strip()
             if not value:
                 continue
+            if field == 'currency':
+                value = store_currency(value)
         setattr(prefs, field, value)
     if applied:
         prefs.save(update_fields=list(applied.keys()) + ['updated_at'])
@@ -461,7 +464,9 @@ def _has_open_withdrawal(user_id: int) -> bool:
 
 def get_wallet(user_id: int) -> dict:
     _require_player(user_id)
-    wallet, _ = Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': 'INR'})
+    wallet, _ = Wallet.objects.get_or_create(
+        user_id=user_id, defaults={'currency': BACKEND_CURRENCY}
+    )
     main = float(wallet.main_balance)
     locked = float(wallet.locked_balance)
     bonus = float(wallet.bonus_balance)
@@ -480,7 +485,7 @@ def get_wallet(user_id: int) -> dict:
         # Only one withdrawal may await review at a time (create_withdrawal);
         # the withdraw page uses this to lock its form until the admin acts.
         'hasPendingWithdrawal': _has_open_withdrawal(user_id),
-        'currency': wallet.currency,
+        'currency': present_currency(wallet.currency),
         # Withdrawable cash. Deliberately excludes `bonus`: bonus money is
         # credited on award but can only be staked, never cashed out, until
         # wagering converts it into the real balance (bonus_services).
@@ -663,7 +668,7 @@ def create_deposit(
     user_id: int,
     amount: float,
     payment_method: str,
-    currency: str = 'INR',
+    currency: str = BACKEND_CURRENCY,
     reference_number: str | None = None,
     payment_proof_url: str | None = None,
     *,
@@ -675,6 +680,7 @@ def create_deposit(
     _require_player(user_id)
     if amount <= 0:
         raise ValueError('Amount must be greater than zero')
+    currency = store_currency(currency)
     reference_number = _normalize_deposit_reference(reference_number)
     Wallet.objects.get_or_create(user_id=user_id, defaults={'currency': currency})
     with tenant_atomic():
@@ -877,7 +883,7 @@ def create_withdrawal(
             'wagering requirement before they can be withdrawn.'
         )
     if amount < 500:
-        raise ValueError('Minimum withdrawal is ₹500')
+        raise ValueError('Minimum withdrawal is USDT 5')
 
     with tenant_atomic():
         # Re-check under the wallet row lock so two requests fired together
@@ -889,6 +895,7 @@ def create_withdrawal(
             user_id=user_id,
             type=Transaction.TxType.WITHDRAWAL,
             amount=Decimal(str(amount)),
+            currency=BACKEND_CURRENCY,
             status=Transaction.Status.PENDING,
             payment_method=payment_method,
             reference_number=reference,

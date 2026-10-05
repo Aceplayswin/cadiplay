@@ -240,7 +240,7 @@ class CashierQueueItem(models.Model):
     amount = models.DecimalField(
         max_digits=18, decimal_places=2, null=True, blank=True
     )
-    currency = models.CharField(max_length=10, default='INR')
+    currency = models.CharField(max_length=10, default='USD')
     reason = models.CharField(max_length=255, null=True, blank=True)
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.PENDING

@@ -1,7 +1,7 @@
 COUNTRY_CONFIG = {
     'IN': {
         'countryCode': 'IN',
-        'currency': 'INR',
+        'currency': 'USDT',
         'language': 'hi',
         'paymentMethods': ['upi', 'imps', 'bank_transfer', 'crypto'],
     },

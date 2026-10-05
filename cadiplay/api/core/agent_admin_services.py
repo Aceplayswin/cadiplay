@@ -43,6 +43,7 @@ from core.agent_models import (Agent, AgentAuditLog, AgentSettlement,
 from core.agent_services import (ZERO, _money, _q, _validate_password, audit,
                                  get_program_settings, save_program_settings)
 from core.models import User, UserSetting, Wallet
+from core.money import present_currency
 from core.services import hash_password
 from tenants.state import tenant_atomic
 
@@ -405,7 +406,7 @@ def get_agent_detail(agent_id: int) -> dict:
         'levels_below': agent.can_create_below,
         'depth': agent.depth,
         'tree_path': agent.tree_path,
-        'currency': agent.currency,
+        'currency': present_currency(agent.currency),
         'timezone': agent.timezone,
         'partnership': _q(agent.partnership),
         'commission_rate': _q(agent.commission_rate),

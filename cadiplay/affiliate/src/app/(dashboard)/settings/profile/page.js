@@ -40,7 +40,7 @@ export default function ProfileSettingsPage() {
         contactEmail: data.email || '',
         contactPhone: data.phone || '',
         timezone: data.timezone || 'Asia/Kolkata',
-        currency: data.currency || 'USDT',
+        currency: data.currency === 'USD' ? 'USDT' : (data.currency || 'USDT'),
         notificationPreferences: data.notification_prefs || {
           referrals: true,
           deposits: true,

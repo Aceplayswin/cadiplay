@@ -13,6 +13,7 @@ from django.db.models import Avg, Count, F, Q, Sum
 from django.db.models.functions import TruncDate, TruncMonth
 from django.utils import timezone
 
+from core.money import present_currency
 from core.models import (
     Game,
     GameProvider,
@@ -328,7 +329,7 @@ def players_online(params):
             'logins': login_counts.get(u.id, 0),
             'deposits': 'Yes' if deposit_totals.get(u.id) else 'No',
             'balance': _f(wallet.main_balance) if wallet else 0.0,
-            'currency': prefs.currency if prefs else 'INR',
+            'currency': present_currency(prefs.currency if prefs else None),
         })
     limit, offset = paging(params)
     return {

@@ -45,6 +45,7 @@ from core.affiliate_models import (Affiliate, AffiliateApiKey, AffiliateApiLog,
                                    AffiliateTicketMessage, Notification)
 from core.auth_jwt import sign_token
 from core.models import GameRound, PlatformSetting, User, UserSetting
+from core.money import BACKEND_CURRENCY, present_currency, store_currency
 from core.services import _check_password, hash_password
 from tenants.state import get_current_tenant_id, tenant_atomic
 
@@ -55,7 +56,7 @@ CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 SETTINGS_KEY = 'affiliate_program'
 
 # Fallbacks used only when the platform_settings row is missing entirely (a DB
-# that predates the migration). Amounts are INR.
+# that predates the migration). Amounts are USD (shown as USDT in the UI).
 DEFAULT_PROGRAM_SETTINGS = {
     'default_commission_type': 'revenue_share',
     'default_commission_rate': 30,
@@ -75,7 +76,7 @@ DEFAULT_PROGRAM_SETTINGS = {
     'fraud_block_disposable_emails': True,
     'fraud_flag_self_referral': True,
     'click_retention_days': 180,
-    'currency': 'INR',
+    'currency': 'USD',
 }
 
 DISPOSABLE_EMAIL_DOMAINS = {
@@ -115,6 +116,7 @@ def get_program_settings() -> dict:
                 value = {}
         if isinstance(value, dict):
             merged.update(value)
+    merged['currency'] = store_currency(merged.get('currency'))
     return merged
 
 
@@ -124,7 +126,9 @@ def save_program_settings(values: dict) -> dict:
     current = get_program_settings()
     for key in DEFAULT_PROGRAM_SETTINGS:
         if key in values and values[key] is not None:
-            current[key] = values[key]
+            current[key] = (
+                store_currency(values[key]) if key == 'currency' else values[key]
+            )
     PlatformSetting.objects.update_or_create(
         setting_key=SETTINGS_KEY, defaults={'setting_value': current}
     )
@@ -139,15 +143,15 @@ def money(value) -> Decimal:
 def f(value) -> float:
     """Serialize a Decimal for JSON.
 
-    The house convention. Loses precision past 2^53, which INR amounts at this
+    The house convention. Loses precision past 2^53, which USD amounts at this
     scale will not reach.
     """
     return float(value or 0)
 
 
-def inr(value) -> str:
-    """Server-formatted money, for labels the client shows verbatim."""
-    return f'₹{Decimal(str(value or 0)):,.2f}'.replace('.00', '')
+def usd(value) -> str:
+    """Server-formatted money, for labels the client shows verbatim as USDT."""
+    return f'USDT {Decimal(str(value or 0)):,.2f}'.replace('.00', '')
 
 
 def _rate_or_default(affiliate_value, default_value) -> Decimal:
@@ -290,7 +294,7 @@ def serialize_affiliate(affiliate: Affiliate, settings: dict | None = None) -> d
         'two_factor_enabled': affiliate.two_factor_enabled,
         'onboarding_complete': affiliate.onboarding_complete,
         'terms_accepted_at': _iso(affiliate.terms_accepted_at),
-        'currency': affiliate.currency or settings['currency'],
+        'currency': present_currency(affiliate.currency or settings['currency']),
         'timezone': affiliate.timezone,
         'notification_prefs': affiliate.notification_prefs or {},
         'payout_threshold': f(payout_threshold_for(affiliate, settings)),
@@ -388,10 +392,10 @@ def serialize_ledger_entry(entry: AffiliateCommissionLedger,
         # A label rather than the client re-deriving one: the server knows
         # whether the base is NGR or an FTD, and the currency.
         'base_label': f'{_BASE_LABELS.get(entry.base_kind, entry.base_kind)}: '
-                      f'{inr(entry.base_amount)}',
+                      f'{usd(entry.base_amount)}',
         'rate': f(entry.rate),
         'amount': f(entry.amount),
-        'currency': entry.currency,
+        'currency': present_currency(entry.currency),
         'status': entry.status,
         'period_start': entry.period_start.isoformat() if entry.period_start else None,
         'period_end': entry.period_end.isoformat() if entry.period_end else None,
@@ -408,7 +412,7 @@ def serialize_payout(payout: AffiliatePayout, entry_count: int = 0) -> dict:
     return {
         'id': payout.id,
         'amount': f(payout.amount),
-        'currency': payout.currency,
+        'currency': present_currency(payout.currency),
         'status': payout.status,
         'method_id': payout.method_id,
         'method_label': payout.method_label,
@@ -522,7 +526,7 @@ def get_program_overview() -> dict:
         'cookie_window_days': settings['cookie_window_days'],
         'min_payout_threshold': f(settings['min_payout_threshold']),
         'payout_cycle': settings['payout_cycle'],
-        'currency': settings['currency'],
+        'currency': present_currency(settings['currency']),
     }
 
 
@@ -577,7 +581,7 @@ def apply_as_affiliate(*, full_name, email, password, phone=None, company_name=N
             payment_preference=payment_preference,
             application_notes=notes,
             applied_at=timezone.now(),
-            currency=settings['currency'],
+            currency=BACKEND_CURRENCY,
         )
     audit(affiliate.id, AffiliateAuditLog.ActorType.AFFILIATE, 'application.submitted',
           actor_id=affiliate.id, actor_label=full_name, ip=ip,
@@ -1045,7 +1049,7 @@ def record_deposit(user_id: int, amount, transaction_id=None) -> bool:
 
     if is_ftd:
         notify(referral.affiliate_id, 'ftd', 'First deposit',
-               f'A referred player made their first deposit of {inr(amount)}.',
+               f'A referred player made their first deposit of {usd(amount)}.',
                {'referral_id': referral.id})
         try:
             from core import affiliate_commission
@@ -1270,7 +1274,7 @@ def get_activity(affiliate: Affiliate, limit: int = 12) -> dict:
             events.append({
                 'type': 'deposit',
                 'text': f'P-{referral.user_id:05d} deposited '
-                        f'{inr(referral.first_deposit_amount)}',
+                        f'{usd(referral.first_deposit_amount)}',
                 'at': _iso(referral.first_deposit_at),
             })
     for payout in AffiliatePayout.objects.filter(
@@ -1278,7 +1282,7 @@ def get_activity(affiliate: Affiliate, limit: int = 12) -> dict:
     ).order_by('-created_at')[:limit]:
         events.append({
             'type': 'payout',
-            'text': f'Payout {inr(payout.amount)} — {payout.status}',
+            'text': f'Payout {usd(payout.amount)} — {payout.status}',
             'at': _iso(payout.processed_at or payout.requested_at or payout.created_at),
         })
 
@@ -1522,13 +1526,13 @@ def get_referral_detail(affiliate: Affiliate, referral_id: int) -> dict:
     if referral.first_deposit_at:
         activity.append({
             'type': 'deposit',
-            'text': f'First deposit of {inr(referral.first_deposit_amount)}',
+            'text': f'First deposit of {usd(referral.first_deposit_amount)}',
             'at': _iso(referral.first_deposit_at),
         })
     for entry in entries[:5]:
         activity.append({
             'type': 'commission',
-            'text': f'{entry.get_entry_type_display()} of {inr(entry.amount)}',
+            'text': f'{entry.get_entry_type_display()} of {usd(entry.amount)}',
             'at': _iso(entry.created_at),
         })
     activity.sort(key=lambda e: e['at'] or '', reverse=True)
@@ -1783,7 +1787,7 @@ def get_payouts(affiliate: Affiliate, *, status=None, limit=50, offset=0) -> dic
                 and methods.exists() and not has_open_request
             ),
             'has_open_request': has_open_request,
-            'currency': affiliate.currency or settings['currency'],
+            'currency': present_currency(affiliate.currency or settings['currency']),
         },
         'methods': [serialize_payout_method(m) for m in methods],
         'records': [serialize_payout(p, entry_counts.get(p.id, 0)) for p in payouts],
@@ -1834,8 +1838,8 @@ def request_payout(affiliate: Affiliate, *, amount=None, method_id=None) -> dict
             raise ValueError('You have no approved commission available to withdraw.')
         if available < threshold:
             raise ValueError(
-                f'Minimum payout is {inr(threshold)}. Your available balance is '
-                f'{inr(available)}.'
+                f'Minimum payout is {usd(threshold)}. Your available balance is '
+                f'{usd(available)}.'
             )
 
         # A partial amount claims whole entries up to that value: splitting a
@@ -1851,12 +1855,12 @@ def request_payout(affiliate: Affiliate, *, amount=None, method_id=None) -> dict
             claimed.append(entry.id)
             running += entry.amount
         if running < threshold:
-            raise ValueError(f'Minimum payout is {inr(threshold)}.')
+            raise ValueError(f'Minimum payout is {usd(threshold)}.')
 
         payout = AffiliatePayout.objects.create(
             affiliate_id=affiliate.id,
             amount=running,
-            currency=affiliate.currency or settings['currency'],
+            currency=store_currency(affiliate.currency or settings['currency']),
             method_id=method.id,
             method_label=method.label or method.get_method_type_display(),
             method_details=method.masked_details,

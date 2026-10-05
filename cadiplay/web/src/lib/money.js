@@ -3,6 +3,11 @@
 
 export const AMOUNT_SCALE = 100;
 
+/** UI label. The API stores USD; screens always show USDT. */
+export function displayCurrency(_code) {
+  return 'USDT';
+}
+
 export function toDisplayAmount(stored) {
   const n = Number(stored ?? 0);
   return Number.isFinite(n) ? n / AMOUNT_SCALE : 0;

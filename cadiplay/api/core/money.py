@@ -3,14 +3,32 @@
 Wallets are stored in units that are 100 times the USDT amount the player sees.
 6000 stored is 60 USDT. Game launch, callbacks, and client reads and writes
 convert at this boundary so the stored ledger does not have to be rewritten.
+
+The ledger currency is always USD. Clients and UIs render that same unit as
+USDT (1:1). Incoming client codes (including USDT) are stored as USD.
 """
 
 from decimal import Decimal, ROUND_HALF_UP
+
+# Stored on wallets, transactions, sessions, and program settings.
+BACKEND_CURRENCY = 'USD'
+# Returned to web / admin / affiliate / agent screens.
+DISPLAY_CURRENCY = 'USDT'
 
 USDT_SCALE = Decimal('100')
 _DP = Decimal('0.01')
 MIN_DEPOSIT_USDT = Decimal('30')
 MIN_WITHDRAWAL_USDT = Decimal('50')
+
+
+def store_currency(_value=None) -> str:
+    """House currency written to the database. Always USD."""
+    return BACKEND_CURRENCY
+
+
+def present_currency(_value=None) -> str:
+    """Currency label clients show. Always USDT."""
+    return DISPLAY_CURRENCY
 
 
 def usdt_amount(value) -> float:

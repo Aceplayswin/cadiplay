@@ -27,6 +27,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from core import bonus_services, game_logging
+from core.money import store_currency
 from core.game_schemas import (
     LOST,
     VOID,
@@ -164,7 +165,7 @@ def launch_game(user_id: int, body: dict) -> dict:
                     game_name=game_name,
                     member_account=member_account,
                     launch_url=launch_url,
-                    currency=wallet.currency,
+                    currency=store_currency(wallet.currency),
                     status=GameSession.Status.WAIT,
                 )
             GameRepository.increment_play_count(game.id)
@@ -602,7 +603,7 @@ def _settle(user_id: int, cb: CallbackPayload) -> SettlementResult:
                     win_amount=cb.win_amount,
                     balance_before=balance_before,
                     balance_after=balance_before + net,
-                    currency=cb.currency_code or wallet.currency,
+                    currency=store_currency(cb.currency_code or wallet.currency),
                     provider_timestamp=cb.timestamp,
                 )
             except IntegrityError as exc:
@@ -690,7 +691,7 @@ def _settle(user_id: int, cb: CallbackPayload) -> SettlementResult:
                 user_id=user_id,
                 type=Transaction.TxType.BET_SETTLEMENT,
                 amount=abs(net),
-                currency=cb.currency_code or wallet.currency,
+                currency=store_currency(cb.currency_code or wallet.currency),
                 status=Transaction.Status.COMPLETED,
                 reference_number=cb.serial_number,
                 notes='Win' if net > 0 else 'Loss',
@@ -1008,7 +1009,7 @@ def _settle_sports_slip(
                 user_id=user_id,
                 type=Transaction.TxType.BET_SETTLEMENT,
                 amount=payout,
-                currency=cb.currency_code or wallet.currency,
+                currency=store_currency(cb.currency_code or wallet.currency),
                 status=Transaction.Status.COMPLETED,
                 reference_number=cb.serial_number,
                 notes='Win',

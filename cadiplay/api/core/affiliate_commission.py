@@ -9,8 +9,8 @@ player activity into ledger entries. Three kinds of money come out of it:
   deposit;
 * **override** — the parent (level 2) cut of a sub-affiliate's earnings. It is
   taken out of the level-1 amount, not paid on top:
-  - rev-share: player loss ₹100 at 30% → ₹30; 5% override → parent ₹1.50 / child ₹28.50
-  - CPA: first deposit only, fixed bounty ₹100; 5% override → parent ₹5 / child ₹95
+  - rev-share: player loss USD 100 at 30% → USD 30; 5% override → parent USD 1.50 / child USD 28.50
+  - CPA: first deposit only, fixed bounty USD 100; 5% override → parent USD 5 / child USD 95
 
 Two decisions here matter more than the rest:
 
@@ -40,7 +40,8 @@ from core.affiliate_models import (Affiliate, AffiliateApiNonce, AffiliateClick,
                                    AffiliateReferral)
 from core.affiliate_services import (ZERO, get_program_settings, money,
                                      commission_rate_for, cpa_amount_for,
-                                     override_rate_for, notify, inr)
+                                     override_rate_for, notify, usd)
+from core.money import BACKEND_CURRENCY, store_currency
 from core.models import GameRound, UserBonus
 from tenants.state import tenant_atomic
 
@@ -76,7 +77,7 @@ def _dedupe_key(entry_type: str, period: date, referral_id=None,
 
 def _write_entry(*, affiliate_id, entry_type, base_kind, base_amount, rate, amount,
                  period, referral_id=None, source_affiliate_id=None, run_id=None,
-                 currency='INR', dry_run=False, pool: str | None = None) -> str:
+                 currency=BACKEND_CURRENCY, dry_run=False, pool: str | None = None) -> str:
     """Insert or update one ledger entry. Returns 'written', 'skipped' or 'noop'.
 
     The three-way branch is the whole safety story:
@@ -89,6 +90,7 @@ def _write_entry(*, affiliate_id, entry_type, base_kind, base_amount, rate, amou
     has already cleared review can never be silently rewritten underneath it.
     """
     amount = money(amount)
+    currency = store_currency(currency)
     if amount <= ZERO:
         return 'noop'
 
@@ -213,7 +215,7 @@ def _process_revenue_share(affiliate, referrals, period, start, end, settings,
             base_kind=AffiliateCommissionLedger.BaseKind.NGR,
             base_amount=base, rate=rate, amount=amount, period=period,
             referral_id=referral_id, run_id=run_id,
-            currency=affiliate.currency or 'INR', dry_run=dry_run,
+            currency=store_currency(affiliate.currency), dry_run=dry_run,
         )
         if result == 'written':
             written += 1
@@ -269,7 +271,7 @@ def _process_cpa(affiliate, referrals, period, start, end, settings, run_id,
             base_kind=AffiliateCommissionLedger.BaseKind.FTD,
             base_amount=referral.first_deposit_amount, rate=ZERO, amount=bounty,
             period=period, referral_id=referral.id, run_id=run_id,
-            currency=affiliate.currency or 'INR', dry_run=dry_run,
+            currency=store_currency(affiliate.currency), dry_run=dry_run,
         )
         if result == 'written':
             written += 1
@@ -453,7 +455,7 @@ def _process_override_pool(affiliate, period, settings, run_id, dry_run, *,
                 base_kind=override_base_kind,
                 base_amount=base, rate=rate, amount=amount, period=period,
                 source_affiliate_id=affiliate.id, run_id=run_id,
-                currency=parent.currency or 'INR', dry_run=dry_run,
+                currency=store_currency(parent.currency), dry_run=dry_run,
                 pool=pool,
             )
             if result == 'written':
@@ -484,8 +486,8 @@ def _process_overrides(period, settings, run_id, dry_run) -> tuple[int, int, Dec
 
     Both pools are split the same way — the override is taken *out of* level 1:
 
-    * rev-share: ₹100 player loss × 30% → ₹30; 5% override → ₹1.50 / ₹28.50
-    * CPA: first deposit only, fixed ₹100 bounty; 5% override → ₹5 / ₹95
+    * rev-share: USD 100 player loss × 30% → USD 30; 5% override → USD 1.50 / USD 28.50
+    * CPA: first deposit only, fixed USD 100 bounty; 5% override → USD 5 / USD 95
 
     Overrides are never calculated on other overrides, so a deep chain cannot
     compound. Net-new money from this step is zero (redistribution only).
@@ -722,7 +724,7 @@ def _notify_new_commission(start: date, end: date, run_id) -> None:
         if not row['total']:
             continue
         notify(row['affiliate_id'], 'commission', 'Commission calculated',
-               f'{row["n"]} new entries totalling {inr(row["total"])} '
+               f'{row["n"]} new entries totalling {usd(row["total"])} '
                f'for {start.isoformat()}.',
                {'run_id': run_id, 'amount': float(row['total'])})
 

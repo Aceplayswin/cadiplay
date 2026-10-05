@@ -406,7 +406,7 @@ def wallet_deposit(request):
             request.auth.sub,
             float(body['amount']),
             body['paymentMethod'],
-            body.get('currency', 'INR'),
+            body.get('currency', 'USD'),
             # Optional UTR / reference the user pastes from their payment app.
             reference_number=(body.get('referenceNumber') or body.get('reference_number')),
             # Screenshot the player uploaded first (see wallet_deposit_proof).
