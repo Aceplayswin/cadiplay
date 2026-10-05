@@ -1,4 +1,4 @@
-"""Built-in per-theme color defaults — cadiplay's own copy of the palette.
+"""Built-in per-theme color defaults — dollara's own copy of the palette.
 
 Branding (including colors) is authored in Super Admin and delivered over the
 control plane. These defaults are the *offline* fallback: if Super Admin has
@@ -6,7 +6,7 @@ never been reached (cold cache) or set no color for a token, the product still
 renders each theme with a complete, correct palette.
 
 This mirrors ``super_admin/api/tenants/theme_palettes.py`` (default values only)
-and ``cadiplay/web/src/themes/palettes.js`` (the web injector). Keep the three in
+and ``dollara/web/src/themes/palettes.js`` (the web injector). Keep the three in
 sync when adding or renaming a token.
 """
 

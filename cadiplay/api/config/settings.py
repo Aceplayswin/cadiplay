@@ -36,7 +36,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
 # --- Database ---
-# `default` is this product's OWN feature database (MYSQL_*). cadiplay no longer
+# `default` is this product's OWN feature database (MYSQL_*). dollara no longer
 # connects to Super Admin's master/control-plane database — that data (product
 # identity, branding, theme, webhook public keys) is fetched over HTTP from Super
 # Admin and cached; see services/control_plane.py. This instance serves a single
@@ -44,7 +44,7 @@ ASGI_APPLICATION = 'config.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_DATABASE', 'cadiplay'),
+        'NAME': os.getenv('MYSQL_DATABASE', 'dollara'),
         'USER': os.getenv('MYSQL_USER', 'root'),
         'PASSWORD': os.getenv('MYSQL_PASSWORD', ''),
         'HOST': os.getenv('MYSQL_HOST', 'localhost'),
@@ -60,7 +60,7 @@ DATABASE_ROUTERS = ['middleware.db_router.TenantRouter']
 # authenticates the pull AND identifies which product this instance is. Super
 # Admin resolves the product from this key alone — no slug is exchanged, so the
 # two sides only communicate when a valid key is configured here.
-SUPER_ADMIN_URL = os.getenv('SUPER_ADMIN_URL', 'http://localhost:9000').rstrip('/')
+SUPER_ADMIN_URL = os.getenv('SUPER_ADMIN_URL', 'http://localhost:8000').rstrip('/')
 PRODUCT_CONFIG_TOKEN = os.getenv('PRODUCT_CONFIG_TOKEN', '')
 # How long (seconds) to cache a fetched config before re-checking Super Admin.
 CONTROL_PLANE_CACHE_TTL = int(os.getenv('CONTROL_PLANE_CACHE_TTL', '60'))
@@ -93,7 +93,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # record of every launch, settlement (bet/win/loss/balance) and failure to
 # logs/games.log; everything WARNING+ (interruptions, rejected callbacks,
 # decrypt/internal errors) is mirrored to logs/games_error.log so problems are
-# easy to find and diagnose. Files rotate so they never grow unbounded.
+# easy to find and diagnose. Its 'games.raw' child writes everything the
+# aggregator sends — callback bodies verbatim plus their decrypted payloads,
+# launch responses — to logs/raw_games.log. Files rotate so they never grow
+# unbounded.
 # --------------------------------------------------------------------------- #
 LOG_DIR = BASE_DIR / 'logs'
 LOG_DIR.mkdir(exist_ok=True)
@@ -106,7 +109,7 @@ LOGGING = {
     },
     'handlers': {
         'games_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'core.logging_handlers.WatchedRotatingFileHandler',
             'filename': str(LOG_DIR / 'games.log'),
             'maxBytes': 10 * 1024 * 1024,
             'backupCount': 10,
@@ -115,7 +118,7 @@ LOGGING = {
             'encoding': 'utf-8',
         },
         'games_error_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'core.logging_handlers.WatchedRotatingFileHandler',
             'filename': str(LOG_DIR / 'games_error.log'),
             'maxBytes': 5 * 1024 * 1024,
             'backupCount': 10,
@@ -123,11 +126,22 @@ LOGGING = {
             'level': 'WARNING',
             'encoding': 'utf-8',
         },
+        # Raw aggregator traffic. Every callback lands here twice (body and
+        # decrypted payload), so it gets bigger files than games.log.
+        'games_raw_file': {
+            'class': 'core.logging_handlers.WatchedRotatingFileHandler',
+            'filename': str(LOG_DIR / 'raw_games.log'),
+            'maxBytes': 50 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'game',
+            'level': 'INFO',
+            'encoding': 'utf-8',
+        },
         # Affiliate program: attribution decisions, commission runs and signed
         # partner requests. Separate from games.log because these are money
         # decisions about third parties and get read during payout disputes.
         'affiliate_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'core.logging_handlers.WatchedRotatingFileHandler',
             'filename': str(LOG_DIR / 'affiliate.log'),
             'maxBytes': 10 * 1024 * 1024,
             'backupCount': 10,
@@ -139,6 +153,13 @@ LOGGING = {
     'loggers': {
         'games': {
             'handlers': ['games_file', 'games_error_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # Kept out of games.log: without propagate=False every raw payload
+        # would be copied there too.
+        'games.raw': {
+            'handlers': ['games_raw_file'],
             'level': 'INFO',
             'propagate': False,
         },
@@ -168,13 +189,13 @@ REST_FRAMEWORK = {
     'UNAUTHENTICATED_USER': None,
 }
 
-# CADIPLAY platform settings
+# DOLLARA platform settings
 JWT_SECRET = os.getenv('JWT_SECRET', 'dev-secret-change-in-production')
 JWT_REFRESH_SECRET = os.getenv('JWT_REFRESH_SECRET', 'dev-refresh-secret')
 JWT_EXPIRY_DAYS = 7
 WELCOME_BONUS = float(os.getenv('WELCOME_BONUS', '100'))
 DEMO_SESSION_MINUTES = 30
-API_PORT = int(os.getenv('PORT', '9001'))
+API_PORT = int(os.getenv('PORT', '5000'))
 
 # --- Game aggregator / provider integration ---
 # All values come from the environment so credentials, keys, and URLs are never
@@ -196,7 +217,7 @@ if _callback_env:
 elif _api_public_url.startswith('https://'):
     _game_callback_base = _api_public_url
 else:
-    _game_callback_base = 'http://localhost:9001'
+    _game_callback_base = 'http://localhost:5000'
 
 GAME_PROVIDER = {
     'AGENCY_UID': os.getenv('GAME_AGENCY_UID', ''),
@@ -209,8 +230,8 @@ GAME_PROVIDER = {
     # testing against a shared agency account it can be set to '/game/' (the
     # legacy registered path) and reverse-proxied/aliased to games_callback.
     'CALLBACK_PATH': os.getenv('GAME_CALLBACK_PATH', '/api/v1/games/callback'),
-    'HOME_URL': os.getenv('GAME_HOME_URL', 'http://localhost:4000'),
-    'CURRENCY_CODE': os.getenv('GAME_CURRENCY_CODE', 'USD'),
+    'HOME_URL': os.getenv('GAME_HOME_URL', 'http://localhost:3000'),
+    'CURRENCY_CODE': os.getenv('GAME_CURRENCY_CODE', 'INR'),
     'DEFAULT_LANGUAGE': os.getenv('GAME_DEFAULT_LANGUAGE', 'en'),
     'HTTP_TIMEOUT': int(os.getenv('GAME_HTTP_TIMEOUT', '15')),
 }
@@ -221,33 +242,20 @@ GAME_MIN_LAUNCH_BALANCE = os.getenv('GAME_MIN_LAUNCH_BALANCE', '100')
 GAME_MOCK_LAUNCH = os.getenv('GAME_MOCK_LAUNCH', '').lower() in ('1', 'true', 'yes')
 # Launch endpoint path on the aggregator (default matches legacy /game/v1).
 GAME_LAUNCH_PATH = _normalize_launch_path(os.getenv('GAME_LAUNCH_PATH', '/game/v1'))
-# Minimum win that qualifies for the public "recent big wins" feed.
-GAME_BIG_WIN_THRESHOLD = os.getenv('GAME_BIG_WIN_THRESHOLD', '1000')
+# Minimum win that qualifies for the public "recent big wins" feed. Kept low so
+# the feed reflects real settled play on a young catalog — at 1000 the panel sat
+# empty because no round had yet won that much. Raise it via env once volume
+# justifies a higher bar.
+GAME_BIG_WIN_THRESHOLD = os.getenv('GAME_BIG_WIN_THRESHOLD', '1')
 # How long a stake may sit unresolved before the sweep force-settles it, so a
 # provider that never reports a result cannot pin a bet on "Pending" forever.
 GAME_PENDING_STAKE_MAX_HOURS = os.getenv('GAME_PENDING_STAKE_MAX_HOURS', '72')
-
-# --- CoinGecko (USD ⇄ USDT exchange rate) ---
-# A key is optional: without one the public Simple Price endpoint is used, which
-# is capped at a few calls per minute — hence the cache TTL below. Set
-# COINGECKO_PRO=1 only for a paid Pro key; a demo key uses the public host with a
-# different header, and sending the wrong one silently drops back to public limits.
-COINGECKO_API_KEY = os.getenv('COINGECKO_API_KEY', '')
-COINGECKO_PRO = os.getenv('COINGECKO_PRO', '').lower() in ('1', 'true', 'yes')
-COINGECKO_HTTP_TIMEOUT = int(os.getenv('COINGECKO_HTTP_TIMEOUT', '10'))
-# How long a fetched rate is served before refetching. 60s keeps the quote close
-# to the market while staying well inside the public rate limit.
-COINGECKO_CACHE_TTL = int(os.getenv('COINGECKO_CACHE_TTL', '60'))
-# Rate of last resort, used only if CoinGecko has never answered since this
-# process started (so there is no last-known-good copy). Left blank the cashier
-# refuses to quote rather than pricing a transfer off a stale constant.
-USDT_USD_FALLBACK_RATE = os.getenv('USDT_USD_FALLBACK_RATE', '')
 
 # Public base URLs of this deployment's own surfaces. The affiliate program
 # needs both: it builds tracking links against the API (which owns /r/<code>)
 # and redirects the resulting click to the player site.
 API_URL = os.getenv('API_URL', '').rstrip('/') or f'http://localhost:{API_PORT}'
-WEB_URL = os.getenv('WEB_URL', '').rstrip('/') or 'http://localhost:4000'
+WEB_URL = os.getenv('WEB_URL', '').rstrip('/') or 'http://localhost:3000'
 # The partner portal. Needed server-side because sub-affiliate invite links are
 # built by the API and point at that portal's apply form.
-AFFILIATE_URL = os.getenv('AFFILIATE_URL', '').rstrip('/') or 'http://localhost:4002'
+AFFILIATE_URL = os.getenv('AFFILIATE_URL', '').rstrip('/') or 'http://localhost:3003'

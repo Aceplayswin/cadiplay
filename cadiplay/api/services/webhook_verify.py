@@ -2,7 +2,7 @@
 
 Super Admin signs every data pull with the product's RSA private key
 (``super_admin/api/services/crypto_keys.py`` / ``webhook_client.py``). This module
-is the product (cadiplay) side: it rebuilds the **same** canonical signing-string
+is the product (dollara) side: it rebuilds the **same** canonical signing-string
 from the request it received and verifies the ``X-SA-Signature`` against the
 stored public key before any tenant data is read.
 
@@ -76,7 +76,7 @@ def verify_incoming(*, public_pem: str, method: str, path: str, headers,
     # NOTE: For full replay protection, also store-and-reject seen (key_id, nonce)
     # pairs for SIGNATURE_MAX_SKEW_SECONDS. The timestamp window above bounds the
     # exposure; a nonce store would close it. Left out here to match the reference
-    # contract and because cadiplay's cache is per-process (not shared across
+    # contract and because dollara's cache is per-process (not shared across
     # workers). The affiliate contract, which is a lower-trust externally
     # distributed surface, does implement one — see core/affiliate_auth.py, which
     # persists nonces in a table precisely because the cache cannot be trusted.

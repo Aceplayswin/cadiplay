@@ -30,6 +30,7 @@ import json
 import logging
 import re
 import secrets
+import uuid
 from datetime import datetime, time, timedelta
 from decimal import Decimal
 
@@ -38,13 +39,13 @@ from django.db.models import Count, DecimalField, F, Q, Sum, Value
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from core.money import stored_amount
 from core.agent_models import (Agent, AgentAuditLog, AgentSettlement,
                                AgentTransfer, SportBet, SportEvent,
                                SportMarket)
 from core.auth_jwt import sign_token
 from core.models import (Game, GameRound, PlatformSetting, Transaction, User,
                          UserSetting, Wallet)
+from core.repositories import sports_category_slugs
 from core.services import _check_password, hash_password
 from tenants.state import get_current_tenant_id, tenant_atomic
 
@@ -56,7 +57,15 @@ CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 # Aggregator categories that belong to the sports side of every report, not the
 # casino side. `sports` is the real sportsbook; `virtual_sports` is simulated
 # but is still sold, priced and reported as a sports product.
+# Backstop only — the live list comes from `game_categories.is_sports`, which an
+# admin can edit. See repositories.sports_category_slugs.
 SPORTS_CATEGORIES = (Game.Category.SPORTS, Game.Category.VIRTUAL_SPORTS)
+
+
+def _sports_categories():
+    """Slugs reported on the sports side, resolved per call so an admin's
+    category change takes effect without a redeploy."""
+    return tuple(sports_category_slugs())
 
 USERNAME_RE = re.compile(r'^[A-Za-z0-9_.]{4,30}$')
 EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
@@ -73,7 +82,7 @@ DEFAULT_PROGRAM_SETTINGS = {
     'min_partnership': 0,
     'max_partnership': 100,
     'review_hours': 24,
-    'currency': 'USDT',
+    'currency': 'INR',
 }
 
 MONEY = DecimalField(max_digits=20, decimal_places=2)
@@ -249,7 +258,7 @@ def _casino_totals(player_ids, start, end) -> dict:
     """Aggregator play that is not a sports product."""
     rounds = (
         GameRound.objects.filter(user_id__in=player_ids, created_at__range=(start, end))
-        .exclude(game__category__in=SPORTS_CATEGORIES)
+        .exclude(game__category__in=_sports_categories())
     )
     totals = rounds.aggregate(
         bets=_money('bet_amount'), wins=_money('win_amount'), count=Count('id')
@@ -282,7 +291,7 @@ def _sports_totals(player_ids, start, end) -> dict:
     )['total']
     rounds = (
         GameRound.objects.filter(user_id__in=player_ids, created_at__range=(start, end))
-        .filter(game__category__in=SPORTS_CATEGORIES)
+        .filter(game__category__in=_sports_categories())
         .aggregate(bets=_money('bet_amount'), wins=_money('win_amount'), count=Count('id'))
     )
 
@@ -307,11 +316,15 @@ def _sports_totals(player_ids, start, end) -> dict:
 def _login_payload(agent: Agent, ip=None) -> dict:
     """Mint the session. Role 'agent' means `sub` is an agents.id, never a
     users.id — the two never collide because no endpoint accepts both."""
+    session_id = uuid.uuid4().hex
     agent.last_login_at = timezone.now()
     agent.last_login_ip = ip
-    agent.save(update_fields=['last_login_at', 'last_login_ip', 'updated_at'])
+    agent.active_session_id = session_id
+    agent.save(update_fields=[
+        'last_login_at', 'last_login_ip', 'active_session_id', 'updated_at',
+    ])
     return {
-        'token': sign_token({'sub': agent.id, 'role': 'agent'},
+        'token': sign_token({'sub': agent.id, 'role': 'agent', 'sid': session_id},
                             tenant=get_current_tenant_id()),
         'agentId': agent.id,
         'code': agent.code,
@@ -501,7 +514,7 @@ def _player_stats_rows(player_ids, start, end, limit: int = 50) -> list[dict]:
         row['user_id']: row
         for row in GameRound.objects
         .filter(user_id__in=player_ids, created_at__range=(start, end))
-        .exclude(game__category__in=SPORTS_CATEGORIES)
+        .exclude(game__category__in=_sports_categories())
         .values('user_id')
         .annotate(bets=_money('bet_amount'), wins=_money('win_amount'))
     }
@@ -509,7 +522,7 @@ def _player_stats_rows(player_ids, start, end, limit: int = 50) -> list[dict]:
         row['user_id']: row
         for row in GameRound.objects
         .filter(user_id__in=player_ids, created_at__range=(start, end))
-        .filter(game__category__in=SPORTS_CATEGORIES)
+        .filter(game__category__in=_sports_categories())
         .values('user_id')
         .annotate(bets=_money('bet_amount'), wins=_money('win_amount'))
     }
@@ -916,7 +929,7 @@ def create_client(agent: Agent, *, username, password, name, level,
     partnership = Decimal(str(partnership or 0))
     if partnership < 0 or partnership > 100:
         raise ValueError('Partnership must be between 0 and 100')
-    credit = stored_amount(credit or 0)
+    credit = Decimal(str(credit or 0))
     if credit < 0:
         raise ValueError('Opening credit cannot be negative')
 
@@ -1103,7 +1116,7 @@ def create_player(agent: Agent, *, username, password, full_name=None,
     if User.objects.filter(username=username).exists():
         raise ValueError('That username is already taken')
 
-    credit = stored_amount(credit or 0)
+    credit = Decimal(str(credit or 0))
     if credit < 0:
         raise ValueError('Opening credit cannot be negative')
 
@@ -1228,7 +1241,7 @@ def transfer_credit(agent: Agent, *, counterparty_type, counterparty_id,
     audited without replaying the whole history to work out what a balance was
     at the time.
     """
-    amount = stored_amount(amount or 0)
+    amount = Decimal(str(amount or 0))
     if amount <= 0:
         raise ValueError('Amount must be greater than zero')
     if direction not in AgentTransfer.Direction.values:
@@ -1335,7 +1348,7 @@ def settle(agent: Agent, *, counterparty_type, counterparty_id, amount,
     ``amount`` is signed from the agent's side: positive means the counterparty
     owed the agent.
     """
-    amount = stored_amount(amount or 0)
+    amount = Decimal(str(amount or 0))
     if amount == 0:
         raise ValueError('Settlement amount cannot be zero')
     if counterparty_type not in AgentSettlement.CounterpartyType.values:
@@ -1841,7 +1854,7 @@ def real_revenue(agent: Agent, filters: dict) -> dict:
     casino = by_user(
         GameRound.objects
         .filter(user_id__in=all_player_ids, created_at__range=(start, end))
-        .exclude(game__category__in=SPORTS_CATEGORIES)
+        .exclude(game__category__in=_sports_categories())
         .values('user_id')
         .annotate(total=_money(F('bet_amount') - F('win_amount')))
     )

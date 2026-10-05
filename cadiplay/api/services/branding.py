@@ -1,8 +1,8 @@
 """White-label branding for the current tenant, per theme.
 
-Branding is authored in Super Admin (one set per theme) and delivered to cadiplay
+Branding is authored in Super Admin (one set per theme) and delivered to dollara
 over the control-plane config endpoint (see :mod:`services.control_plane`) —
-cadiplay no longer reads the master ``branding`` table directly.
+dollara no longer reads the master ``branding`` table directly.
 
 Two states, as required:
   1. **Super Admin available** — colors/name/logo come from the delivered config
@@ -23,7 +23,7 @@ def _default_branding(theme_key: str) -> dict:
     colors = default_colors(theme_key)
     return {
         'theme_key': theme_key,
-        'product_name': 'Cadiplay',
+        'product_name': 'Gaming Platform',
         'logo_url': '',
         'favicon_url': '',
         'theme_color': colors.get('primary', '#ff9800'),
@@ -60,7 +60,7 @@ def _fill_colors(branding: dict, theme_key: str) -> dict:
 def get_branding(theme_key: str | None = None) -> dict:
     """Branding for a theme (default: this product's live theme), or safe defaults.
 
-    cadiplay serves a single product identified by its api_key, so branding comes
+    dollara serves a single product identified by its api_key, so branding comes
     from the control-plane config — there is no tenant/slug argument.
     """
     config = get_product_config()

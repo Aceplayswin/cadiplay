@@ -1,6 +1,6 @@
 """Tenant resolution middleware.
 
-Runs early in the request cycle to resolve the active product from cadiplay's own
+Runs early in the request cycle to resolve the active product from dollara's own
 api_key (via the control-plane config pull), expose it as ``request.tenant``, and
 always clear the thread-local tenant context at the end of the request so
 connections are never leaked across the worker thread pool.

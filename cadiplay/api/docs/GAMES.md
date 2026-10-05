@@ -1,7 +1,7 @@
 # Gaming Module (Python / Django)
 
 Production rebuild of the legacy PHP gaming platform (see `../../games.md`) on the
-Cadiplay Django stack. The module integrates an **external game aggregator**: games
+Dollara Django stack. The module integrates an **external game aggregator**: games
 run in an iframe served by the provider, and bets/wins are settled back into the
 player wallet via a secure, idempotent, transaction-safe callback.
 
@@ -146,7 +146,14 @@ Returns the aggregator-shaped encrypted ack `{ code, msg, payload }` where
 1. **Decrypt** the envelope (`services.game_provider.parse_callback`).
 2. **Validate** the payload (`CallbackPayload.parse`).
 3. **Resolve** the user by stripping the player prefix from `member_account`.
-4. **Heartbeat**: if `bet == win == 0`, return the current balance, no writes.
+4. **Heartbeat**: if `bet == win == 0` and the payload carries no sportsbook
+   bet-slip result, return the current balance, no writes. A bet-slip result
+   (`exchange_payout` operation, `bet_slip_settle` block, or final selection
+   statuses in the provider detail under `data`) is settled instead — a losing
+   slip legitimately arrives with both amounts at 0, because its stakes were
+   debited when the bets were placed. Each selection is tied to its stake by the
+   provider bet id; a selection with no recorded stake rejects the whole slip so
+   the provider retries it.
 5. **Idempotency pre-check**: known `serial_number` → re-ack, no settlement.
 6. **Settle** under `SELECT … FOR UPDATE` on the wallet row, inside
    `tenant_atomic()`:

@@ -1,4 +1,4 @@
-# Cadiplay Product API (Django)
+# Dollara Product API (Django)
 
 White-label gaming backend for a **single product deployment**. The product owns
 one MySQL database (its feature data). It does **not** connect to Super Admin's
@@ -21,15 +21,15 @@ public keys are fetched from Super Admin over HTTP and cached.
 ## Architecture
 
 ```
-  Super Admin API                       Cadiplay Product API
+  Super Admin API                       Dollara Product API
   (super_admin/api)                      (this service)
   ┌──────────────────────┐   HTTPS GET   ┌──────────────────────────┐
   │ Master MySQL DB       │ ◀──────────  │ services/control_plane.py │
   │ products, branding,   │  X-Product-  │  (fetch + cache config)   │
   │ themes, credentials   │  Token       │            │              │
   └──────────────────────┘  ──────────▶ │            ▼              │
-        (never touched                   │      cadiplay feature DB   │
-         directly by cadiplay)            │  (users, wallets, games,  │
+        (never touched                   │      dollara feature DB   │
+         directly by dollara)            │  (users, wallets, games,  │
                                          │   txns — the `default`     │
                                          │   connection, MYSQL_*)     │
                                          └──────────────────────────┘
@@ -80,6 +80,19 @@ cp .env.example .env
 ```bash
 python manage.py runserver 0.0.0.0:5000
 ```
+
+Schema lives in `database/init.sql` (no Django migrations). After pulling a
+build that adds columns, run the idempotent repair before restarting, or the
+affected screens return a schema error:
+
+```bash
+python manage.py ensure_payment_method_columns   # Cashier → Payment Methods columns
+python manage.py ensure_bonus_claim_columns      # Bonus claim conditions (min balance / wagering / deposits)
+```
+
+Fresh installs get the full schema (including single-session and blocked-IP
+columns) from `database/init.sql` alone; the ensure commands are only for
+databases that already exist and are behind the current build.
 
 ## Endpoints
 

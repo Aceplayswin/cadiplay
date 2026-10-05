@@ -27,6 +27,8 @@ import requests
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from django.conf import settings
 
+from core import game_logging
+
 
 class ProviderConfigError(RuntimeError):
     """Raised when required provider credentials/URLs are missing from env."""
@@ -64,8 +66,6 @@ class ProviderConfig:
 # Per-provider override keys (as stored on the ``game_providers`` row) mapped to
 # the ProviderConfig field they replace. Blank/NULL values are ignored, so a
 # provider only overrides what it actually integrates differently.
-# ``currency_code`` is included so a vendor can launch in a currency other
-# than the platform default (USD) without changing GAME_CURRENCY_CODE.
 _OVERRIDE_FIELDS = (
     'agency_uid',
     'aes_secret_key',
@@ -99,25 +99,14 @@ def get_config(overrides: dict | None = None) -> ProviderConfig:
         'default_language': raw['DEFAULT_LANGUAGE'],
         'http_timeout': raw['HTTP_TIMEOUT'],
     }
-    extras = overrides or {}
     for field in _OVERRIDE_FIELDS:
-        value = extras.get(field)
+        value = (overrides or {}).get(field)
         if value not in (None, ''):
             values[field] = value.rstrip('/') if field == 'server_url' else value
-    values['currency_code'] = normalize_currency_code(values.get('currency_code'))
     return ProviderConfig(**values)
 
 
 DEFAULT_LAUNCH_PATH = '/game/v1'
-
-
-def normalize_currency_code(code: str | None, *, fallback: str = 'USD') -> str:
-    """Aggregator ISO currency. USDT is the wallet token, not a launch currency."""
-    raw = (code or '').strip().upper()
-    if not raw:
-        return fallback
-    # The aggregator rejects USDT with 10018 ("line does not support currency").
-    return 'USD' if raw == 'USDT' else raw
 
 
 def normalize_launch_path(path: str | None) -> str:
@@ -292,6 +281,7 @@ def request_launch_url(
     user_id: int | str,
     game_uid: str,
     credit_amount: str,
+    currency_code: str | None = None,
     language: str | None = None,
     platform: str = 'web',
     overrides: dict | None = None,
@@ -317,8 +307,7 @@ def request_launch_url(
         'member_account': build_member_account(user_id, overrides),
         'game_uid': game_uid,
         'credit_amount': str(credit_amount),
-        # Platform currency is USD. Never send USDT (aggregator 10018).
-        'currency_code': cfg.currency_code,
+        'currency_code': currency_code or cfg.currency_code,
         'language': language or cfg.default_language,
         'home_url': cfg.home_url,
         'platform': platform,
@@ -341,6 +330,11 @@ def request_launch_url(
     except requests.RequestException as exc:
         raise ProviderError(f'Aggregator unreachable at {launch_url}: {exc}') from exc
 
+    # Logged before any check, so a 403 page or malformed reply is on record.
+    game_logging.raw_launch_response(
+        user_id, game_uid, launch_url, resp.status_code, resp.text,
+    )
+
     if resp.status_code != 200:
         # Include the target URL (no secrets) so a 403/404 is diagnosable —
         # e.g. a wrong launch path or a source IP not whitelisted by the provider.
@@ -360,7 +354,9 @@ def request_launch_url(
     # Some aggregators return the inner payload encrypted, others plain. Handle both.
     if isinstance(launch_payload, str):
         try:
-            launch_payload = decrypt_json(launch_payload, cfg.aes_secret_key)
+            text = decrypt(launch_payload, cfg.aes_secret_key)
+            game_logging.raw_launch_payload(user_id, game_uid, text)
+            launch_payload = json.loads(text)
         except Exception as exc:  # pragma: no cover - defensive
             raise ProviderError('Failed to decrypt launch payload') from exc
 
@@ -394,9 +390,13 @@ def parse_callback(envelope: dict, extra_secrets: tuple = ()) -> tuple[dict, str
                 continue
             seen.add(secret)
             try:
-                return decrypt_json(envelope['payload'], secret), secret
+                text = decrypt(envelope['payload'], secret)
+                payload = json.loads(text)
             except Exception:
                 continue
+            # Only once a key has worked: a wrong key's output is just noise.
+            game_logging.raw_callback_payload(text)
+            return payload, secret
         raise ProviderError('Failed to decrypt callback payload')
     # Fall back to treating the envelope itself as the decrypted body.
     return envelope, None

@@ -1,24 +1,24 @@
 """Control-plane client: fetch this product's config from Super Admin over HTTP.
 
-cadiplay used to read its control-plane data (product identity, branding, live
+dollara used to read its control-plane data (product identity, branding, live
 theme, webhook public keys) straight out of Super Admin's master database. It no
 longer connects to that database at all — instead it pulls the same data from::
 
     GET {SUPER_ADMIN_URL}/api/v1/product/config
         X-Product-Token: <api_key>
 
-Key-oriented: cadiplay serves a single product and identifies it purely by its
+Key-oriented: dollara serves a single product and identifies it purely by its
 ``PRODUCT_CONFIG_TOKEN`` (the product's api_key). Super Admin resolves *which*
 product the key belongs to and returns its config — no slug is exchanged, so the
-two sides communicate iff cadiplay holds a valid key. The response is cached
+two sides communicate iff dollara holds a valid key. The response is cached
 in-process so tenant resolution (which runs on every request) doesn't make an HTTP
 call each time, and a *last-known-good* copy is kept so a brief Super Admin outage
-doesn't take cadiplay down.
+doesn't take dollara down.
 
 Response shape (see ``super_admin/api/tenants/views.py::product_config``)::
 
     {
-      "slug": "cadiplay",
+      "slug": "dollara",
       "product":  {"id", "slug", "name", "status"},
       "branding": {...branding fields..., "slug"},
       "theme":    {"active_theme", "known_themes": [...]},
@@ -77,7 +77,7 @@ def _http_fetch() -> dict | None:
     """Fetch this product's config from Super Admin, identifying it by api_key.
 
     Returns ``None`` on any error — including a missing key, so the two sides only
-    communicate when cadiplay actually holds a token.
+    communicate when dollara actually holds a token.
     """
     base = _base_url()
     if not base:
@@ -89,7 +89,7 @@ def _http_fetch() -> dict | None:
         return None
     url = f'{base}/api/v1/product/config'
     req = urllib.request.Request(url, method='GET')
-    req.add_header('User-Agent', 'cadiplay-control-plane/1.0')
+    req.add_header('User-Agent', 'dollara-control-plane/1.0')
     req.add_header('Accept', 'application/json')
     req.add_header('X-Product-Token', token)
     try:

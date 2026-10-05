@@ -1,12 +1,12 @@
 """Tenant Resolver Service.
 
-cadiplay serves a single product and identifies it purely by its api_key
+dollara serves a single product and identifies it purely by its api_key
 (``PRODUCT_CONFIG_TOKEN``): the tenant is whatever product Super Admin returns for
 that key over the control-plane config pull (see :mod:`services.control_plane`).
 There is no slug/host/JWT guessing and no per-tenant DB switching — all feature
 data lives on the Django ``default`` connection (``MYSQL_*``).
 
-Resolution therefore succeeds iff cadiplay holds a valid key and the control plane
+Resolution therefore succeeds iff dollara holds a valid key and the control plane
 (or its last-known-good cache) can supply the product's identity.
 """
 

@@ -1,7 +1,7 @@
 """Database router.
 
 This instance serves a single product and keeps all feature data on the
-``default`` connection (``MYSQL_*``) — cadiplay no longer has a master/control-plane
+``default`` connection (``MYSQL_*``) — dollara no longer has a master/control-plane
 database (that data is fetched from Super Admin over HTTP; see
 ``services/control_plane.py``). The router resolves ORM access to the current
 tenant connection when one is set, otherwise ``default``; in practice

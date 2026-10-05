@@ -13,7 +13,7 @@ Two rules make that re-export safe and must not be broken:
 * every model declares ``app_label = 'core'`` explicitly, since Django cannot
   infer it from a module that is not the app's ``models`` module.
 
-Tables come from ``database/init.sql`` / ``database/migrations/002_affiliate_program.sql``
+Tables come from ``database/init.sql``
 (migrations are disabled product-wide via ``MIGRATION_MODULES``), so field
 definitions here describe existing columns rather than create them.
 """
@@ -132,7 +132,7 @@ class Affiliate(models.Model):
     onboarding_complete = models.BooleanField(default=False)
     terms_accepted_at = models.DateTimeField(null=True, blank=True)
     timezone = models.CharField(max_length=64, default='Asia/Kolkata')
-    currency = models.CharField(max_length=10, default='USDT')
+    currency = models.CharField(max_length=10, default='INR')
     notification_prefs = models.JSONField(null=True, blank=True)
     webhook_url = models.CharField(max_length=500, null=True, blank=True)
 
@@ -147,6 +147,9 @@ class Affiliate(models.Model):
     approved_by = models.BigIntegerField(null=True, blank=True)
 
     last_login_at = models.DateTimeField(null=True, blank=True)
+    # Id of the most recently issued login token; see User.active_session_id
+    # in core/models.py for why — same single-device-login mechanism.
+    active_session_id = models.CharField(max_length=64, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -256,7 +259,7 @@ class AffiliateReferral(models.Model):
 
 
 class AffiliateCommissionLedger(models.Model):
-    """Every USDT an affiliate earns, one row at a time.
+    """Every rupee an affiliate earns, one row at a time.
 
     ``dedupe_key`` is unique per affiliate and is computed by the commission
     engine from (entry type, period, referral, source affiliate). Re-running a
@@ -301,7 +304,7 @@ class AffiliateCommissionLedger(models.Model):
     base_amount = models.DecimalField(max_digits=18, decimal_places=2, default=0)
     rate = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=18, decimal_places=2)
-    currency = models.CharField(max_length=10, default='USDT')
+    currency = models.CharField(max_length=10, default='INR')
     status = models.CharField(
         max_length=20, choices=Status.choices, default=Status.PENDING
     )
@@ -337,7 +340,7 @@ class AffiliatePayout(models.Model):
         Affiliate, on_delete=models.CASCADE, db_column='affiliate_id'
     )
     amount = models.DecimalField(max_digits=18, decimal_places=2)
-    currency = models.CharField(max_length=10, default='USDT')
+    currency = models.CharField(max_length=10, default='INR')
     method_id = models.BigIntegerField(null=True, blank=True)
     # Snapshotted at request time so history stays readable after a method is
     # edited or deleted.

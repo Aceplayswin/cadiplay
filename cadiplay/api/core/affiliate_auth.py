@@ -78,6 +78,20 @@ def require_affiliate(allow_pending: bool = False):
                     {'error': 'Affiliate account not found. Please log in again.'},
                     status=401,
                 )
+            # A newer login (any device) overwrites active_session_id, so a
+            # token minted before that no longer matches and is rejected.
+            if (
+                request.auth.sid
+                and affiliate.active_session_id
+                and request.auth.sid != affiliate.active_session_id
+            ):
+                return JsonResponse(
+                    {
+                        'error': 'You have been logged out because this account was signed in on another device.',
+                        'code': 'SESSION_REVOKED',
+                    },
+                    status=401,
+                )
             if affiliate.status == Affiliate.Status.SUSPENDED or not affiliate.is_active:
                 return JsonResponse(
                     {'error': 'Your affiliate account has been suspended.'}, status=403
@@ -115,7 +129,7 @@ def new_totp_secret() -> str:
     return base64.b32encode(secrets.token_bytes(20)).decode().rstrip('=')
 
 
-def totp_uri(secret: str, account: str, issuer: str = 'Cadiplay Affiliates') -> str:
+def totp_uri(secret: str, account: str, issuer: str = 'Dollara Affiliates') -> str:
     """The ``otpauth://`` URI an authenticator app scans.
 
     Rendered as a QR client-side rather than server-side: the secret then never

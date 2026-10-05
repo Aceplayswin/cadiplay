@@ -43,7 +43,6 @@ from core.agent_models import (Agent, AgentAuditLog, AgentSettlement,
 from core.agent_services import (ZERO, _money, _q, _validate_password, audit,
                                  get_program_settings, save_program_settings)
 from core.models import User, UserSetting, Wallet
-from core.money import stored_amount, usdt_amount
 from core.services import hash_password
 from tenants.state import tenant_atomic
 
@@ -59,6 +58,14 @@ ACCOUNT_STATUSES = (
     Agent.Status.LOCKED,
     Agent.Status.CLOSED,
 )
+
+
+def _window(qs, offset, limit):
+    """``limit is None`` returns every matching row from ``offset``."""
+    start = max(0, int(offset or 0))
+    if limit is None:
+        return qs[start:]
+    return qs[start:start + int(limit)]
 
 
 def _actor_label(admin_id) -> str:
@@ -114,7 +121,7 @@ def _serialize_application(agent: Agent) -> dict:
     }
 
 
-def list_applications(*, status=None, limit=50, offset=0) -> dict:
+def list_applications(*, status=None, limit=None, offset=0) -> dict:
     """Every application, whoever it was addressed to.
 
     There is no routing clause because there is nowhere else for an application
@@ -129,7 +136,7 @@ def list_applications(*, status=None, limit=50, offset=0) -> dict:
         qs = qs.filter(status__in=Agent.APPLICATION_STATUSES)
 
     total = qs.count()
-    rows = qs.order_by('-applied_at', '-created_at')[offset:offset + limit]
+    rows = _window(qs.order_by('-applied_at', '-created_at'), offset, limit)
     return {
         'records': [_serialize_application(a) for a in rows],
         'total': total,
@@ -293,7 +300,7 @@ def decide_application(application_id: int, admin_id: int, *, decision,
 # Agent list and detail
 # ---------------------------------------------------------------------------
 
-def list_agents(*, status=None, level=None, q=None, limit=100, offset=0) -> dict:
+def list_agents(*, status=None, level=None, q=None, limit=None, offset=0) -> dict:
     qs = Agent.objects.select_related('parent').exclude(
         status__in=Agent.APPLICATION_STATUSES
     )
@@ -308,7 +315,7 @@ def list_agents(*, status=None, level=None, q=None, limit=100, offset=0) -> dict
         )
 
     total = qs.count()
-    rows = list(qs.order_by('depth', 'username')[offset:offset + limit])
+    rows = list(_window(qs.order_by('depth', 'username'), offset, limit))
     ids = [a.id for a in rows]
 
     # Two aggregates for the whole page rather than two queries per row.
@@ -721,7 +728,7 @@ def delete_agent(agent_id: int, admin_id: int) -> dict:
         raise ValueError('Move this agent\'s players to another account first.')
     if Decimal(agent.balance or 0) != ZERO:
         raise ValueError(
-            f'This agent still holds a balance of {usdt_amount(agent.balance)} USDT. '
+            f'This agent still holds a balance of {_q(agent.balance)}. '
             'Withdraw it before deleting.'
         )
     if Decimal(agent.exposure or 0) != ZERO:
@@ -770,7 +777,7 @@ def adjust_credit(agent_id: int, admin_id: int, *, amount, remark=None) -> dict:
     clawback is capped at available credit rather than balance — credit already
     committed to open bets is not the operator's to remove.
     """
-    amount = stored_amount(amount or 0)
+    amount = Decimal(str(amount or 0))
     if amount == ZERO:
         raise ValueError('Amount must not be zero')
 
@@ -784,7 +791,7 @@ def adjust_credit(agent_id: int, admin_id: int, *, amount, remark=None) -> dict:
         if amount < ZERO and -amount > agent.available_credit:
             raise ValueError(
                 'That exceeds the credit this agent has free of open bets '
-                f'({usdt_amount(agent.available_credit)} USDT).'
+                f'({_q(agent.available_credit)}).'
             )
 
         agent.balance = Decimal(agent.balance or 0) + amount

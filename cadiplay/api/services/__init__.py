@@ -1,7 +1,7 @@
 """Cross-cutting platform services (control plane).
 
 - ``control_plane``: fetch this product's config (identity, branding, theme,
-  webhook public keys) from Super Admin over HTTP and cache it. cadiplay never
+  webhook public keys) from Super Admin over HTTP and cache it. dollara never
   connects to the master database directly.
 - ``tenant_resolver``: map a request (host / subdomain / header / JWT claim) to
   the product, using ``control_plane``.

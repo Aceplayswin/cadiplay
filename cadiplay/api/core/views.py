@@ -8,7 +8,9 @@ from django.http import (
     HttpResponse,
     HttpResponseRedirect,
     JsonResponse,
+    StreamingHttpResponse,
 )
+from django.db.utils import OperationalError, ProgrammingError
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -20,13 +22,15 @@ from core import (
     game_services,
     services,
 )
-from core.excel import XLSX_CONTENT_TYPE, xlsx_bytes
 from core.ai import chat_respond, fraud_score, welcome_call
 from core.game_services import GameError
-from core.money import present_wallet, stored_amount, usdt_amount
 from core.geo import detect_geo_from_ip
+from core.ip_tracking import IpBlocked, enforce_ip, get_client_ip, record_login
 from core.middleware import require_auth
 from core.models import AiCallLog, Transaction, User, UserSetting, Wallet
+from core.schema_errors import (
+    BONUSES_SCHEMA_MESSAGE, is_missing_column_error, schema_error_response,
+)
 from services.branding import get_branding
 
 logger = logging.getLogger(__name__)
@@ -52,7 +56,7 @@ def _brand_name() -> str:
 def health(request):
     return JsonResponse({
         'status': 'ok',
-        'service': 'cadiplay-api',
+        'service': 'dollara-api',
         'version': '1.0.0',
     })
 
@@ -253,6 +257,7 @@ def _error_response(exc: Exception, status: int = 400):
 def register(request):
     """Direct sign-up: full name + phone + password. No verification step."""
     try:
+        enforce_ip(request)
         body = _json_body(request)
         result = services.register_user(
             body['fullName'],
@@ -266,10 +271,11 @@ def register(request):
             affiliate_ref=body.get('affiliateRef'),
             affiliate_sub=body.get('affiliateSub'),
             affiliate_click_id=body.get('affiliateClickId'),
-            signup_ip=services.client_ip(request),
-            email=body.get('email'),
+            signup_ip=get_client_ip(request),
         )
         return JsonResponse(result, status=201)
+    except IpBlocked as e:
+        return _error_response(e, 403)
     except (KeyError, json.JSONDecodeError) as e:
         return _error_response(e)
     except ValueError as e:
@@ -285,20 +291,25 @@ def register(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def demo_session(request):
-    return JsonResponse({'error': 'Demo play is not available'}, status=403)
+    try:
+        return JsonResponse(services.create_demo_session(), status=201)
+    except ValueError as e:
+        return _error_response(e)
+    except Exception as e:
+        return _error_response(e, status=500)
 
 
 @csrf_exempt
 @require_http_methods(['POST'])
 def login(request):
     try:
+        enforce_ip(request)
         body = _json_body(request)
-        return JsonResponse(services.login_user(
-            body['phone'],
-            body['password'],
-            ip=services.client_ip(request),
-            user_agent=request.META.get('HTTP_USER_AGENT'),
-        ))
+        result = services.login_user(body['phone'], body['password'])
+        record_login(request, user_id=result.get('userId'))
+        return JsonResponse(result)
+    except IpBlocked as e:
+        return _error_response(e, 403)
     except (KeyError, json.JSONDecodeError) as e:
         return _error_response(e)
     except ValueError as e:
@@ -340,6 +351,12 @@ def app_download_redirect(request):
     return HttpResponseRedirect(config['apk_url'])
 
 
+@require_http_methods(['GET'])
+def social_links(request):
+    """Public Facebook / Instagram / X / WhatsApp URLs for player chrome."""
+    return JsonResponse(services.get_social_links())
+
+
 # --- Settings / preferences ---
 @csrf_exempt
 @require_auth(['user'])
@@ -363,7 +380,7 @@ def user_settings(request):
 @require_http_methods(['GET'])
 def wallet_get(request):
     try:
-        return JsonResponse(present_wallet(services.get_wallet(request.auth.sub)))
+        return JsonResponse(services.get_wallet(request.auth.sub))
     except Exception as e:
         return _error_response(e, 404)
 
@@ -374,7 +391,7 @@ def wallet_breakdown(request):
     """Itemised wallet view for the Wallet page — balances plus a per-source
     breakdown of bonuses, deposits/withdrawals, and game-play totals."""
     try:
-        return JsonResponse(present_wallet(services.get_wallet_breakdown(request.auth.sub)))
+        return JsonResponse(services.get_wallet_breakdown(request.auth.sub))
     except Exception as e:
         return _error_response(e, 404)
 
@@ -387,17 +404,41 @@ def wallet_deposit(request):
         body = _json_body(request)
         result = services.create_deposit(
             request.auth.sub,
-            float(stored_amount(body['amount'])),
+            float(body['amount']),
             body['paymentMethod'],
-            'USDT',
+            body.get('currency', 'INR'),
             # Optional UTR / reference the user pastes from their payment app.
             reference_number=(body.get('referenceNumber') or body.get('reference_number')),
-            ip=services.client_ip(request),
+            # Screenshot the player uploaded first (see wallet_deposit_proof).
+            payment_proof_url=(body.get('paymentProofUrl') or body.get('payment_proof_url')),
+            # Same ?ref/&sub/&clk the tracking link left in the browser. Used
+            # when signup did not already tie this player to the link, so the
+            # confirmed deposit can count as that link's first deposit.
+            affiliate_ref=body.get('affiliateRef'),
+            affiliate_sub=body.get('affiliateSub'),
+            affiliate_click_id=body.get('affiliateClickId'),
+            client_ip=get_client_ip(request),
         )
         return JsonResponse(result, status=201)
     except (KeyError, json.JSONDecodeError) as e:
         return _error_response(e)
     except Exception as e:
+        return _error_response(e)
+
+
+@csrf_exempt
+@require_auth(['user'])
+@require_http_methods(['POST'])
+def wallet_deposit_proof(request):
+    """Player uploads a payment screenshot (multipart) and gets back its URL.
+
+    Uploading alone credits nothing: the URL is passed to the deposit request,
+    which stays PENDING until an admin reviews the proof and confirms it.
+    """
+    try:
+        url = services.save_payment_proof(request.auth.sub, request.FILES.get('file'))
+        return JsonResponse({'url': request.build_absolute_uri(url)}, status=201)
+    except ValueError as e:
         return _error_response(e)
 
 
@@ -425,9 +466,9 @@ def wallet_withdraw(request):
         body = _json_body(request)
         result = services.create_withdrawal(
             request.auth.sub,
-            float(stored_amount(body['amount'])),
+            float(body['amount']),
             body['paymentMethod'],
-            ip=services.client_ip(request),
+            body.get('destination'),
         )
         return JsonResponse(result, status=201)
     except (KeyError, json.JSONDecodeError) as e:
@@ -444,7 +485,7 @@ def wallet_transactions(request):
         {
             'id': t.id,
             'type': t.type,
-            'amount': usdt_amount(t.amount),
+            'amount': float(t.amount),
             'currency': t.currency,
             'status': t.status,
             'payment_method': t.payment_method,
@@ -455,53 +496,45 @@ def wallet_transactions(request):
     ]
     return JsonResponse(data, safe=False)
 
-# --- USD ⇄ USDT exchange rate (crypto cashier) ---
-# Keyless: the deposit and withdrawal screens quote the rate before a player has
-# committed to anything, and the underlying CoinGecko price is public data.
-@require_http_methods(['GET'])
-def exchange_rate_usdt(request):
-    """The current USDT⇄USD rate, for display on the crypto cashier screens.
-
-    Optional ``?amount=`` and ``?from=``/``?to=`` convert in the same call, so
-    the client can show "≈ X USDT" without a second round trip. Defaults to
-    converting USD into USDT, which is the deposit direction.
-    """
-    amount = request.GET.get('amount')
-    try:
-        if amount is None:
-            return JsonResponse(services.get_usdt_usd_quote())
-        return JsonResponse(services.convert_currency(
-            amount,
-            request.GET.get('from', 'USD'),
-            request.GET.get('to', 'USDT'),
-        ))
-    except ValueError as e:
-        return _error_response(e)
-    except Exception:
-        logger.exception('exchange rate lookup failed')
-        return JsonResponse({'error': 'Exchange rate unavailable'}, status=503)
-
-
 
 # --- Bonuses / Promotions (player-facing) ---
 @require_http_methods(['GET'])
 def promotions_list(request):
-    """Active, promotable bonuses for the public promotions page. Keyless."""
-    return JsonResponse(bonus_services.list_public_bonuses(), safe=False)
+    """Active, promotable bonuses for the public promotions page. Keyless.
+
+    Anyone can browse the catalogue; a signed-in player additionally gets
+    their own claim state on each offer (conditions met or not, already
+    claimed), which is what the Bonus page's Claim button is driven by.
+    """
+    auth = getattr(request, 'auth', None)
+    user_id = auth.sub if auth and auth.role == 'user' else None
+    try:
+        return JsonResponse(bonus_services.list_public_bonuses(user_id), safe=False)
+    except (OperationalError, ProgrammingError) as e:
+        # A database that missed the bonuses claim-condition columns: tell the
+        # operator what to run instead of a bare HTML 500.
+        if is_missing_column_error(e):
+            return schema_error_response(503, BONUSES_SCHEMA_MESSAGE)
+        raise
 
 
 @require_auth(['user'])
 @require_http_methods(['GET'])
 def my_bonuses(request):
     """The signed-in player's awarded bonuses + wagering progress."""
-    return JsonResponse(bonus_services.list_user_bonuses(request.auth.sub), safe=False)
+    try:
+        return JsonResponse(bonus_services.list_user_bonuses(request.auth.sub), safe=False)
+    except (OperationalError, ProgrammingError) as e:
+        if is_missing_column_error(e):
+            return schema_error_response(503, BONUSES_SCHEMA_MESSAGE)
+        raise
 
 
 @csrf_exempt
 @require_auth(['user'])
 @require_http_methods(['POST'])
 def claim_promo(request):
-    """Player redeems a promo code for its bonus."""
+    """Player redeems a coupon code for its bonus."""
     try:
         body = _json_body(request)
         return JsonResponse(bonus_services.claim_promo_code(request.auth.sub, body.get('code', '')))
@@ -511,13 +544,57 @@ def claim_promo(request):
         return _error_response(e)
 
 
+@csrf_exempt
+@require_auth(['user'])
+@require_http_methods(['POST'])
+def preview_promo(request):
+    """Validate a coupon code without redeeming it (live check on the redeem form)."""
+    try:
+        body = _json_body(request)
+        return JsonResponse(bonus_services.preview_coupon(request.auth.sub, body.get('code', '')))
+    except (KeyError, json.JSONDecodeError) as e:
+        return _error_response(e)
+    except ValueError as e:
+        return _error_response(e)
+
+
 @require_auth(['user'])
 @require_http_methods(['GET'])
 def my_referral(request):
-    """The player's shareable referral code + how many people they've referred."""
+    """The player's shareable referral code, their referrals, and who referred them.
+
+    The list is what makes the code meaningful to the player: a bare count gave
+    them no way to see whether a person they invited actually signed up.
+    Usernames are masked — a referrer is entitled to see that a signup happened,
+    not to read another player's account name in full.
+    """
     code = bonus_services.ensure_referral_code(request.auth.sub)
-    count = UserSetting.objects.filter(referred_by=request.auth.sub).count()
-    return JsonResponse({'referral_code': code, 'referred_count': count})
+    referred = (
+        UserSetting.objects.filter(referred_by=request.auth.sub)
+        .select_related('user')
+        .order_by('-user__created_at')[:100]
+    )
+    referrals = [
+        {
+            'username': game_services._mask_username(r.user.username),
+            'joined_at': r.user.created_at.isoformat() if r.user.created_at else None,
+        }
+        for r in referred
+        if r.user_id
+    ]
+    mine = UserSetting.objects.filter(user_id=request.auth.sub).first()
+    referrer = (
+        User.objects.filter(id=mine.referred_by).first()
+        if mine and mine.referred_by
+        else None
+    )
+    return JsonResponse({
+        'referral_code': code,
+        'referred_count': len(referrals),
+        'referrals': referrals,
+        # Who invited this player, when they signed up with a code.
+        'referred_by': game_services._mask_username(referrer.username) if referrer else None,
+    })
 
 
 # --- Games ---
@@ -536,8 +613,41 @@ def games_list(request):
 
 
 @require_http_methods(['GET'])
+def games_detail(request, slug):
+    """One game by slug — what the play page resolves its URL against.
+
+    404s on an unknown or hidden slug so the client can show "game not found"
+    without having to download the whole catalog to decide.
+    """
+    game = services.get_game_by_slug(slug)
+    if not game:
+        return JsonResponse({'error': 'Game not found'}, status=404)
+    return JsonResponse(game)
+
+
+@require_http_methods(['GET'])
+def games_categories(request):
+    return JsonResponse(services.list_game_categories(), safe=False)
+
+
+@require_http_methods(['GET'])
 def games_trending(request):
     return JsonResponse(services.list_games(limit=12), safe=False)
+
+
+@require_auth(['user'])
+@require_http_methods(['GET'])
+def deposit_methods(request):
+    """Deposit methods plus the account details the player pays into."""
+    try:
+        return JsonResponse(services.list_deposit_methods(), safe=False)
+    except (OperationalError, ProgrammingError) as e:
+        # A database that missed the payment_methods column migration: tell the
+        # operator what to run, and let the deposit page show "unavailable"
+        # rather than an HTML 500.
+        if is_missing_column_error(e):
+            return schema_error_response(503)
+        raise
 
 
 # --- Banners (public home-page hero carousel) ---
@@ -545,6 +655,12 @@ def games_trending(request):
 def banners_list(request):
     """Active hero banners for this product's frontends. Keyless, like games."""
     return JsonResponse(services.list_active_banners(), safe=False)
+
+
+@require_http_methods(['GET'])
+def promotion_posters_list(request):
+    """Active offer posters for /promotions. Keyless. Not bonus claims."""
+    return JsonResponse(services.list_active_promotion_posters(), safe=False)
 
 
 @require_http_methods(['GET'])
@@ -562,7 +678,7 @@ def games_bet(request):
         result = services.place_bet(
             request.auth.sub,
             body['gameId'],
-            float(stored_amount(body['amount'])),
+            float(body['amount']),
             float(body['odds']) if body.get('odds') else None,
         )
         return JsonResponse(result, status=201)
@@ -579,15 +695,31 @@ def games_launch(request):
     """Request a launch URL from the aggregator and open a game session."""
     try:
         body = _json_body(request)
-        return JsonResponse(game_services.launch_game(
-            request.auth.sub, body, ip=services.client_ip(request),
-        ))
+        return JsonResponse(game_services.launch_game(request.auth.sub, body))
     except json.JSONDecodeError as e:
         return JsonResponse({'status_code': 'invalid_params', 'error': str(e)}, status=400)
     except GameError as e:
         return JsonResponse(
             {'status_code': e.code, 'error': str(e)},
             status=_GAME_ERROR_STATUS.get(e.code, 400),
+        )
+    except ValueError as e:
+        # Request-body validation (LaunchRequest.parse) — a bad game identifier
+        # is the caller's error, not a platform fault.
+        return JsonResponse({'status_code': 'invalid_params', 'error': str(e)}, status=400)
+    except Exception:
+        # Anything the launch path did not anticipate (a vendor returning a
+        # shape we don't parse, a transport library raising its own error type)
+        # used to escape as a bare HTTP 500 "internal server error" on the
+        # player's screen. Log the detail for operators and hand the client the
+        # same structured error every other launch failure returns.
+        logger.exception('Game launch failed for user %s', getattr(request.auth, 'sub', None))
+        return JsonResponse(
+            {
+                'status_code': 'server_error',
+                'error': 'This game is temporarily unavailable. Please try again.',
+            },
+            status=502,
         )
 
 
@@ -638,6 +770,12 @@ def games_big_wins(request):
 def games_callback(request):
     """Inbound aggregator bet/win callback. Public (auth is via AES payload)."""
     raw = request.body.decode('utf-8', errors='replace') if request.body else ''
+    # First, before anything can reject it: a callback that fails to parse or
+    # decrypt is exactly the one worth having verbatim in raw_games.log.
+    game_logging.raw_callback(
+        raw, ip=get_client_ip(request), path=request.get_full_path(),
+        content_type=request.content_type,
+    )
     try:
         envelope = json.loads(raw) if raw else {}
     except json.JSONDecodeError:
@@ -694,9 +832,7 @@ def games_mock_launch(request):
 # --- Geo ---
 @require_http_methods(['GET'])
 def geo_detect(request):
-    ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip()
-    if not ip:
-        ip = request.META.get('REMOTE_ADDR', '127.0.0.1')
+    ip = get_client_ip(request) or '127.0.0.1'
     return JsonResponse(detect_geo_from_ip(ip))
 
 
@@ -706,7 +842,9 @@ def geo_detect(request):
 def admin_login(request):
     try:
         body = _json_body(request)
-        return JsonResponse(services.login_admin(body['username'], body['password']))
+        result = services.login_admin(body['username'], body['password'])
+        record_login(request, admin_id=result.get('adminId'))
+        return JsonResponse(result)
     except (KeyError, json.JSONDecodeError) as e:
         return _error_response(e)
     except ValueError as e:
@@ -727,6 +865,12 @@ def admin_dashboard_charts(request):
 
 @require_auth(['admin'])
 @require_http_methods(['GET'])
+def admin_dashboard_tables(request):
+    return JsonResponse(admin_services.get_dashboard_tables())
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
 def admin_recent_activity(request):
     return JsonResponse(admin_services.get_recent_activity(), safe=False)
 
@@ -734,21 +878,32 @@ def admin_recent_activity(request):
 @require_auth(['admin'])
 @require_http_methods(['GET'])
 def admin_users(request):
+    """Every player, or the subset matching the search box and filter panel.
+
+    ``limit`` is optional. Omitting it returns the whole match set — the admin
+    list used to hard-cap the response at 200, which hid older accounts from
+    both the table and the on-page search.
+    """
+    raw_limit = (request.GET.get('limit') or '').strip()
+    try:
+        limit = int(raw_limit) if raw_limit else None
+        offset = int(request.GET.get('offset', 0) or 0)
+    except ValueError:
+        return _error_response(ValueError('limit and offset must be integers'))
     return JsonResponse(
         services.list_users(
             request.GET.get('status'),
-            request.GET.get('kycStatus'),
-            int(request.GET.get('limit', 200)),
-            int(request.GET.get('offset', 0)),
+            limit,
+            offset,
             search=request.GET.get('search'),
             user_id=request.GET.get('userId'),
+            affiliate_id=request.GET.get('affiliateId'),
             username=request.GET.get('username'),
             full_name=request.GET.get('fullName'),
             phone=request.GET.get('phone'),
             ip=request.GET.get('ip'),
             date_from=request.GET.get('dateFrom'),
             date_to=request.GET.get('dateTo'),
-            affiliate_id=request.GET.get('affiliateId'),
         ),
         safe=False,
     )
@@ -765,9 +920,11 @@ def admin_user_create(request):
                 full_name=body.get('full_name', ''),
                 phone=body.get('phone', ''),
                 password=body.get('password', ''),
-                email=body.get('email'),
                 country_code=body.get('country_code', 'IN'),
                 initial_balance=body.get('initial_balance', 0),
+                state=body.get('state'),
+                signup_ip=get_client_ip(request),
+                created_by=getattr(request.auth, 'sub', None),
             ),
             status=201,
         )
@@ -788,6 +945,32 @@ def admin_user_detail(request, user_id):
 
 @csrf_exempt
 @require_auth(['admin'])
+@require_http_methods(['POST'])
+def admin_user_reset_password(request, user_id):
+    try:
+        body = _json_body(request)
+        return JsonResponse(
+            admin_services.reset_user_password(user_id, body.get('password', ''))
+        )
+    except (KeyError, json.JSONDecodeError) as e:
+        return _error_response(e)
+    except User.DoesNotExist:
+        return _error_response(ValueError('User not found'), 404)
+    except ValueError as e:
+        return _error_response(e)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_user_duplicates(request, user_id):
+    try:
+        return JsonResponse(admin_services.find_duplicate_accounts(user_id), safe=False)
+    except User.DoesNotExist:
+        return _error_response(ValueError('User not found'), 404)
+
+
+@csrf_exempt
+@require_auth(['admin'])
 @require_http_methods(['PATCH'])
 def admin_user_status(request, user_id):
     try:
@@ -799,8 +982,10 @@ def admin_user_status(request, user_id):
             admin_services.update_user_admin(
                 user_id,
                 account_status=body.get('account_status'),
-                kyc_status=body.get('kyc_status'),
                 fraud_score=body.get('fraud_score'),
+                username=body.get('username'),
+                phone=body.get('phone'),
+                full_name=body.get('full_name'),
             )
         )
     except (KeyError, json.JSONDecodeError) as e:
@@ -838,7 +1023,34 @@ def admin_transaction_by_reference(request, reference):
 @require_auth(['admin'])
 @require_http_methods(['GET'])
 def admin_deposits_pending(request):
-    return JsonResponse(admin_services.list_pending_deposits(), safe=False)
+    """Deposit requests for one review tab (all/pending/approved/rejected).
+
+    Defaults to pending so the original callers of this endpoint, which sent no
+    tab, keep getting exactly what they got before.
+    """
+    tab = request.GET.get('tab') or 'pending'
+    try:
+        rows = admin_services.list_cashier_requests(
+            Transaction.TxType.DEPOSIT, tab,
+            limit=_query_limit(request),
+            date_from=_parse_date(request.GET.get('dateFrom') or request.GET.get('from')),
+            date_to=_parse_date(request.GET.get('dateTo') or request.GET.get('to')),
+        )
+    except ValueError as e:
+        return _error_response(e)
+    return JsonResponse(rows, safe=False)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_deposits_counts(request):
+    return JsonResponse(
+        admin_services.count_cashier_requests(
+            Transaction.TxType.DEPOSIT,
+            date_from=_parse_date(request.GET.get('dateFrom') or request.GET.get('from')),
+            date_to=_parse_date(request.GET.get('dateTo') or request.GET.get('to')),
+        )
+    )
 
 
 @csrf_exempt
@@ -887,7 +1099,7 @@ def admin_upload_image(request):
 def admin_games(request):
     return JsonResponse(
         admin_services.list_admin_games(
-            int(request.GET.get('limit', 200)),
+            _query_limit(request),
             int(request.GET.get('offset', 0)),
         ),
         safe=False,
@@ -912,6 +1124,38 @@ def admin_games_create(request):
 def admin_games_update(request, game_id):
     try:
         return JsonResponse(admin_services.update_game(game_id, _json_body(request)))
+    except Exception as e:
+        return _error_response(e)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_categories(request):
+    return JsonResponse(admin_services.list_admin_categories(), safe=False)
+
+
+@csrf_exempt
+@require_auth(['admin'])
+@require_http_methods(['POST'])
+def admin_categories_create(request):
+    try:
+        return JsonResponse(admin_services.create_category(_json_body(request)), status=201)
+    except (KeyError, json.JSONDecodeError) as e:
+        return _error_response(e)
+    except Exception as e:
+        return _error_response(e)
+
+
+@csrf_exempt
+@require_auth(['admin'])
+@require_http_methods(['PATCH', 'DELETE'])
+def admin_categories_update(request, category_id):
+    try:
+        if request.method == 'DELETE':
+            return JsonResponse(admin_services.delete_category(category_id))
+        return JsonResponse(
+            admin_services.update_category(category_id, _json_body(request))
+        )
     except Exception as e:
         return _error_response(e)
 
@@ -1016,7 +1260,12 @@ def admin_bets(request):
 @require_auth(['admin'])
 @require_http_methods(['GET'])
 def admin_bonuses(request):
-    return JsonResponse(admin_services.list_admin_bonuses(), safe=False)
+    try:
+        return JsonResponse(admin_services.list_admin_bonuses(), safe=False)
+    except (OperationalError, ProgrammingError) as e:
+        if is_missing_column_error(e):
+            return schema_error_response(503, BONUSES_SCHEMA_MESSAGE)
+        raise
 
 
 @require_auth(['admin'])
@@ -1094,6 +1343,33 @@ def admin_bonuses_providers(request, bonus_id):
         return _error_response(e)
 
 
+@csrf_exempt
+@require_auth(['admin'])
+@require_http_methods(['POST'])
+def admin_bonuses_generate_code(request):
+    """Mint an unused coupon code for the bonus form."""
+    try:
+        body = _json_body(request)
+        return JsonResponse(admin_services.generate_coupon_code(
+            body.get('length') or 8, body.get('prefix') or '',
+        ))
+    except (KeyError, json.JSONDecodeError) as e:
+        return _error_response(e)
+    except ValueError as e:
+        return _error_response(e)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_coupon_redemptions(request):
+    """Ledger of coupon-code redemptions — who used which code."""
+    bonus_id = request.GET.get('bonusId')
+    return JsonResponse(
+        admin_services.list_coupon_redemptions(int(bonus_id) if bonus_id else None),
+        safe=False,
+    )
+
+
 @require_auth(['admin'])
 @require_http_methods(['GET'])
 def admin_bonuses_issued(request):
@@ -1141,6 +1417,37 @@ def admin_banners_update(request, banner_id):
         if request.method == 'DELETE':
             return JsonResponse(admin_services.delete_banner(banner_id))
         return JsonResponse(admin_services.update_banner(banner_id, _json_body(request)))
+    except Exception as e:
+        return _error_response(e)
+
+
+# --- Admin: promotion posters (/promotions page offer images) ---
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_promotion_posters(request):
+    return JsonResponse(admin_services.list_admin_promotion_posters(), safe=False)
+
+
+@csrf_exempt
+@require_auth(['admin'])
+@require_http_methods(['POST'])
+def admin_promotion_posters_create(request):
+    try:
+        return JsonResponse(admin_services.create_promotion_poster(_json_body(request)), status=201)
+    except (KeyError, json.JSONDecodeError) as e:
+        return _error_response(e)
+    except Exception as e:
+        return _error_response(e)
+
+
+@csrf_exempt
+@require_auth(['admin'])
+@require_http_methods(['PATCH', 'DELETE'])
+def admin_promotion_posters_update(request, poster_id):
+    try:
+        if request.method == 'DELETE':
+            return JsonResponse(admin_services.delete_promotion_poster(poster_id))
+        return JsonResponse(admin_services.update_promotion_poster(poster_id, _json_body(request)))
     except Exception as e:
         return _error_response(e)
 
@@ -1198,7 +1505,7 @@ def admin_settings_update(request, setting_key):
 def admin_ai_calls(request):
     return JsonResponse(
         admin_services.list_ai_call_logs(
-            int(request.GET.get('limit', 50)),
+            _query_limit(request),
             int(request.GET.get('offset', 0)),
         ),
         safe=False,
@@ -1213,7 +1520,7 @@ def admin_wallet_adjust(request, user_id):
         body = _json_body(request)
         return JsonResponse(
             admin_services.wallet_adjustment(
-                user_id, float(stored_amount(body['amount'])), body.get('notes', '')
+                user_id, float(body['amount']), body.get('notes', '')
             )
         )
     except Wallet.DoesNotExist:
@@ -1245,6 +1552,7 @@ def admin_bet_history(request):
         game_uid=request.GET.get('gameUid'),
         date_from=_parse_date(request.GET.get('from')),
         date_to=_parse_date(request.GET.get('to')),
+        search=request.GET.get('search'),
     ))
 
 
@@ -1322,7 +1630,8 @@ def admin_reports(request):
 @require_auth(['admin'])
 @require_http_methods(['GET'])
 def admin_report_export(request, kind):
-    """Build one report as a real .xlsx workbook."""
+    """One report as a download: XLSX (bold header row) unless ``format=csv``."""
+    fmt = (request.GET.get('format') or 'xlsx').lower()
     date_from = _parse_date(request.GET.get('from'))
     date_to = _parse_date(request.GET.get('to'))
     member_id = (request.GET.get('memberId') or '').strip() or None
@@ -1333,14 +1642,11 @@ def admin_report_export(request, kind):
     except ValueError as e:
         return _error_response(e, 404)
 
-    stamp = datetime.now().strftime('%Y%m%d-%H%M%S')
-    filename = f'{kind}-{stamp}.xlsx'
-    response = HttpResponse(
-        xlsx_bytes(header, rows, sheet_name=kind),
-        content_type=XLSX_CONTENT_TYPE,
-    )
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response
+    from core import data_export
+    name = f'{kind}-{data_export.export_stamp()}'
+    if fmt == 'csv':
+        return _csv_response(name, header, rows)
+    return _xlsx_response(name, [(kind, header, rows)])
 
 
 # --- Admin: mobile app (APK) distribution ---
@@ -1370,31 +1676,59 @@ def admin_app_download_update(request):
 
 @require_auth(['admin'])
 @require_http_methods(['GET'])
+def admin_social_links(request):
+    return JsonResponse(services.get_social_links())
+
+
+@csrf_exempt
+@require_auth(['admin'])
+@require_http_methods(['PUT'])
+def admin_social_links_update(request):
+    """Update player-facing social / support URLs."""
+    try:
+        body = _json_body(request)
+        config = {}
+        for key in services.SOCIAL_LINKS_DEFAULTS:
+            raw = body.get(key, '')
+            config[key] = raw.strip() if isinstance(raw, str) else ''
+        admin_services.update_platform_setting(services.SOCIAL_LINKS_KEY, config)
+        return JsonResponse(services.get_social_links())
+    except json.JSONDecodeError as e:
+        return _error_response(e)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
 def admin_withdrawals_pending(request):
-    txs = (
-        Transaction.objects.filter(
-            type=Transaction.TxType.WITHDRAWAL,
-            status__in=[Transaction.Status.PENDING, Transaction.Status.PROCESSING],
+    """Withdrawal requests for one review tab (all/pending/approved/rejected).
+
+    Defaults to pending, so callers that send no tab are unaffected.
+    """
+    tab = request.GET.get('tab') or 'pending'
+    try:
+        rows = admin_services.list_cashier_requests(
+            Transaction.TxType.WITHDRAWAL, tab,
+            limit=_query_limit(request),
+            date_from=_parse_date(request.GET.get('dateFrom') or request.GET.get('from')),
+            date_to=_parse_date(request.GET.get('dateTo') or request.GET.get('to')),
+            # Admins read withdrawals latest-first, pending tab included.
+            pending_oldest_first=False,
         )
-        .select_related('user')
-        .order_by('created_at')[:100]
+    except ValueError as e:
+        return _error_response(e)
+    return JsonResponse(rows, safe=False)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_withdrawals_counts(request):
+    return JsonResponse(
+        admin_services.count_cashier_requests(
+            Transaction.TxType.WITHDRAWAL,
+            date_from=_parse_date(request.GET.get('dateFrom') or request.GET.get('from')),
+            date_to=_parse_date(request.GET.get('dateTo') or request.GET.get('to')),
+        )
     )
-    data = [
-        {
-            'id': t.id,
-            'user_id': t.user_id,
-            'amount': float(t.amount),
-            'status': t.status,
-            'payment_method': t.payment_method,
-            'reference_number': t.reference_number,
-            'created_at': t.created_at.isoformat(),
-            'username': t.user.username,
-            'full_name': t.user.full_name,
-            'ip': t.ip_address,
-        }
-        for t in txs
-    ]
-    return JsonResponse(data, safe=False)
 
 
 @csrf_exempt
@@ -1483,3 +1817,127 @@ def ai_chat(request):
         return _error_response(ValueError('message is required'))
     data = chat_respond(message=message, language=body.get('language', 'en'), brand=_brand_name())
     return JsonResponse(data)
+
+
+# --- Admin: whole-database export -------------------------------------------
+# The Reports screen lists every table and pre-joined combination here, and can
+# download any of them as CSV or XLSX, or the entire database as a ZIP of CSVs.
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_data_catalog(request):
+    """Every exportable table and combination, with row counts."""
+    from core import data_export
+    return JsonResponse({
+        'tables': data_export.list_tables(),
+        'combos': data_export.list_combos(),
+    })
+
+
+def _query_limit(request):
+    """Optional ``?limit=``. A missing value means the list is not capped."""
+    raw = (request.GET.get('limit') or '').strip()
+    if not raw:
+        return None
+    return int(raw)
+
+
+def _export_limit(request):
+    raw = (request.GET.get('limit') or '').strip()
+    if not raw:
+        return None
+    try:
+        value = int(raw)
+    except ValueError:
+        return None
+    return value if value > 0 else None
+
+
+def _csv_response(filename, header, rows):
+    from core import data_export
+    response = StreamingHttpResponse(
+        data_export.stream_csv(header, rows), content_type='text/csv',
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+    return response
+
+
+def _xlsx_response(filename, sheets):
+    from core import data_export
+    payload = data_export.build_xlsx(sheets)
+    response = HttpResponse(
+        payload,
+        content_type=(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ),
+    )
+    response['Content-Disposition'] = f'attachment; filename="{filename}.xlsx"'
+    return response
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_data_table_export(request, key):
+    """One table as CSV or XLSX, foreign keys resolved to readable columns."""
+    from core import data_export
+    fmt = (request.GET.get('format') or 'csv').lower()
+    limit = _export_limit(request)
+    try:
+        header, rows = data_export.build_table(key, limit=limit)
+    except ValueError as e:
+        return _error_response(e, 404)
+
+    name = f'{key}-{data_export.export_stamp()}'
+    if fmt == 'xlsx':
+        return _xlsx_response(name, [(key.split('.')[-1], header, rows)])
+    return _csv_response(name, header, rows)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_data_combo_export(request, key):
+    """One pre-joined combination as CSV or XLSX."""
+    from core import data_export
+    fmt = (request.GET.get('format') or 'csv').lower()
+    limit = _export_limit(request)
+    try:
+        header, rows = data_export.build_combo(key, limit=limit)
+    except ValueError as e:
+        return _error_response(e, 404)
+
+    name = f'{key}-{data_export.export_stamp()}'
+    if fmt == 'xlsx':
+        return _xlsx_response(name, [(key, header, rows)])
+    return _csv_response(name, header, rows)
+
+
+@require_auth(['admin'])
+@require_http_methods(['GET'])
+def admin_data_full_export(request):
+    """The whole database: a ZIP of one CSV per table, or a single workbook.
+
+    Built in memory rather than streamed — a ZIP central directory and an XLSX
+    package are both written last, so neither can be produced incrementally.
+    """
+    from core import data_export
+    fmt = (request.GET.get('format') or 'zip').lower()
+    limit = _export_limit(request)
+    # An explicit table list narrows the dump; otherwise take everything.
+    requested = [k for k in (request.GET.get('tables') or '').split(',') if k.strip()]
+    keys = requested or data_export.all_table_keys()
+    stamp = data_export.export_stamp()
+
+    if fmt == 'xlsx':
+        sheets = []
+        for key in keys:
+            try:
+                header, rows = data_export.build_table(key, limit=limit)
+            except Exception:
+                continue
+            sheets.append((key.split('.')[-1], header, rows))
+        return _xlsx_response(f'database-{stamp}', sheets)
+
+    payload = data_export.build_zip(keys, limit=limit)
+    response = HttpResponse(payload, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="database-{stamp}.zip"'
+    return response
