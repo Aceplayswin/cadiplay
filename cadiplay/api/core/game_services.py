@@ -27,7 +27,7 @@ from django.db import IntegrityError
 from django.utils import timezone
 
 from core import bonus_services, game_logging
-from core.money import store_currency
+from core.money import BACKEND_CURRENCY, store_currency
 from core.game_schemas import (
     LOST,
     VOID,
@@ -122,10 +122,13 @@ def launch_game(user_id: int, body: dict) -> dict:
         overrides = GameRepository.provider_overrides(game)
 
         try:
+            # First launch creates the aggregator player with this currency
+            # (locked thereafter). Always USD — ignore wallet/provider INR leftovers.
             launch_url = game_provider.request_launch_url(
                 user_id=user_id,
                 game_uid=req.game_uid,
                 credit_amount=f'{available:.2f}',
+                currency_code=BACKEND_CURRENCY,
                 language=req.language,
                 platform=req.platform,
                 overrides=overrides,
@@ -151,7 +154,7 @@ def launch_game(user_id: int, body: dict) -> dict:
                 session.game_name = game_name
                 session.member_account = member_account
                 session.launch_url = launch_url
-                session.currency = wallet.currency
+                session.currency = store_currency(wallet.currency)
                 session.save(update_fields=[
                     'game_name', 'member_account', 'launch_url', 'currency',
                     'updated_at',

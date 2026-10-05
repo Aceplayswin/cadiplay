@@ -28,6 +28,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from django.conf import settings
 
 from core import game_logging
+from core.money import store_currency
 
 
 class ProviderConfigError(RuntimeError):
@@ -307,7 +308,10 @@ def request_launch_url(
         'member_account': build_member_account(user_id, overrides),
         'game_uid': game_uid,
         'credit_amount': str(credit_amount),
-        'currency_code': currency_code or cfg.currency_code,
+        # Aggregator registers the player on first /game/v1 and freezes that
+        # currency (10011 if a later launch disagrees). Always USD — never INR
+        # from env, wallet, or a provider override.
+        'currency_code': store_currency(currency_code),
         'language': language or cfg.default_language,
         'home_url': cfg.home_url,
         'platform': platform,
