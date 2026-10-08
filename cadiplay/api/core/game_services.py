@@ -76,6 +76,15 @@ def _new_session_uid() -> str:
     return f'GS{uuid.uuid4().hex[:24]}'
 
 
+def _launch_extras(game) -> str | None:
+    """Sportsbook query string the aggregator expects on a sports launch."""
+    category = (getattr(game, 'category', None) or '').strip().lower()
+    game_type = (getattr(game, 'game_type', None) or '').strip().lower()
+    if category in ('sports', 'virtual_sports') or 'sport' in game_type:
+        return game_provider.DEFAULT_SPORTS_EXTRAS
+    return None
+
+
 # --------------------------------------------------------------------------- #
 # Launch
 # --------------------------------------------------------------------------- #
@@ -131,6 +140,7 @@ def launch_game(user_id: int, body: dict) -> dict:
                 currency_code=BACKEND_CURRENCY,
                 language=req.language,
                 platform=req.platform,
+                extras=_launch_extras(game),
                 overrides=overrides,
             )
         except (game_provider.ProviderConfigError, game_provider.ProviderError) as exc:

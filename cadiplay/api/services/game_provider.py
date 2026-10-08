@@ -109,6 +109,19 @@ def get_config(overrides: dict | None = None) -> ProviderConfig:
 
 DEFAULT_LAUNCH_PATH = '/game/v1'
 
+# Huidu platform codes inside the encrypted launch payload: 1 = web, 2 = H5.
+_PLATFORM_CODES = {
+    'web': '1',
+    'desktop': '1',
+    '1': '1',
+    'mobile': '2',
+    'h5': '2',
+    '2': '2',
+}
+
+# Sportsbook-only query string from the provider's launch sample.
+DEFAULT_SPORTS_EXTRAS = 'sport=basketball&betbyTheme=1'
+
 
 def normalize_launch_path(path: str | None) -> str:
     """Resolve the aggregator launch path; reject bare ``/`` and empty values."""
@@ -257,6 +270,12 @@ def decrypt_json(payload_b64: str, secret: str | None = None) -> dict:
 
 # --- Outbound: launch a game session ---
 
+def aggregator_platform(platform: str | None) -> str:
+    """Map our launch platform to the aggregator's code (``1`` web, ``2`` H5)."""
+    key = (platform or 'web').strip().lower()
+    return _PLATFORM_CODES.get(key, '1')
+
+
 def build_member_account(user_id: int | str, overrides: dict | None = None) -> str:
     """Namespace our internal user id into the aggregator member_account."""
     return f'{get_config(overrides).player_prefix}{user_id}'
@@ -285,6 +304,7 @@ def request_launch_url(
     currency_code: str | None = None,
     language: str | None = None,
     platform: str = 'web',
+    extras: str | None = None,
     overrides: dict | None = None,
 ) -> str:
     """Call the aggregator launch endpoint and return the game_launch_url.
@@ -302,21 +322,28 @@ def request_launch_url(
     _require_launch_config(cfg)
 
     timestamp = int(time.time() * 1000)
+    # Inner timestamp is a string. The outer envelope timestamp stays a number,
+    # matching the provider's /game/v1 sample.
     payload = {
+        'timestamp': str(timestamp),
         'agency_uid': cfg.agency_uid,
-        'timestamp': timestamp,
         'member_account': build_member_account(user_id, overrides),
         'game_uid': game_uid,
         'credit_amount': str(credit_amount),
         # Aggregator registers the player on first /game/v1 and freezes that
-        # currency (10011 if a later launch disagrees). Always USD — never INR
+        # currency (10011 if a later launch disagrees). Always USD - never INR
         # from env, wallet, or a provider override.
         'currency_code': store_currency(currency_code),
         'language': language or cfg.default_language,
-        'home_url': cfg.home_url,
-        'platform': platform,
-        'callback_url': cfg.callback_url,
+        'platform': aggregator_platform(platform),
     }
+    if extras:
+        payload['extras'] = extras
+    payload['callback_url'] = cfg.callback_url
+    # Lobby return URL. Not in the provider's sample, but the in-game home
+    # button uses it and the aggregator accepts it alongside callback_url.
+    if cfg.home_url:
+        payload['home_url'] = cfg.home_url
     envelope = {
         'agency_uid': cfg.agency_uid,
         'timestamp': timestamp,
