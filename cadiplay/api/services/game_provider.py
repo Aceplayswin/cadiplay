@@ -362,39 +362,43 @@ def request_launch_url(
         raise ProviderError(f'Aggregator unreachable at {launch_url}: {exc}') from exc
 
     # Logged before any check, so a 403 page or malformed reply is on record.
-    game_logging.raw_launch_response(
-        user_id, game_uid, launch_url, resp.status_code, resp.text,
-    )
-
-    if resp.status_code != 200:
-        # Include the target URL (no secrets) so a 403/404 is diagnosable —
-        # e.g. a wrong launch path or a source IP not whitelisted by the provider.
-        raise ProviderError(f'Aggregator HTTP {resp.status_code} from {launch_url}')
-
+    # finally flushes the joined JSON line even when a later step raises.
     try:
-        data = resp.json()
-    except ValueError as exc:
-        raise ProviderError('Aggregator returned non-JSON response') from exc
-
-    if data.get('code') not in (0, '0'):
-        raise ProviderError(
-            f'Aggregator error code={data.get("code")} msg={data.get("msg", "")}'
+        game_logging.raw_launch_response(
+            user_id, game_uid, launch_url, resp.status_code, resp.text,
         )
 
-    launch_payload = data.get('payload')
-    # Some aggregators return the inner payload encrypted, others plain. Handle both.
-    if isinstance(launch_payload, str):
-        try:
-            text = decrypt(launch_payload, cfg.aes_secret_key)
-            game_logging.raw_launch_payload(user_id, game_uid, text)
-            launch_payload = json.loads(text)
-        except Exception as exc:  # pragma: no cover - defensive
-            raise ProviderError('Failed to decrypt launch payload') from exc
+        if resp.status_code != 200:
+            # Include the target URL (no secrets) so a 403/404 is diagnosable —
+            # e.g. a wrong launch path or a source IP not whitelisted by the provider.
+            raise ProviderError(f'Aggregator HTTP {resp.status_code} from {launch_url}')
 
-    url = (launch_payload or {}).get('game_launch_url')
-    if not url:
-        raise ProviderError('Aggregator did not return a game_launch_url')
-    return url
+        try:
+            data = resp.json()
+        except ValueError as exc:
+            raise ProviderError('Aggregator returned non-JSON response') from exc
+
+        if data.get('code') not in (0, '0'):
+            raise ProviderError(
+                f'Aggregator error code={data.get("code")} msg={data.get("msg", "")}'
+            )
+
+        launch_payload = data.get('payload')
+        # Some aggregators return the inner payload encrypted, others plain. Handle both.
+        if isinstance(launch_payload, str):
+            try:
+                text = decrypt(launch_payload, cfg.aes_secret_key)
+                game_logging.raw_launch_payload(user_id, game_uid, text)
+                launch_payload = json.loads(text)
+            except Exception as exc:  # pragma: no cover - defensive
+                raise ProviderError('Failed to decrypt launch payload') from exc
+
+        url = (launch_payload or {}).get('game_launch_url')
+        if not url:
+            raise ProviderError('Aggregator did not return a game_launch_url')
+        return url
+    finally:
+        game_logging.flush_raw_json()
 
 
 # --- Inbound: decrypt a callback, build the encrypted ack ---
@@ -441,4 +445,6 @@ def build_ack(
         'credit_amount': str(credit_amount),
         'timestamp': timestamp or time.strftime('%Y-%m-%d %H:%M:%S'),
     }
+    # Logged in the clear before encryption. The HTTP body only carries ciphertext.
+    game_logging.raw_callback_ack(body)
     return {'code': 0, 'msg': '', 'payload': encrypt_json(body, secret)}

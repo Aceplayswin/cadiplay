@@ -93,9 +93,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # record of every launch, settlement (bet/win/loss/balance) and failure to
 # logs/games.log; everything WARNING+ (interruptions, rejected callbacks,
 # decrypt/internal errors) is mirrored to logs/games_error.log so problems are
-# easy to find and diagnose. Its 'games.raw' child writes everything the
-# aggregator sends — callback bodies verbatim plus their decrypted payloads,
-# launch responses — to logs/raw_games.log. Files rotate so they never grow
+# easy to find and diagnose. 'games.raw' writes everything the aggregator
+# sends — callback bodies verbatim, decrypted payloads, plain acks, launch
+# responses — to logs/raw_games.log. 'games.raw.json' writes one joined JSON
+# object per request to logs/raw_games.json and does not propagate, so those
+# lines are not copied into the text file. Files rotate so they never grow
 # unbounded.
 # --------------------------------------------------------------------------- #
 LOG_DIR = BASE_DIR / 'logs'
@@ -106,6 +108,9 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'game': {'format': '%(asctime)s %(levelname)s %(message)s'},
+        # Timestamp already lives inside the JSON object. A prefix would break
+        # "one JSON value per line".
+        'game_raw_json': {'format': '%(message)s'},
     },
     'handlers': {
         'games_file': {
@@ -126,14 +131,23 @@ LOGGING = {
             'level': 'WARNING',
             'encoding': 'utf-8',
         },
-        # Raw aggregator traffic. Every callback lands here twice (body and
-        # decrypted payload), so it gets bigger files than games.log.
+        # Raw aggregator traffic. A callback lands here once per wire piece
+        # (body, decrypted payload, plain ack, HTTP response).
         'games_raw_file': {
             'class': 'core.logging_handlers.WatchedRotatingFileHandler',
             'filename': str(LOG_DIR / 'raw_games.log'),
             'maxBytes': 50 * 1024 * 1024,
             'backupCount': 10,
             'formatter': 'game',
+            'level': 'INFO',
+            'encoding': 'utf-8',
+        },
+        'games_raw_json_file': {
+            'class': 'core.logging_handlers.WatchedRotatingFileHandler',
+            'filename': str(LOG_DIR / 'raw_games.json'),
+            'maxBytes': 50 * 1024 * 1024,
+            'backupCount': 10,
+            'formatter': 'game_raw_json',
             'level': 'INFO',
             'encoding': 'utf-8',
         },
@@ -160,6 +174,13 @@ LOGGING = {
         # would be copied there too.
         'games.raw': {
             'handlers': ['games_raw_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # Name is a child of games.raw, so propagate must stay off or every
+        # JSON line would also be written into raw_games.log.
+        'games.raw.json': {
+            'handlers': ['games_raw_json_file'],
             'level': 'INFO',
             'propagate': False,
         },

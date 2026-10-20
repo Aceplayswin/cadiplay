@@ -777,20 +777,27 @@ def games_callback(request):
         content_type=request.content_type,
     )
     try:
-        envelope = json.loads(raw) if raw else {}
-    except json.JSONDecodeError:
-        # The aggregator may post the encrypted payload as a raw form field.
-        envelope = {'payload': request.POST.get('payload', raw)}
-    try:
-        ack = game_services.process_callback(envelope, raw_body=raw)
-        return JsonResponse(ack)
-    except GameError as e:
-        # Provider-shaped error envelope (non-zero code) so the aggregator can
-        # retry/alert without us leaking internals.
-        return JsonResponse({'code': 1, 'msg': str(e), 'payload': ''}, status=200)
-    except Exception as e:
-        game_logging.callback_error(f'{type(e).__name__}: {e}')
-        return JsonResponse({'code': 1, 'msg': 'internal_error', 'payload': ''}, status=200)
+        try:
+            envelope = json.loads(raw) if raw else {}
+        except json.JSONDecodeError:
+            # The aggregator may post the encrypted payload as a raw form field.
+            envelope = {'payload': request.POST.get('payload', raw)}
+        try:
+            ack = game_services.process_callback(envelope, raw_body=raw)
+            response = JsonResponse(ack)
+        except GameError as e:
+            # Provider-shaped error envelope (non-zero code) so the aggregator can
+            # retry/alert without us leaking internals.
+            response = JsonResponse({'code': 1, 'msg': str(e), 'payload': ''}, status=200)
+        except Exception as e:
+            game_logging.callback_error(f'{type(e).__name__}: {e}')
+            response = JsonResponse({'code': 1, 'msg': 'internal_error', 'payload': ''}, status=200)
+        game_logging.raw_callback_response(response.content)
+        return response
+    finally:
+        # A failure before the response is logged must not leave this record
+        # open for the next callback on this worker.
+        game_logging.flush_raw_json()
 
 
 @require_http_methods(['GET'])
